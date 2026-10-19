@@ -28,7 +28,11 @@ namespace HuntHappens.Editor
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) != null)
             {
                 if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                {
                     EditorSceneManager.OpenScene(ScenePath);
+                    InteractionSceneBuilder.AddInteractionObjects();
+                    EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+                }
                 Debug.Log("Opened existing ForestPrototype. To generate a fresh scene, first move or rename the existing scene asset.");
                 return;
             }
@@ -123,6 +127,7 @@ namespace HuntHappens.Editor
             look.SetCamera(cameraObject.transform);
             string prefabPath = AssetDatabase.GenerateUniqueAssetPath("Assets/Prefabs/PrototypePlayer.prefab");
             PrefabUtility.SaveAsPrefabAssetAndConnect(player, prefabPath, InteractionMode.AutomatedAction);
+            InteractionSceneBuilder.AddInteractionObjects();
             if (!EditorSceneManager.SaveScene(scene, ScenePath))
                 throw new System.IO.IOException("Could not save " + ScenePath);
             AssetDatabase.SaveAssets();

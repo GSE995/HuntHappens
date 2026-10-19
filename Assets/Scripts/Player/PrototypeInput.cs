@@ -11,12 +11,15 @@ namespace HuntHappens.Player
         public Vector2 Move { get; private set; }
         public Vector2 Look { get; private set; }
         public bool JumpPressed { get; private set; }
+        public bool InteractPressed { get; private set; }
+        public bool ThrowPressed { get; private set; }
 #if ENABLE_INPUT_SYSTEM
         private InputAction move;
         private InputAction look;
         private InputAction jump;
         private InputAction releaseCursor;
         private InputAction captureCursor;
+        private InputAction interact;
 
         private void Awake()
         {
@@ -28,17 +31,20 @@ namespace HuntHappens.Player
             jump = new InputAction("Jump", InputActionType.Button, "<Keyboard>/space");
             releaseCursor = new InputAction("Release cursor", InputActionType.Button, "<Keyboard>/escape");
             captureCursor = new InputAction("Capture cursor", InputActionType.Button, "<Mouse>/leftButton");
+            interact = new InputAction("Interact", InputActionType.Button, "<Keyboard>/e");
         }
 
         private void OnEnable()
         {
             move.Enable(); look.Enable(); jump.Enable();
             releaseCursor.Enable(); captureCursor.Enable();
+            interact.Enable();
             SetCursor(true);
         }
 
         public void ReadFrame()
         {
+            bool wasCaptured = Cursor.lockState == CursorLockMode.Locked;
             if (releaseCursor.WasPressedThisFrame()) SetCursor(false);
             else if (captureCursor.WasPressedThisFrame()) SetCursor(true);
 
@@ -46,14 +52,19 @@ namespace HuntHappens.Player
             Move = captured ? move.ReadValue<Vector2>() : Vector2.zero;
             Look = captured ? look.ReadValue<Vector2>() : Vector2.zero;
             JumpPressed = captured && jump.WasPressedThisFrame();
+            InteractPressed = captured && wasCaptured && interact.WasPressedThisFrame();
+            // Clicking back into Game captures the cursor without throwing the held item.
+            ThrowPressed = captured && wasCaptured && captureCursor.WasPressedThisFrame();
         }
 
         private void OnDisable()
         {
             move.Disable(); look.Disable(); jump.Disable();
             releaseCursor.Disable(); captureCursor.Disable();
+            interact.Disable();
             Move = Look = Vector2.zero;
             JumpPressed = false;
+            InteractPressed = ThrowPressed = false;
             SetCursor(false);
         }
 
@@ -61,6 +72,7 @@ namespace HuntHappens.Player
         {
             move?.Dispose(); look?.Dispose(); jump?.Dispose();
             releaseCursor?.Dispose(); captureCursor?.Dispose();
+            interact?.Dispose();
         }
 #else
         private void OnEnable()
