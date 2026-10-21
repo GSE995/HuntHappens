@@ -20,6 +20,17 @@ namespace HuntHappens.Animals
         private float dose;
         private float elapsed;
         private float speedBeforeHit;
+        private MonoBehaviour deliveryReservation;
+        public bool IsDelivered { get; private set; }
+        public bool DeliveryReserved => deliveryReservation != null && deliveryReservation.isActiveAndEnabled;
+        public void ReserveForDelivery(MonoBehaviour owner) { if (deliveryReservation == null || deliveryReservation == owner) deliveryReservation = owner; }
+        public void ReleaseDeliveryReservation(MonoBehaviour owner) { if (deliveryReservation == owner) deliveryReservation = null; }
+        public bool TryMarkDelivered()
+        {
+            if (IsDelivered || !isActiveAndEnabled || currentState != SedationState.Unconscious || physicsBody.IsHeld) return false;
+            IsDelivered = true;
+            return true;
+        }
         public SedationState State => currentState;
         public float RecoveryProgress => Mathf.Clamp01(elapsed / recoveryDuration);
         public float SedationProgress => Mathf.Clamp01(elapsed / sedationDuration);
@@ -73,7 +84,7 @@ namespace HuntHappens.Animals
                     elapsed = 0;
                 }
             }
-            else if (currentState == SedationState.Unconscious && elapsed >= sleepDuration && physicsBody.TryBeginRecovery())
+            else if (currentState == SedationState.Unconscious && !DeliveryReserved && elapsed >= sleepDuration && physicsBody.TryBeginRecovery())
             {
                 currentState = SedationState.Recovering;
                 ai.SetSedationState(DeerAI.DeerState.Recovering);

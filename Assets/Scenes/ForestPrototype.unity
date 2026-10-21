@@ -8170,6 +8170,78 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 983178119}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &986787984
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2016340547158425045, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: manager
+      value: 
+      objectReference: {fileID: 1887257589}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.05000019
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6222688775767490324, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8971606478362312295, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+      propertyPath: m_Name
+      value: PickupTruck
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+--- !u!114 &986787985 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2016340547158425045, guid: 997737f3fd24c704fac0f3ec51bcf6b9, type: 3}
+  m_PrefabInstance: {fileID: 986787984}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c648c354d98e2514386d0386d0835376, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.PickupTruckDelivery
 --- !u!1 &989382871
 GameObject:
   m_ObjectHideFlags: 0
@@ -10155,6 +10227,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1142409096}
   - component: {fileID: 1142409095}
+  - component: {fileID: 1142409097}
   m_Layer: 0
   m_Name: Interaction HUD
   m_TagString: Untagged
@@ -10191,6 +10264,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1142409097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1142409094}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50e6ff8f6bf42d540b5a20824a7b48cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.UI.GameHUD
+  manager: {fileID: 1887257589}
+  font: {fileID: 11400000, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
 --- !u!1 &1153323961
 GameObject:
   m_ObjectHideFlags: 0
@@ -15814,6 +15901,77 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1880803236}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1887257588
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1887257591}
+  - component: {fileID: 1887257589}
+  - component: {fileID: 1887257590}
+  m_Layer: 0
+  m_Name: Delivery System
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1887257589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1887257588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 606ef240c27338c47addd63edec1a367, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.DeliveryManager
+  rewardPerDeer: 100
+  goal: 3
+  spawner: {fileID: 1887257590}
+--- !u!114 &1887257590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1887257588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9154b7c883d1fa43b14f5ac255325e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.DeerSpawner
+  deerPrefab: {fileID: 5642659562763300804, guid: 660fb856acaa60f4db8225b200fd52ce, type: 3}
+  player: {fileID: 122241181}
+  animalRoot: {fileID: 1321654113}
+  maximumPopulation: 3
+  spawnCenter: {x: 0, y: 0, z: 0}
+  spawnRadius: 38
+  minimumPlayerDistance: 20
+  minimumAnimalSpacing: 6
+  spawnDelay: 3
+  retryInterval: 2
+  attemptsPerRetry: 32
+--- !u!4 &1887257591
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1887257588}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1901679199
 GameObject:
   m_ObjectHideFlags: 0
@@ -16877,6 +17035,7 @@ MonoBehaviour:
   interactionLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  deliveryTruck: {fileID: 986787985}
 --- !u!114 &7632009958039229847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16931,3 +17090,5 @@ SceneRoots:
   - {fileID: 1142409096}
   - {fileID: 374448030}
   - {fileID: 1321654113}
+  - {fileID: 1887257591}
+  - {fileID: 986787984}

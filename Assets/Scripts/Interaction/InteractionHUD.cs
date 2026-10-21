@@ -68,6 +68,7 @@ namespace HuntHappens.Interaction
             bool visible = interaction != null && interaction.isActiveAndEnabled && Cursor.lockState == CursorLockMode.Locked;
             canvas.enabled = visible;
             prompt.text = !visible ? "" : interaction.IsHolding ? "E — Отпустить | ЛКМ — Бросить" :
+                interaction.DeliveryTarget != null ? "E — Сдать животных" :
                 interaction.Target != null ? interaction.Target.PickupPrompt :
                 interaction.ObservedDeer != null ? interaction.ObservedDeer.StatusText : "";
             if (tools != null)
