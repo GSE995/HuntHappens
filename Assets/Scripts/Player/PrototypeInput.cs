@@ -13,6 +13,8 @@ namespace HuntHappens.Player
         public bool JumpPressed { get; private set; }
         public bool InteractPressed { get; private set; }
         public bool ThrowPressed { get; private set; }
+        public bool SelectTranquilizerPressed { get; private set; }
+        public bool SelectInteractionPressed { get; private set; }
 #if ENABLE_INPUT_SYSTEM
         private InputAction move;
         private InputAction look;
@@ -20,6 +22,8 @@ namespace HuntHappens.Player
         private InputAction releaseCursor;
         private InputAction captureCursor;
         private InputAction interact;
+        private InputAction selectTranquilizer;
+        private InputAction selectInteraction;
 
         private void Awake()
         {
@@ -32,6 +36,8 @@ namespace HuntHappens.Player
             releaseCursor = new InputAction("Release cursor", InputActionType.Button, "<Keyboard>/escape");
             captureCursor = new InputAction("Capture cursor", InputActionType.Button, "<Mouse>/leftButton");
             interact = new InputAction("Interact", InputActionType.Button, "<Keyboard>/e");
+            selectTranquilizer = new InputAction("Select tranquilizer", InputActionType.Button, "<Keyboard>/1");
+            selectInteraction = new InputAction("Select interaction", InputActionType.Button, "<Keyboard>/2");
         }
 
         private void OnEnable()
@@ -39,6 +45,7 @@ namespace HuntHappens.Player
             move.Enable(); look.Enable(); jump.Enable();
             releaseCursor.Enable(); captureCursor.Enable();
             interact.Enable();
+            selectTranquilizer.Enable(); selectInteraction.Enable();
             SetCursor(true);
         }
 
@@ -55,6 +62,8 @@ namespace HuntHappens.Player
             InteractPressed = captured && wasCaptured && interact.WasPressedThisFrame();
             // Clicking back into Game captures the cursor without throwing the held item.
             ThrowPressed = captured && wasCaptured && captureCursor.WasPressedThisFrame();
+            SelectTranquilizerPressed = captured && selectTranquilizer.WasPressedThisFrame();
+            SelectInteractionPressed = captured && selectInteraction.WasPressedThisFrame();
         }
 
         private void OnDisable()
@@ -62,9 +71,11 @@ namespace HuntHappens.Player
             move.Disable(); look.Disable(); jump.Disable();
             releaseCursor.Disable(); captureCursor.Disable();
             interact.Disable();
+            selectTranquilizer.Disable(); selectInteraction.Disable();
             Move = Look = Vector2.zero;
             JumpPressed = false;
             InteractPressed = ThrowPressed = false;
+            SelectTranquilizerPressed = SelectInteractionPressed = false;
             SetCursor(false);
         }
 
@@ -73,6 +84,7 @@ namespace HuntHappens.Player
             move?.Dispose(); look?.Dispose(); jump?.Dispose();
             releaseCursor?.Dispose(); captureCursor?.Dispose();
             interact?.Dispose();
+            selectTranquilizer?.Dispose(); selectInteraction?.Dispose();
         }
 #else
         private void OnEnable()

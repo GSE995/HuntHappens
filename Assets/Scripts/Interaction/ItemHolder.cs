@@ -32,6 +32,8 @@ namespace HuntHappens.Interaction
         public PickupItem HeldItem => held;
         public bool IsHolding => held != null;
         public float MaximumMass => maximumMass;
+        public void EnsureMaximumMass(float value) => maximumMass = Mathf.Max(maximumMass, value);
+        private float TargetDistance => held != null && held.CarryDistance > 0 ? held.CarryDistance : holdDistance;
         public void SetView(Transform cameraTransform) => view = cameraTransform;
 
         public bool TryPickUp(PickupItem item)
@@ -49,7 +51,7 @@ namespace HuntHappens.Interaction
             body.angularVelocity = Vector3.zero;
             body.WakeUp();
             stuckTime = 0;
-            previousTarget = view.position + view.forward * holdDistance;
+            previousTarget = view.position + view.forward * TargetDistance;
             foreach (Collider itemCollider in item.GetComponentsInChildren<Collider>())
             {
                 if (itemCollider.attachedRigidbody != body) continue;
@@ -74,7 +76,7 @@ namespace HuntHappens.Interaction
                 Drop();
                 return;
             }
-            Vector3 target = view.position + view.forward * holdDistance;
+            Vector3 target = view.position + view.forward * TargetDistance;
             Vector3 targetVelocity = Vector3.ClampMagnitude((target - previousTarget) / Time.fixedDeltaTime, maximumSpeed);
             previousTarget = target;
             Vector3 error = target - body.worldCenterOfMass;
@@ -82,8 +84,9 @@ namespace HuntHappens.Interaction
             if (stuckTime >= stuckTimeout) { Drop(); return; }
 
             // A damped spring: finite acceleration and speed, no teleporting through colliders.
-            Vector3 acceleration = error * (followSmoothness * followSmoothness)
-                + (targetVelocity - body.linearVelocity) * (2f * followSmoothness);
+            float response = followSmoothness * held.FollowMultiplier;
+            Vector3 acceleration = error * (response * response)
+                + (targetVelocity - body.linearVelocity) * (2f * response);
             body.AddForce(Vector3.ClampMagnitude(acceleration, maximumAcceleration), ForceMode.Acceleration);
             body.linearVelocity = Vector3.ClampMagnitude(body.linearVelocity, maximumSpeed);
             body.angularVelocity *= Mathf.Exp(-6f * Time.fixedDeltaTime);
@@ -106,7 +109,7 @@ namespace HuntHappens.Interaction
             {
                 // Do not add a throw impulse on top of accumulated spring velocity.
                 body.linearVelocity = Vector3.ClampMagnitude(body.linearVelocity, 2f);
-                if (throwing && view != null) body.AddForce(view.forward * throwImpulse, ForceMode.Impulse);
+                if (throwing && view != null) body.AddForce(view.forward * (throwImpulse * item.ThrowMultiplier), ForceMode.Impulse);
                 body.WakeUp();
             }
             // Player collision returns only after separation, avoiding a launch when dropping nearby.

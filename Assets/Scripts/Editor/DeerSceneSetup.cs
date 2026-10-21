@@ -82,7 +82,8 @@ namespace HuntHappens.Editor
             }
             // Movable props are excluded from the bake and carve their current position at runtime.
             foreach (GameObject root in scene.GetRootGameObjects())
-                foreach (PickupItem item in root.GetComponentsInChildren<PickupItem>()) AddObstacle(item);
+                foreach (PickupItem item in root.GetComponentsInChildren<PickupItem>())
+                    if (item.GetComponent<DeerAI>() == null) AddObstacle(item);
             Undo.CollapseUndoOperations(group);
             EditorUtility.SetDirty(navigation);
             EditorSceneManager.MarkSceneDirty(scene);

@@ -1,4 +1,5 @@
 using HuntHappens.Player;
+using HuntHappens.Animals;
 using UnityEngine;
 
 namespace HuntHappens.Interaction
@@ -13,6 +14,8 @@ namespace HuntHappens.Interaction
         private PrototypeInput input;
         private ItemHolder holder;
         public PickupItem Target { get; private set; }
+        public DeerSedation ObservedDeer { get; private set; }
+        public int LastHandledFrame { get; private set; } = -1;
         public bool IsHolding => holder != null && holder.IsHolding;
         public void SetView(Camera cameraComponent)
         {
@@ -32,30 +35,38 @@ namespace HuntHappens.Interaction
         private void LateUpdate()
         {
             Target = null;
+            ObservedDeer = null;
             if (view == null || Cursor.lockState != CursorLockMode.Locked) return;
             if (holder.IsHolding)
             {
+                if (input.InteractPressed || input.ThrowPressed) LastHandledFrame = Time.frameCount;
                 if (input.InteractPressed) holder.Drop();
                 else if (input.ThrowPressed) holder.Throw();
                 return;
             }
             // First solid hit blocks selection: items cannot be picked up through trees or walls.
             RaycastHit[] hits = Physics.RaycastAll(view.transform.position, view.transform.forward,
-                interactionDistance, interactionLayers, QueryTriggerInteraction.Ignore);
+                Mathf.Max(interactionDistance, 60f), interactionLayers, QueryTriggerInteraction.Ignore);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (RaycastHit hit in hits)
             {
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 PickupItem item = hit.rigidbody != null ? hit.rigidbody.GetComponent<PickupItem>() : null;
-                if (item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
+                ObservedDeer = hit.collider.GetComponentInParent<DeerSedation>();
+                if (hit.distance <= interactionDistance && item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
                 break;
             }
-            if (input.InteractPressed && Target != null) holder.TryPickUp(Target);
+            if (input.InteractPressed && Target != null)
+            {
+                LastHandledFrame = Time.frameCount;
+                holder.TryPickUp(Target);
+            }
         }
 
         private void OnDisable()
         {
             Target = null;
+            ObservedDeer = null;
             if (holder != null) holder.Drop();
         }
     }

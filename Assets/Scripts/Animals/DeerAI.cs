@@ -7,7 +7,7 @@ namespace HuntHappens.Animals
     [RequireComponent(typeof(NavMeshAgent), typeof(DeerPerception))]
     public sealed class DeerAI : MonoBehaviour
     {
-        public enum DeerState { Idle, Wander, Alert, Flee }
+        public enum DeerState { Idle, Wander, Alert, Flee, Sedated, Unconscious, Recovering }
         [Header("State (runtime)")]
         [SerializeField] private DeerState currentState;
         [Header("Movement")]
@@ -44,6 +44,19 @@ namespace HuntHappens.Animals
         public DeerState State => currentState;
         public Vector3 MovementTarget => movementTarget;
         public Vector3 FleeDirection => fleeDirection;
+        public void SetSedationState(DeerState state)
+        {
+            if (state != DeerState.Sedated && state != DeerState.Unconscious && state != DeerState.Recovering) return;
+            currentState = state;
+        }
+        public void ResumeAfterSedation()
+        {
+            if (!agent.enabled || !agent.isOnNavMesh) return;
+            home = transform.position;
+            perception.Observe(0);
+            lastThreat = perception.Player != null ? perception.Player.position : transform.position - transform.forward;
+            Enter(perception.Distance <= perception.FrightRadius ? DeerState.Flee : DeerState.Idle);
+        }
 
         private void Awake()
         {
@@ -67,6 +80,7 @@ namespace HuntHappens.Animals
 
         private void Update()
         {
+            if (currentState == DeerState.Sedated || currentState == DeerState.Unconscious || currentState == DeerState.Recovering) return;
             if (!agent.enabled || !agent.isOnNavMesh)
             {
                 if (!warned) Debug.LogWarning("Deer navigation unavailable; check its NavMesh.", this);

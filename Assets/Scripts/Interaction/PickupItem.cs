@@ -6,8 +6,24 @@ namespace HuntHappens.Interaction
     [RequireComponent(typeof(Rigidbody))]
     public sealed class PickupItem : MonoBehaviour
     {
+        [SerializeField] private string pickupPrompt = "E — Поднять";
+        [SerializeField, Min(0)] private float carryDistance;
+        [SerializeField, Range(0.2f, 2)] private float followMultiplier = 1f;
+        [SerializeField, Range(0, 12)] private float throwMultiplier = 1f;
+        public string PickupPrompt => pickupPrompt;
+        public float CarryDistance => carryDistance;
+        public float FollowMultiplier => followMultiplier;
+        public float ThrowMultiplier => throwMultiplier;
+        public void ConfigureAnimal()
+        {
+            pickupPrompt = "E — Поднять оленя";
+            carryDistance = 2.8f;
+            followMultiplier = 0.7f;
+            throwMultiplier = 8f;
+        }
         public Rigidbody Body => GetComponent<Rigidbody>();
         public ItemHolder Holder { get; private set; }
+        public float LastReleasedTime { get; private set; } = float.NegativeInfinity;
 
         public bool CanPickUp(float maximumMass)
         {
@@ -29,7 +45,7 @@ namespace HuntHappens.Interaction
 
         public void ReleaseClaim(ItemHolder holder)
         {
-            if (Holder == holder) Holder = null;
+            if (Holder == holder) { Holder = null; LastReleasedTime = Time.time; }
         }
 
         private void OnDisable()

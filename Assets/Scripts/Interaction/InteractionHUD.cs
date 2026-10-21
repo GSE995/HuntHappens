@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using HuntHappens.Weapons;
 
 namespace HuntHappens.Interaction
 {
@@ -12,6 +13,8 @@ namespace HuntHappens.Interaction
         [SerializeField] private TMP_FontAsset promptFont;
         private TextMeshProUGUI prompt;
         private Canvas canvas;
+        private TextMeshProUGUI tools;
+        private TranquilizerGun gun;
         public void SetInteraction(PlayerInteraction value) => interaction = value;
         public void SetFont(TMP_FontAsset value) => promptFont = value;
 
@@ -46,6 +49,18 @@ namespace HuntHappens.Interaction
             prompt.rectTransform.anchorMin = prompt.rectTransform.anchorMax = Vector2.one * 0.5f;
             prompt.rectTransform.anchoredPosition = new Vector2(0, -55);
             prompt.rectTransform.sizeDelta = new Vector2(800, 65);
+            var toolObject = new GameObject("Selected Tool", typeof(RectTransform));
+            toolObject.transform.SetParent(canvas.transform, false);
+            tools = toolObject.AddComponent<TextMeshProUGUI>();
+            tools.font = promptFont;
+            tools.fontSize = 23;
+            tools.alignment = TextAlignmentOptions.BottomLeft;
+            tools.raycastTarget = false;
+            tools.rectTransform.anchorMin = tools.rectTransform.anchorMax = Vector2.zero;
+            tools.rectTransform.pivot = Vector2.zero;
+            tools.rectTransform.anchoredPosition = new Vector2(30, 25);
+            tools.rectTransform.sizeDelta = new Vector2(1250, 100);
+            if (interaction != null) gun = interaction.GetComponent<TranquilizerGun>();
         }
 
         private void LateUpdate()
@@ -53,7 +68,12 @@ namespace HuntHappens.Interaction
             bool visible = interaction != null && interaction.isActiveAndEnabled && Cursor.lockState == CursorLockMode.Locked;
             canvas.enabled = visible;
             prompt.text = !visible ? "" : interaction.IsHolding ? "E — Отпустить | ЛКМ — Бросить" :
-                interaction.Target != null ? "E — Поднять" : "";
+                interaction.Target != null ? interaction.Target.PickupPrompt :
+                interaction.ObservedDeer != null ? interaction.ObservedDeer.StatusText : "";
+            if (tools != null)
+                tools.text = gun == null ? "" : (gun.Selected ? "Транквилизатор" : "Взаимодействие") +
+                    "\n1 — Транквилизатор | 2 — Взаимодействие | E — Поднять / Отпустить | ЛКМ — " +
+                    (interaction != null && interaction.IsHolding ? "Бросить" : gun.Selected ? "Выстрел" : "Бросить предмет");
         }
 
         private void OnDisable()
