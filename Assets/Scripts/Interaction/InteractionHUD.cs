@@ -15,6 +15,8 @@ namespace HuntHappens.Interaction
         private Canvas canvas;
         private TextMeshProUGUI tools;
         private TranquilizerGun gun;
+        private HuntHappens.Traps.TrapPlacement traps;
+        private TextMeshProUGUI trapNotice;
         public void SetInteraction(PlayerInteraction value) => interaction = value;
         public void SetFont(TMP_FontAsset value) => promptFont = value;
 
@@ -59,22 +61,39 @@ namespace HuntHappens.Interaction
             tools.rectTransform.anchorMin = tools.rectTransform.anchorMax = Vector2.zero;
             tools.rectTransform.pivot = Vector2.zero;
             tools.rectTransform.anchoredPosition = new Vector2(30, 25);
-            tools.rectTransform.sizeDelta = new Vector2(1250, 100);
+            tools.rectTransform.sizeDelta = new Vector2(1800, 145);
             if (interaction != null) gun = interaction.GetComponent<TranquilizerGun>();
+            if (interaction != null) traps = interaction.GetComponent<HuntHappens.Traps.TrapPlacement>();
+            var notice = new GameObject("Trap Notification", typeof(RectTransform));
+            notice.transform.SetParent(canvas.transform, false);
+            trapNotice = notice.AddComponent<TextMeshProUGUI>();
+            trapNotice.font = promptFont;
+            trapNotice.fontSize = 29;
+            trapNotice.alignment = TextAlignmentOptions.Center;
+            trapNotice.color = new Color(1, 0.85f, 0.25f);
+            trapNotice.raycastTarget = false;
+            trapNotice.rectTransform.anchorMin = trapNotice.rectTransform.anchorMax = Vector2.one * 0.5f;
+            trapNotice.rectTransform.anchoredPosition = new Vector2(0, 110);
+            trapNotice.rectTransform.sizeDelta = new Vector2(1000, 80);
         }
 
         private void LateUpdate()
         {
-            bool visible = interaction != null && interaction.isActiveAndEnabled && Cursor.lockState == CursorLockMode.Locked;
+            bool visible = interaction != null && interaction.isActiveAndEnabled && !interaction.GameplayBlocked && Cursor.lockState == CursorLockMode.Locked;
             canvas.enabled = visible;
             prompt.text = !visible ? "" : interaction.IsHolding ? "E — Отпустить | ЛКМ — Бросить" :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :
+                interaction.ShopTarget != null ? "E — Открыть магазин" :
+                interaction.TrapTarget != null ? interaction.TrapTarget.Prompt :
                 interaction.Target != null ? interaction.Target.PickupPrompt :
-                interaction.ObservedDeer != null ? interaction.ObservedDeer.StatusText : "";
+                interaction.ObservedDeer != null ? interaction.ObservedDeer.StatusText :
+                gun != null && gun.TrapSelected && traps != null ? traps.PlacementHint : "";
             if (tools != null)
-                tools.text = gun == null ? "" : (gun.Selected ? "Транквилизатор" : "Взаимодействие") +
-                    "\n1 — Транквилизатор | 2 — Взаимодействие | E — Поднять / Отпустить | ЛКМ — " +
-                    (interaction != null && interaction.IsHolding ? "Бросить" : gun.Selected ? "Выстрел" : "Бросить предмет");
+                tools.text = gun == null ? "" : (gun.TrapSelected ? "Ловушка" : gun.Selected ? "Транквилизатор" : "Взаимодействие") +
+                    (traps != null && traps.Manager != null ? " | Ловушки: " + traps.Manager.PlacedCount + "/" + traps.Manager.MaximumTraps : "") +
+                    "\n1 — Транквилизатор | 2 — Взаимодействие | 3 — Ловушка\nE — Поднять / Отпустить | ЛКМ — " +
+                    (interaction != null && interaction.IsHolding ? "Бросить" : gun.TrapSelected ? "Установить ловушку" : gun.Selected ? "Выстрел" : "Бросить предмет");
+            trapNotice.text = traps != null && traps.Manager != null && Time.time < traps.Manager.NotificationUntil ? traps.Manager.Notification : "";
         }
 
         private void OnDisable()

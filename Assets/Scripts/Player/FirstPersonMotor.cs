@@ -23,7 +23,7 @@ namespace HuntHappens.Player
         private void Update()
         {
             input.ReadFrame();
-            look.ApplyLook(input.Look);
+            if (!input.GameplayBlocked) look.ApplyLook(input.Look);
             if (controller.isGrounded && verticalSpeed < 0f) verticalSpeed = -2f;
             if (controller.isGrounded && input.JumpPressed)
                 verticalSpeed = Mathf.Sqrt(jumpHeight * -2f * gravity);

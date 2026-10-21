@@ -10,7 +10,7 @@ namespace HuntHappens.Interaction
         [SerializeField, Min(0)] private float carryDistance;
         [SerializeField, Range(0.2f, 2)] private float followMultiplier = 1f;
         [SerializeField, Range(0, 12)] private float throwMultiplier = 1f;
-        public string PickupPrompt => pickupPrompt;
+        public string PickupPrompt => GetComponent<HuntHappens.Animals.DeerSedation>()?.State == HuntHappens.Animals.DeerSedation.SedationState.Trapped ? "E — Забрать оленя" : pickupPrompt;
         public float CarryDistance => carryDistance;
         public float FollowMultiplier => followMultiplier;
         public float ThrowMultiplier => throwMultiplier;
@@ -39,6 +39,7 @@ namespace HuntHappens.Interaction
         public bool TryClaim(ItemHolder holder, float maximumMass)
         {
             if (holder == null || !CanPickUp(maximumMass)) return false;
+            GetComponent<HuntHappens.Animals.DeerSedation>()?.ReleaseTrapForCarry();
             Holder = holder;
             return true;
         }

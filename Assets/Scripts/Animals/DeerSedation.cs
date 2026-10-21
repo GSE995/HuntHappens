@@ -7,7 +7,7 @@ namespace HuntHappens.Animals
     [DisallowMultipleComponent, RequireComponent(typeof(DeerAI), typeof(DeerPhysics))]
     public sealed class DeerSedation : MonoBehaviour
     {
-        public enum SedationState { Awake, Sedated, Unconscious, Recovering }
+        public enum SedationState { Awake, Sedated, Unconscious, Recovering, Trapped }
         [SerializeField] private SedationState currentState;
         [SerializeField, Min(0.1f)] private float requiredDose = 1f;
         [SerializeField, Min(0.5f)] private float sedationDuration = 3f;
@@ -20,7 +20,34 @@ namespace HuntHappens.Animals
         private float dose;
         private float elapsed;
         private float speedBeforeHit;
+        private float activeSedationDuration;
+        public float CurrentSedationDuration => activeSedationDuration > 0 ? activeSedationDuration : sedationDuration;
         private MonoBehaviour deliveryReservation;
+        private RigidbodyConstraints beforeTrapConstraints;
+        public HuntHappens.Traps.AnimalTrap Trap { get; private set; }
+        public bool TryTrap(HuntHappens.Traps.AnimalTrap trap)
+        {
+            if (trap == null || !isActiveAndEnabled || IsDelivered || currentState != SedationState.Awake || physicsBody.IsHeld) return false;
+            Trap = trap;
+            beforeTrapConstraints = physicsBody.Body.constraints;
+            physicsBody.FallAsleep();
+            physicsBody.Body.constraints = RigidbodyConstraints.FreezeAll;
+            currentState = SedationState.Trapped;
+            ai.SetSedationState(DeerAI.DeerState.Trapped);
+            elapsed = 0;
+            return true;
+        }
+        public void ReleaseTrapForCarry()
+        {
+            if (currentState != SedationState.Trapped) return;
+            physicsBody.Body.constraints = beforeTrapConstraints;
+            currentState = SedationState.Unconscious;
+            ai.SetSedationState(DeerAI.DeerState.Unconscious);
+            elapsed = 0;
+            var previous = Trap;
+            Trap = null;
+            previous?.Release(this);
+        }
         public bool IsDelivered { get; private set; }
         public bool DeliveryReserved => deliveryReservation != null && deliveryReservation.isActiveAndEnabled;
         public void ReserveForDelivery(MonoBehaviour owner) { if (deliveryReservation == null || deliveryReservation == owner) deliveryReservation = owner; }
@@ -33,8 +60,8 @@ namespace HuntHappens.Animals
         }
         public SedationState State => currentState;
         public float RecoveryProgress => Mathf.Clamp01(elapsed / recoveryDuration);
-        public float SedationProgress => Mathf.Clamp01(elapsed / sedationDuration);
-        public string StatusText => currentState == SedationState.Unconscious ? "Олень — спит" :
+        public float SedationProgress => Mathf.Clamp01(elapsed / CurrentSedationDuration);
+        public string StatusText => currentState == SedationState.Trapped ? "Олень — в ловушке" : currentState == SedationState.Unconscious ? "Олень — спит" :
             currentState == SedationState.Sedated ? "Олень — засыпает" :
             currentState == SedationState.Recovering ? "Олень — просыпается" : "Олень — бодрствует";
 
@@ -49,17 +76,18 @@ namespace HuntHappens.Animals
             agent = GetComponent<NavMeshAgent>();
         }
 
-        public bool ApplyDose(float strength)
+        public bool ApplyDose(float strength, float durationMultiplier = 1)
         {
-            if (!isActiveAndEnabled || strength <= 0 || currentState == SedationState.Recovering) return false;
+            if (!isActiveAndEnabled || strength <= 0 || currentState == SedationState.Recovering || currentState == SedationState.Trapped) return false;
             if (currentState == SedationState.Unconscious)
             { elapsed = Mathf.Max(0, elapsed - strength * 2f); return true; }
             if (currentState == SedationState.Sedated)
-            { elapsed = Mathf.Min(sedationDuration - 0.1f, elapsed + strength * 0.5f); return true; }
+            { elapsed = Mathf.Min(CurrentSedationDuration - 0.1f, elapsed + strength * 0.5f); return true; }
             dose += strength;
             if (dose < requiredDose) return true;
             speedBeforeHit = agent.enabled && agent.isOnNavMesh ? agent.speed : 0;
             currentState = SedationState.Sedated;
+            activeSedationDuration = Mathf.Max(0.5f, sedationDuration * Mathf.Clamp(durationMultiplier, 0.25f, 1));
             ai.SetSedationState(DeerAI.DeerState.Sedated);
             elapsed = 0;
             return true;
@@ -67,7 +95,7 @@ namespace HuntHappens.Animals
 
         private void Update()
         {
-            if (currentState == SedationState.Awake) return;
+            if (currentState == SedationState.Awake || currentState == SedationState.Trapped) return;
             elapsed += Time.deltaTime;
             if (currentState == SedationState.Sedated)
             {
@@ -76,7 +104,7 @@ namespace HuntHappens.Animals
                     agent.speed = Mathf.Lerp(speedBeforeHit, 0, Mathf.Clamp01(SedationProgress * 1.5f));
                     if (SedationProgress > 0.65f) agent.isStopped = true;
                 }
-                if (elapsed >= sedationDuration)
+                if (elapsed >= CurrentSedationDuration)
                 {
                     currentState = SedationState.Unconscious;
                     ai.SetSedationState(DeerAI.DeerState.Unconscious);

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ba6343a916116c4c8604f968dc9fa8b, type: 3}
+  m_Name: Better Contracts
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.UpgradeDefinition
+  kind: 3
+  title: Better Contracts
+  description: "\u0411\u043E\u043B\u044C\u0448\u0435 \u0434\u0435\u043D\u0435\u0433 \u0437\u0430 \u043A\u0430\u0436\u0434\u043E\u0433\u043E \u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D\u043D\u043E\u0433\u043E \u043E\u043B\u0435\u043D\u044F."
+  prices: 2c010000f401000020030000i
+  effects:
+  - 100
+  - 125
+  - 150
+  - 200

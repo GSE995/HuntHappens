@@ -12,16 +12,18 @@ namespace HuntHappens.Weapons
         private Rigidbody body;
         private Transform owner;
         private float strength;
+        private float sedationDurationMultiplier = 1;
         private bool impacted;
         private Vector3 previousPosition;
         public bool HasImpacted => impacted;
 
         private void Awake() => body = GetComponent<Rigidbody>();
 
-        public void Launch(Transform shooter, Vector3 velocity, float dose, float lifetime)
+        public void Launch(Transform shooter, Vector3 velocity, float dose, float lifetime, float durationMultiplier = 1)
         {
             owner = shooter;
             strength = dose;
+            sedationDurationMultiplier = Mathf.Clamp(durationMultiplier, 0.25f, 1);
             previousPosition = transform.position;
             body.useGravity = false;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
@@ -70,7 +72,7 @@ namespace HuntHappens.Weapons
             if (impacted) return;
             impacted = true; // Set before applying the effect: collision and sweep can report the same hit.
             DeerSedation deer = collider.GetComponentInParent<DeerSedation>();
-            if (deer != null) deer.ApplyDose(strength);
+            if (deer != null) deer.ApplyDose(strength, sedationDurationMultiplier);
             body.linearVelocity = body.angularVelocity = Vector3.zero;
             body.collisionDetectionMode = CollisionDetectionMode.Discrete;
             body.isKinematic = true;

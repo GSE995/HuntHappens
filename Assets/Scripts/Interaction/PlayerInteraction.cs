@@ -15,15 +15,26 @@ namespace HuntHappens.Interaction
         private PrototypeInput input;
         private ItemHolder holder;
         [SerializeField] private PickupTruckDelivery deliveryTruck;
+        [SerializeField] private HuntHappens.Shop.ShopManager shop;
+        public HuntHappens.Shop.ShopInteractable ShopTarget { get; private set; }
+        public bool GameplayBlocked => input != null && input.GameplayBlocked;
+        public void ConfigureShop(HuntHappens.Shop.ShopManager value) => shop = value;
+        public bool TryOpenShop()
+        {
+            if (shop == null || !shop.TryOpen()) return false;
+            LastHandledFrame = Time.frameCount;
+            return true;
+        }
         public PickupTruckDelivery DeliveryTarget { get; private set; }
         public void ConfigureDelivery(PickupTruckDelivery truck) => deliveryTruck = truck;
         public bool TrySubmitDelivery()
         {
-            if (holder == null || holder.IsHolding || view == null || deliveryTruck == null || !deliveryTruck.CanUse(transform, view.transform.position)) return false;
+            if (GameplayBlocked || holder == null || holder.IsHolding || view == null || deliveryTruck == null || !deliveryTruck.CanUse(transform, view.transform.position)) return false;
             LastHandledFrame = Time.frameCount;
             return deliveryTruck.Submit(transform, view.transform.position, holder) > 0;
         }
         public PickupItem Target { get; private set; }
+        public HuntHappens.Traps.AnimalTrap TrapTarget { get; private set; }
         public DeerSedation ObservedDeer { get; private set; }
         public int LastHandledFrame { get; private set; } = -1;
         public bool IsHolding => holder != null && holder.IsHolding;
@@ -47,12 +58,25 @@ namespace HuntHappens.Interaction
             Target = null;
             ObservedDeer = null;
             DeliveryTarget = null;
+            TrapTarget = null;
+            ShopTarget = null;
+            if (shop != null && shop.IsOpen)
+            {
+                if (input.MenuClosePressed) { LastHandledFrame = Time.frameCount; shop.Close(); }
+                return;
+            }
             if (view == null || Cursor.lockState != CursorLockMode.Locked) return;
             if (holder.IsHolding)
             {
                 if (input.InteractPressed || input.ThrowPressed) LastHandledFrame = Time.frameCount;
                 if (input.InteractPressed) holder.Drop();
                 else if (input.ThrowPressed) holder.Throw();
+                return;
+            }
+            if (shop != null && shop.Kiosk != null && shop.Kiosk.CanUse(transform, view.transform.position))
+            {
+                ShopTarget = shop.Kiosk;
+                if (input.InteractPressed) TryOpenShop();
                 return;
             }
             if (deliveryTruck != null && deliveryTruck.CanUse(transform, view.transform.position))
@@ -70,10 +94,16 @@ namespace HuntHappens.Interaction
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 PickupItem item = hit.rigidbody != null ? hit.rigidbody.GetComponent<PickupItem>() : null;
                 ObservedDeer = hit.collider.GetComponentInParent<DeerSedation>();
+                if (hit.distance <= interactionDistance) TrapTarget = hit.collider.GetComponentInParent<HuntHappens.Traps.AnimalTrap>();
                 if (hit.distance <= interactionDistance && item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
                 break;
             }
-            if (input.InteractPressed && Target != null)
+            if (input.InteractPressed && TrapTarget != null)
+            {
+                LastHandledFrame = Time.frameCount;
+                TrapTarget.TryInteract(holder);
+            }
+            else if (input.InteractPressed && Target != null)
             {
                 LastHandledFrame = Time.frameCount;
                 holder.TryPickUp(Target);
@@ -86,6 +116,9 @@ namespace HuntHappens.Interaction
             ObservedDeer = null;
             DeliveryTarget = null;
             if (holder != null) holder.Drop();
+            if (shop != null) shop.Close();
+            ShopTarget = null;
+            TrapTarget = null;
         }
     }
 }

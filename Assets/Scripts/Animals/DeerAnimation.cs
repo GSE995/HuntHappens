@@ -75,7 +75,7 @@ namespace HuntHappens.Animals
             }
             else
             {
-                float asleep = sedation.State == DeerSedation.SedationState.Unconscious ? 1 : 1 - Mathf.SmoothStep(0, 1, sedation.RecoveryProgress);
+                float asleep = sedation.State == DeerSedation.SedationState.Unconscious || sedation.State == DeerSedation.SedationState.Trapped ? 1 : 1 - Mathf.SmoothStep(0, 1, sedation.RecoveryProgress);
                 visual.localPosition = restPosition + new Vector3(1.15f, 0.55f, 0) * asleep;
                 visual.localRotation = restRotation * Quaternion.Euler(0, 0, 90f * asleep);
             }

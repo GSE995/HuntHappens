@@ -15,6 +15,24 @@ namespace HuntHappens.Player
         public bool ThrowPressed { get; private set; }
         public bool SelectTranquilizerPressed { get; private set; }
         public bool SelectInteractionPressed { get; private set; }
+        public bool SelectTrapPressed { get; private set; }
+        public bool GameplayBlocked { get; private set; }
+        public bool MenuClosePressed { get; private set; }
+        private int suppressThroughFrame = -1;
+        public void SetGameplayBlocked(bool blocked)
+        {
+            GameplayBlocked = blocked;
+            ClearGameplayFrame();
+            MenuClosePressed = false;
+            suppressThroughFrame = Time.frameCount + 1;
+            SetCursor(!blocked && isActiveAndEnabled);
+        }
+        private void ClearGameplayFrame()
+        {
+            Move = Look = Vector2.zero;
+            JumpPressed = InteractPressed = ThrowPressed = false;
+            SelectTranquilizerPressed = SelectInteractionPressed = SelectTrapPressed = false;
+        }
 #if ENABLE_INPUT_SYSTEM
         private InputAction move;
         private InputAction look;
@@ -24,6 +42,7 @@ namespace HuntHappens.Player
         private InputAction interact;
         private InputAction selectTranquilizer;
         private InputAction selectInteraction;
+        private InputAction selectTrap;
 
         private void Awake()
         {
@@ -38,6 +57,7 @@ namespace HuntHappens.Player
             interact = new InputAction("Interact", InputActionType.Button, "<Keyboard>/e");
             selectTranquilizer = new InputAction("Select tranquilizer", InputActionType.Button, "<Keyboard>/1");
             selectInteraction = new InputAction("Select interaction", InputActionType.Button, "<Keyboard>/2");
+            selectTrap = new InputAction("Select trap", InputActionType.Button, "<Keyboard>/3");
         }
 
         private void OnEnable()
@@ -46,11 +66,21 @@ namespace HuntHappens.Player
             releaseCursor.Enable(); captureCursor.Enable();
             interact.Enable();
             selectTranquilizer.Enable(); selectInteraction.Enable();
+            selectTrap.Enable();
             SetCursor(true);
         }
 
         public void ReadFrame()
         {
+            MenuClosePressed = false;
+            if (GameplayBlocked)
+            {
+                ClearGameplayFrame();
+                MenuClosePressed = Time.frameCount > suppressThroughFrame && (interact.WasPressedThisFrame() || releaseCursor.WasPressedThisFrame());
+                SetCursor(false);
+                return;
+            }
+            if (Time.frameCount <= suppressThroughFrame) { ClearGameplayFrame(); return; }
             bool wasCaptured = Cursor.lockState == CursorLockMode.Locked;
             if (releaseCursor.WasPressedThisFrame()) SetCursor(false);
             else if (captureCursor.WasPressedThisFrame()) SetCursor(true);
@@ -64,6 +94,7 @@ namespace HuntHappens.Player
             ThrowPressed = captured && wasCaptured && captureCursor.WasPressedThisFrame();
             SelectTranquilizerPressed = captured && selectTranquilizer.WasPressedThisFrame();
             SelectInteractionPressed = captured && selectInteraction.WasPressedThisFrame();
+            SelectTrapPressed = captured && selectTrap.WasPressedThisFrame();
         }
 
         private void OnDisable()
@@ -72,10 +103,12 @@ namespace HuntHappens.Player
             releaseCursor.Disable(); captureCursor.Disable();
             interact.Disable();
             selectTranquilizer.Disable(); selectInteraction.Disable();
+            selectTrap.Disable();
             Move = Look = Vector2.zero;
             JumpPressed = false;
             InteractPressed = ThrowPressed = false;
             SelectTranquilizerPressed = SelectInteractionPressed = false;
+            SelectTrapPressed = false;
             SetCursor(false);
         }
 
@@ -85,6 +118,7 @@ namespace HuntHappens.Player
             releaseCursor?.Dispose(); captureCursor?.Dispose();
             interact?.Dispose();
             selectTranquilizer?.Dispose(); selectInteraction?.Dispose();
+            selectTrap?.Dispose();
         }
 #else
         private void OnEnable()

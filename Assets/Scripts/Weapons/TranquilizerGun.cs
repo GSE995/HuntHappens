@@ -28,11 +28,15 @@ namespace HuntHappens.Weapons
         private float recoil;
         private float flashUntil;
         public bool Selected => selected;
+        public bool TrapSelected { get; private set; }
         public TranquilizerDart LastDart { get; private set; }
+        public float SedationDurationMultiplier { get; private set; } = 1;
+        public void SetSedationDurationMultiplier(float value) => SedationDurationMultiplier = Mathf.Clamp(value, 0.25f, 1);
 
         public void Configure(Camera camera, Transform visual, Transform barrelEnd, GameObject muzzleFlash, TranquilizerDart projectile)
         { view = camera; weaponVisual = visual; muzzle = barrelEnd; flash = muzzleFlash; dartPrefab = projectile; }
-        public void SelectTool(bool tranquilizer) => selected = tranquilizer;
+        public void SelectTool(bool tranquilizer) { selected = tranquilizer; TrapSelected = false; }
+        public void SelectTrapTool() { selected = false; TrapSelected = true; }
 
         private void Awake()
         {
@@ -47,8 +51,13 @@ namespace HuntHappens.Weapons
         {
             if (input.SelectTranquilizerPressed) SelectTool(true);
             if (input.SelectInteractionPressed) SelectTool(false);
-            if (input.ThrowPressed) TryFire();
-            bool visible = selected && !holder.IsHolding;
+            if (input.SelectTrapPressed) SelectTrapTool();
+            if (input.ThrowPressed)
+            {
+                if (TrapSelected) GetComponent<HuntHappens.Traps.TrapPlacement>()?.TryPlace();
+                else TryFire();
+            }
+            bool visible = selected && !holder.IsHolding && !input.GameplayBlocked;
             if (weaponVisual != null)
             {
                 weaponVisual.gameObject.SetActive(visible);
@@ -63,7 +72,7 @@ namespace HuntHappens.Weapons
 
         public bool TryFire()
         {
-            if (!isActiveAndEnabled || !selected || holder.IsHolding || interaction.LastHandledFrame == Time.frameCount ||
+            if (!isActiveAndEnabled || input.GameplayBlocked || !selected || holder.IsHolding || interaction.LastHandledFrame == Time.frameCount ||
                 Time.time < nextShot || dartPrefab == null || view == null || muzzle == null) return false;
             Vector3 origin = muzzle.position;
             Vector3 target = view.transform.position + view.transform.forward * 80f;
@@ -83,7 +92,7 @@ namespace HuntHappens.Weapons
             if ((target - origin).sqrMagnitude < 0.0001f) return false;
             Vector3 direction = (target - origin).normalized;
             LastDart = Instantiate(dartPrefab, origin, Quaternion.LookRotation(direction));
-            LastDart.Launch(transform, direction * dartSpeed, tranquilizerStrength, dartLifetime);
+            LastDart.Launch(transform, direction * dartSpeed, tranquilizerStrength, dartLifetime, SedationDurationMultiplier);
             nextShot = Time.time + shotInterval;
             recoil = 1;
             flashUntil = Time.time + 0.055f;

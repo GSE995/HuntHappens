@@ -7,7 +7,7 @@ namespace HuntHappens.Animals
     [RequireComponent(typeof(NavMeshAgent), typeof(DeerPerception))]
     public sealed class DeerAI : MonoBehaviour
     {
-        public enum DeerState { Idle, Wander, Alert, Flee, Sedated, Unconscious, Recovering }
+        public enum DeerState { Idle, Wander, Alert, Flee, Sedated, Unconscious, Recovering, Trapped }
         [Header("State (runtime)")]
         [SerializeField] private DeerState currentState;
         [Header("Movement")]
@@ -46,7 +46,7 @@ namespace HuntHappens.Animals
         public Vector3 FleeDirection => fleeDirection;
         public void SetSedationState(DeerState state)
         {
-            if (state != DeerState.Sedated && state != DeerState.Unconscious && state != DeerState.Recovering) return;
+            if (state != DeerState.Sedated && state != DeerState.Unconscious && state != DeerState.Recovering && state != DeerState.Trapped) return;
             currentState = state;
         }
         public void ResumeAfterSedation()
@@ -80,7 +80,7 @@ namespace HuntHappens.Animals
 
         private void Update()
         {
-            if (currentState == DeerState.Sedated || currentState == DeerState.Unconscious || currentState == DeerState.Recovering) return;
+            if (currentState == DeerState.Sedated || currentState == DeerState.Unconscious || currentState == DeerState.Recovering || currentState == DeerState.Trapped) return;
             if (!agent.enabled || !agent.isOnNavMesh)
             {
                 if (!warned) Debug.LogWarning("Deer navigation unavailable; check its NavMesh.", this);

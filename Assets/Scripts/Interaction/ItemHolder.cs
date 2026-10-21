@@ -31,14 +31,22 @@ namespace HuntHappens.Interaction
 
         public PickupItem HeldItem => held;
         public bool IsHolding => held != null;
-        public float MaximumMass => maximumMass;
+        private float massMultiplier = 1;
+        public float CarryResponseMultiplier { get; private set; } = 1;
+        public float MaximumMass => maximumMass * massMultiplier;
+        public void SetCarryUpgrade(float multiplier)
+        {
+            massMultiplier = Mathf.Clamp(multiplier, 1, 2);
+            CarryResponseMultiplier = Mathf.Lerp(1, 1.2f, Mathf.InverseLerp(1, 1.75f, massMultiplier));
+        }
         public void EnsureMaximumMass(float value) => maximumMass = Mathf.Max(maximumMass, value);
         private float TargetDistance => held != null && held.CarryDistance > 0 ? held.CarryDistance : holdDistance;
         public void SetView(Transform cameraTransform) => view = cameraTransform;
 
         public bool TryPickUp(PickupItem item)
         {
-            if (IsHolding || view == null || item == null || !item.TryClaim(this, maximumMass)) return false;
+            if (GetComponent<HuntHappens.Player.PrototypeInput>()?.GameplayBlocked == true ||
+                IsHolding || view == null || item == null || !item.TryClaim(this, MaximumMass)) return false;
             held = item;
             Rigidbody body = held.Body;
             originalGravity = body.useGravity;
@@ -85,6 +93,7 @@ namespace HuntHappens.Interaction
 
             // A damped spring: finite acceleration and speed, no teleporting through colliders.
             float response = followSmoothness * held.FollowMultiplier;
+            response *= Mathf.Lerp(1, CarryResponseMultiplier, Mathf.InverseLerp(10, 45, body.mass));
             Vector3 acceleration = error * (response * response)
                 + (targetVelocity - body.linearVelocity) * (2f * response);
             body.AddForce(Vector3.ClampMagnitude(acceleration, maximumAcceleration), ForceMode.Acceleration);
