@@ -23,6 +23,7 @@ namespace HuntHappens.Traps
         private GameObject preview;
         private Renderer[] previewRenderers;
         public TrapManager Manager => manager;
+        public event System.Action Placed;
         public bool PlacementValid { get; private set; }
         public string PlacementHint { get; private set; }
         public void Configure(Camera camera, Collider support, TrapManager owner, Material valid, Material invalid)
@@ -72,7 +73,9 @@ namespace HuntHappens.Traps
         {
             if (tools == null || !tools.TrapSelected || holder.IsHolding || interaction.GameplayBlocked || interaction.LastHandledFrame == Time.frameCount) return false;
             if (!Evaluate(out Vector3 position, out Quaternion rotation)) return false;
-            return manager.TryPlace(position, rotation) != null;
+            if (manager.TryPlace(position, rotation) == null) return false;
+            Placed?.Invoke();
+            return true;
         }
         private void LateUpdate()
         {

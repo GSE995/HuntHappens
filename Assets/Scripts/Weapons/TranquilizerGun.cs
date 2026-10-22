@@ -30,6 +30,8 @@ namespace HuntHappens.Weapons
         public bool Selected => selected;
         public bool TrapSelected { get; private set; }
         public TranquilizerDart LastDart { get; private set; }
+        public Transform WeaponVisual => weaponVisual;
+        public event System.Action Fired;
         public float SedationDurationMultiplier { get; private set; } = 1;
         public void SetSedationDurationMultiplier(float value) => SedationDurationMultiplier = Mathf.Clamp(value, 0.25f, 1);
 
@@ -97,6 +99,7 @@ namespace HuntHappens.Weapons
             recoil = 1;
             flashUntil = Time.time + 0.055f;
             if (look != null) look.AddRecoil(1.2f);
+            Fired?.Invoke();
             return true;
         }
 

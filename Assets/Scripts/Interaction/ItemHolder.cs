@@ -31,6 +31,7 @@ namespace HuntHappens.Interaction
 
         public PickupItem HeldItem => held;
         public bool IsHolding => held != null;
+        public event System.Action<bool> Released;
         private float massMultiplier = 1;
         public float CarryResponseMultiplier { get; private set; } = 1;
         public float MaximumMass => maximumMass * massMultiplier;
@@ -123,6 +124,7 @@ namespace HuntHappens.Interaction
             }
             // Player collision returns only after separation, avoiding a launch when dropping nearby.
             RestoreSeparatedCollisions(false);
+            Released?.Invoke(throwing);
         }
 
         private void RestoreSeparatedCollisions(bool force)
