@@ -1,0 +1,89 @@
+{
+  "source": "C:\\Users\\goryn\\Documents\\Codex\\2026-10-22\\files-mentioned-by-the-user-2026\\outputs\\HuntHappens\\Art\\FirstPersonHands\\Iteration01\\CartoonHands_v01.blend",
+  "meters_per_original_unit": 0.065,
+  "geometry": {
+    "Left Hand": {
+      "vertices": 21760,
+      "faces": 21758,
+      "nonmanifold_edges": 0,
+      "signed_volume_before": -2.3866225771565834,
+      "signed_volume_after": 2.3866225771565834,
+      "fingers": 5,
+      "unweighted_vertices": 0,
+      "max_influences": 4
+    },
+    "Right Hand": {
+      "vertices": 21760,
+      "faces": 21758,
+      "nonmanifold_edges": 0,
+      "signed_volume_before": 2.3866225771565834,
+      "signed_volume_after": 2.3866225771565834,
+      "fingers": 5,
+      "unweighted_vertices": 0,
+      "max_influences": 4
+    }
+  },
+  "actions": {
+    "Hands_Idle": {
+      "frames": [
+        1,
+        31
+      ],
+      "fps": 30
+    },
+    "Hands_Grab": {
+      "frames": [
+        1,
+        30
+      ],
+      "fps": 30
+    },
+    "Hands_Hold": {
+      "frames": [
+        1,
+        31
+      ],
+      "fps": 30
+    },
+    "Hands_Throw": {
+      "frames": [
+        1,
+        28
+      ],
+      "fps": 30
+    },
+    "Hands_Weapon": {
+      "frames": [
+        1,
+        31
+      ],
+      "fps": 30
+    },
+    "Hands_Shoot": {
+      "frames": [
+        1,
+        18
+      ],
+      "fps": 30
+    },
+    "Hands_Trap": {
+      "frames": [
+        1,
+        38
+      ],
+      "fps": 30
+    }
+  },
+  "deformation": {
+    "Left Hand": {
+      "max_edge_stretch": 2.7987300820935817,
+      "min_face_area_m2": 1.037981505191965e-07,
+      "nonfinite_coordinates": 0
+    },
+    "Right Hand": {
+      "max_edge_stretch": 2.8834609081631792,
+      "min_face_area_m2": 3.4923962743960146e-07,
+      "nonfinite_coordinates": 0
+    }
+  }
+}

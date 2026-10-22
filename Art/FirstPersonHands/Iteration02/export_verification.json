@@ -1,0 +1,101 @@
+{
+  "pose_intersections": {
+    "Hands_Idle": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    },
+    "Hands_Grab": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    },
+    "Hands_Hold": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    },
+    "Hands_Weapon": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    },
+    "Hands_Throw": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    },
+    "Hands_Trap": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    },
+    "Hands_Shoot": {
+      "Left Hand": {
+        "nonadjacent_triangle_intersections": 0
+      },
+      "Right Hand": {
+        "nonadjacent_triangle_intersections": 0
+      }
+    }
+  },
+  "fbx": {
+    "armatures": 1,
+    "meshes": 2,
+    "bones": 37,
+    "actions": [
+      "Hands_Rig|Hands_Rig|Hands_Grab",
+      "Hands_Rig|Hands_Rig|Hands_Hold",
+      "Hands_Rig|Hands_Rig|Hands_Idle",
+      "Hands_Rig|Hands_Rig|Hands_Shoot",
+      "Hands_Rig|Hands_Rig|Hands_Throw",
+      "Hands_Rig|Hands_Rig|Hands_Trap",
+      "Hands_Rig|Hands_Rig|Hands_Weapon"
+    ],
+    "mesh_sizes_m": {
+      "Right Hand": [
+        0.18610204756259918,
+        0.05606335774064064,
+        0.28591686487197876
+      ],
+      "Left Hand": [
+        0.18610204756259918,
+        0.05606336519122124,
+        0.28591686487197876
+      ]
+    },
+    "rig_scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "animation_motion_m": {
+      "Hands_Rig|Hands_Rig|Hands_Grab": 0.1485002578993296,
+      "Hands_Rig|Hands_Rig|Hands_Hold": 0.005000518094209182,
+      "Hands_Rig|Hands_Rig|Hands_Idle": 0.007523755891657363,
+      "Hands_Rig|Hands_Rig|Hands_Shoot": 0.011196401087673686,
+      "Hands_Rig|Hands_Rig|Hands_Throw": 0.11549811763600291,
+      "Hands_Rig|Hands_Rig|Hands_Trap": 0.08187442260537428,
+      "Hands_Rig|Hands_Rig|Hands_Weapon": 0.0019801381897320567
+    },
+    "max_vertex_influences": 4
+  }
+}
