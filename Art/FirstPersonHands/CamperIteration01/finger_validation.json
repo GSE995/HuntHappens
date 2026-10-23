@@ -1,0 +1,92 @@
+{
+  "Camper_Left_FPS": {
+    "uv_channels": [
+      "uv"
+    ],
+    "weighted_finger_vertices": {
+      "Little_01": 2116,
+      "Little_02": 400,
+      "Little_03": 864,
+      "Ring_01": 3594,
+      "Ring_02": 1945,
+      "Ring_03": 1040,
+      "Middle_01": 2281,
+      "Middle_02": 1804,
+      "Middle_03": 874,
+      "Index_01": 1478,
+      "Index_02": 971,
+      "Index_03": 881,
+      "Thumb_01": 580,
+      "Thumb_02": 757,
+      "Thumb_03": 554
+    },
+    "poses": {
+      "Open": {
+        "finite": true,
+        "max_edge_stretch": 1.000511177645069,
+        "edge_stretch_95_percentile": 1.0000009654786572,
+        "max_edge_stretch_above_half_mm": 1.0000493344107946,
+        "minimum_face_area": 1.3807223142592306e-09
+      },
+      "Grip": {
+        "finite": true,
+        "max_edge_stretch": 71.02859450468897,
+        "edge_stretch_95_percentile": 1.4091413469509706,
+        "max_edge_stretch_above_half_mm": 4.736714373874189,
+        "minimum_face_area": 2.470575299895472e-09
+      },
+      "Point": {
+        "finite": true,
+        "max_edge_stretch": 59.15542618743634,
+        "edge_stretch_95_percentile": 1.3072911491696515,
+        "max_edge_stretch_above_half_mm": 4.917352179621364,
+        "minimum_face_area": 2.1525545790268552e-09
+      }
+    }
+  },
+  "Camper_Right_FPS": {
+    "uv_channels": [
+      "uv"
+    ],
+    "weighted_finger_vertices": {
+      "Little_01": 1515,
+      "Little_02": 284,
+      "Little_03": 382,
+      "Ring_01": 2671,
+      "Ring_02": 1365,
+      "Ring_03": 651,
+      "Middle_01": 2459,
+      "Middle_02": 1760,
+      "Middle_03": 756,
+      "Index_01": 1808,
+      "Index_02": 1091,
+      "Index_03": 791,
+      "Thumb_01": 653,
+      "Thumb_02": 785,
+      "Thumb_03": 493
+    },
+    "poses": {
+      "Open": {
+        "finite": true,
+        "max_edge_stretch": 1.0002255250533756,
+        "edge_stretch_95_percentile": 1.0000006899121219,
+        "max_edge_stretch_above_half_mm": 1.0000470050336818,
+        "minimum_face_area": 5.901268362862311e-10
+      },
+      "Grip": {
+        "finite": true,
+        "max_edge_stretch": 22.753622802605822,
+        "edge_stretch_95_percentile": 1.4514914015956097,
+        "max_edge_stretch_above_half_mm": 6.617394389496566,
+        "minimum_face_area": 7.579665783907785e-10
+      },
+      "Point": {
+        "finite": true,
+        "max_edge_stretch": 21.788939282665055,
+        "edge_stretch_95_percentile": 1.3338929500578622,
+        "max_edge_stretch_above_half_mm": 5.6803198841902365,
+        "minimum_face_area": 1.8982861949012886e-09
+      }
+    }
+  }
+}

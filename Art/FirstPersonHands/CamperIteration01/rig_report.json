@@ -1,0 +1,26 @@
+{
+  "source": "E:\\unity\\Meshy_AI_cartoon_camper_rigged_biped\\Meshy_AI_cartoon_camper_rigged_biped_Character_output.fbx",
+  "method": "extract original arms; preserve UV; simple subdivision; add finger chains and smooth skin weights",
+  "hands": {
+    "Left": {
+      "vertices": 10559,
+      "triangles": 21096,
+      "finger_chains": 5,
+      "phalanges_per_finger": 3,
+      "bones": 25,
+      "unweighted": 0,
+      "max_influences": 4,
+      "source_uv_preserved": true
+    },
+    "Right": {
+      "vertices": 7559,
+      "triangles": 15112,
+      "finger_chains": 5,
+      "phalanges_per_finger": 3,
+      "bones": 25,
+      "unweighted": 0,
+      "max_influences": 4,
+      "source_uv_preserved": true
+    }
+  }
+}

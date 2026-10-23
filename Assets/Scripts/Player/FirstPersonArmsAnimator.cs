@@ -22,6 +22,9 @@ namespace HuntHappens.Player
         [SerializeField] private Vector3 leftSupport = new Vector3(-0.19f, -0.07f, 0.27f);
         [SerializeField] private Vector3 rightGripEuler = new Vector3(-45, 0, -10);
         [SerializeField] private Vector3 leftSupportEuler = new Vector3(-12, 65, -15);
+        [Header("Short FPS hand framing")]
+        [SerializeField] private bool keepWristsAtBottom;
+        [SerializeField, Range(0, 0.1f)] private float wristViewportHeight = 0.015f;
         [Header("Motion")]
         [SerializeField, Min(1)] private float blendSpeed = 15;
         [SerializeField, Min(0)] private float breathingAmount = 0.004f;
@@ -156,7 +159,20 @@ namespace HuntHappens.Player
             leftRotation = Quaternion.Slerp(leftRotation, targetLeftRotation, blend);
             rightRotation = Quaternion.Slerp(rightRotation, targetRightRotation, blend);
             miniatureBlend = Mathf.Lerp(miniatureBlend, mode == FirstPersonArms.VisualMode.Trap ? 1 : 0, blend);
+            if (keepWristsAtBottom && !weaponPose && arms.View != null)
+            {
+                KeepWristAtBottom(ref left);
+                KeepWristAtBottom(ref right);
+            }
             arms.Draw(left, leftRotation, right, rightRotation, mode != FirstPersonArms.VisualMode.Hidden && nearest > 0.25f, throwing ? 0 : miniatureBlend);
+        }
+        private void KeepWristAtBottom(ref Vector3 position)
+        {
+            // Use the camera projection so the cuff stays below the frame across FOVs.
+            Vector3 viewport = arms.View.WorldToViewportPoint(transform.TransformPoint(position));
+            if (viewport.z <= arms.View.nearClipPlane || viewport.y <= wristViewportHeight) return;
+            viewport.y = wristViewportHeight;
+            position = transform.InverseTransformPoint(arms.View.ViewportToWorldPoint(viewport));
         }
     }
 }
