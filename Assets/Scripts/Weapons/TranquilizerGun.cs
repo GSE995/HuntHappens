@@ -13,6 +13,7 @@ namespace HuntHappens.Weapons
         [SerializeField] private Transform muzzle;
         [SerializeField] private GameObject flash;
         [SerializeField] private TranquilizerDart dartPrefab;
+        [SerializeField] private Vector3 viewOffset = new Vector3(0.06f, -0.10f, 0.12f);
         [SerializeField, Min(1)] private float dartSpeed = 38f;
         [SerializeField, Min(0.05f)] private float shotInterval = 0.7f;
         [SerializeField, Min(0.1f)] private float dartLifetime = 10f;
@@ -46,7 +47,12 @@ namespace HuntHappens.Weapons
             holder = GetComponent<ItemHolder>();
             interaction = GetComponent<PlayerInteraction>();
             look = GetComponent<FirstPersonLook>();
-            if (weaponVisual != null) { restPosition = weaponVisual.localPosition; restRotation = weaponVisual.localRotation; }
+            if (weaponVisual != null)
+            {
+                restPosition = weaponVisual.localPosition + viewOffset;
+                restRotation = weaponVisual.localRotation;
+                weaponVisual.localPosition = restPosition;
+            }
         }
 
         private void LateUpdate()

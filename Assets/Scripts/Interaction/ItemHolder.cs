@@ -8,6 +8,8 @@ namespace HuntHappens.Interaction
     {
         [SerializeField] private Transform view;
         [SerializeField, Min(0.5f)] private float holdDistance = 2f;
+        [SerializeField, Range(0.25f, 1f)] private float carryDistanceMultiplier = 0.7f;
+        [SerializeField] private float carryVerticalOffset = -0.25f;
         [SerializeField, Min(0.1f)] private float maximumMass = 20f;
         [SerializeField, Min(0f)] private float throwImpulse = 10f;
         [SerializeField, Range(1f, 20f)] private float followSmoothness = 6f;
@@ -41,7 +43,11 @@ namespace HuntHappens.Interaction
             CarryResponseMultiplier = Mathf.Lerp(1, 1.2f, Mathf.InverseLerp(1, 1.75f, massMultiplier));
         }
         public void EnsureMaximumMass(float value) => maximumMass = Mathf.Max(maximumMass, value);
-        private float TargetDistance => held != null && held.CarryDistance > 0 ? held.CarryDistance : holdDistance;
+        private float TargetDistance => Mathf.Max(0.5f,
+            (held != null && held.CarryDistance > 0 ? held.CarryDistance : holdDistance) * carryDistanceMultiplier);
+        public Vector3 HoldTarget => view != null
+            ? view.position + view.forward * TargetDistance + view.up * carryVerticalOffset
+            : transform.position;
         public void SetView(Transform cameraTransform) => view = cameraTransform;
 
         public bool TryPickUp(PickupItem item)
@@ -60,7 +66,7 @@ namespace HuntHappens.Interaction
             body.angularVelocity = Vector3.zero;
             body.WakeUp();
             stuckTime = 0;
-            previousTarget = view.position + view.forward * TargetDistance;
+            previousTarget = HoldTarget;
             foreach (Collider itemCollider in item.GetComponentsInChildren<Collider>())
             {
                 if (itemCollider.attachedRigidbody != body) continue;
@@ -85,7 +91,7 @@ namespace HuntHappens.Interaction
                 Drop();
                 return;
             }
-            Vector3 target = view.position + view.forward * TargetDistance;
+            Vector3 target = HoldTarget;
             Vector3 targetVelocity = Vector3.ClampMagnitude((target - previousTarget) / Time.fixedDeltaTime, maximumSpeed);
             previousTarget = target;
             Vector3 error = target - body.worldCenterOfMass;
@@ -119,7 +125,14 @@ namespace HuntHappens.Interaction
             {
                 // Do not add a throw impulse on top of accumulated spring velocity.
                 body.linearVelocity = Vector3.ClampMagnitude(body.linearVelocity, 2f);
-                if (throwing && view != null) body.AddForce(view.forward * (throwImpulse * item.ThrowMultiplier), ForceMode.Impulse);
+                if (throwing && view != null)
+                {
+                    // A newly grabbed item may still be travelling toward the hands.
+                    // Cancel that inward component before applying the forward throw.
+                    float inward = Vector3.Dot(body.linearVelocity, view.forward);
+                    if (inward < 0) body.linearVelocity -= view.forward * inward;
+                    body.AddForce(view.forward * (throwImpulse * item.ThrowMultiplier), ForceMode.Impulse);
+                }
                 body.WakeUp();
             }
             // Player collision returns only after separation, avoiding a launch when dropping nearby.

@@ -17,9 +17,13 @@ namespace HuntHappens.Player
         [SerializeField] private Pose empty = new Pose(new Vector3(-0.28f, -0.27f, 0.57f), new Vector3(0.28f, -0.27f, 0.57f), new Vector3(10, -12, -12), new Vector3(10, 12, 12));
         [SerializeField] private Pose carry = new Pose(new Vector3(-0.32f, -0.21f, 0.73f), new Vector3(0.32f, -0.21f, 0.73f), new Vector3(-18, 25, -15), new Vector3(-18, -25, 15));
         [SerializeField] private Pose trap = new Pose(new Vector3(-0.30f, -0.25f, 0.61f), new Vector3(0.29f, -0.29f, 0.56f), new Vector3(0, -10, -4), new Vector3(10, 15, 10));
+        [Header("Hand framing")]
+        [SerializeField, Min(0)] private float restingHandLowering = 0.18f;
+        [SerializeField, Min(0)] private float carryingHandLowering = 0.25f;
         [Header("Existing weapon grip offsets (weapon-local)")]
         [SerializeField] private Vector3 rightGrip = new Vector3(0.16f, -0.035f, -0.19f);
         [SerializeField] private Vector3 leftSupport = new Vector3(-0.19f, -0.07f, 0.27f);
+        [SerializeField] private Vector3 supportUnderBarrelOffset = new Vector3(0.14f, -0.045f, -0.05f);
         [SerializeField] private Vector3 rightGripEuler = new Vector3(-45, 0, -10);
         [SerializeField] private Vector3 leftSupportEuler = new Vector3(-12, 65, -15);
         [Header("Motion")]
@@ -107,7 +111,7 @@ namespace HuntHappens.Player
             if (weaponPose)
             {
                 Transform weapon = arms.Gun.WeaponVisual;
-                targetLeft = transform.InverseTransformPoint(weapon.TransformPoint(leftSupport));
+                targetLeft = transform.InverseTransformPoint(weapon.TransformPoint(leftSupport + supportUnderBarrelOffset));
                 targetRight = transform.InverseTransformPoint(weapon.TransformPoint(rightGrip));
                 targetLeftRotation = Quaternion.Inverse(transform.rotation) * weapon.rotation * Quaternion.Euler(leftSupportEuler);
                 targetRightRotation = Quaternion.Inverse(transform.rotation) * weapon.rotation * Quaternion.Euler(rightGripEuler);
@@ -122,6 +126,10 @@ namespace HuntHappens.Player
             // The gun remains owned by its existing script; hands track its animated grip points.
             if (!weaponPose)
             {
+                // Place wrists near the bottom of the view, leaving mostly hands visible.
+                float lowering = mode == FirstPersonArms.VisualMode.Carry ? carryingHandLowering : restingHandLowering;
+                targetLeft.y -= lowering;
+                targetRight.y -= lowering;
                 targetLeft += motion + leftWalk + Vector3.forward * (ThrowPulse * 0.13f);
                 targetRight += motion + rightWalk + Vector3.forward * (ThrowPulse * 0.13f);
                 targetLeft += new Vector3(0, -0.10f, 0.13f) * PlacementPulse;

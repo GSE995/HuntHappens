@@ -21,6 +21,7 @@ namespace HuntHappens.Animals
         private float idlePhase;
         private DeerSedation sedation;
         private Quaternion restRotation;
+        public Transform[] LegPivots => legs;
 
         public void Configure(Transform model, Transform head, Transform[] legPivots)
         { visual = model; headPivot = head; legs = legPivots; }

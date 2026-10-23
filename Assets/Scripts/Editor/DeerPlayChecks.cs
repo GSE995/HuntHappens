@@ -37,12 +37,37 @@ namespace HuntHappens.Editor
             SessionState.SetBool(Pending, true);
             EditorApplication.EnterPlaymode();
         }
+        public static void RunBossBatch()
+        {
+            SessionState.SetBool("HuntHappens.CheckBoss", true);
+            RunBatch();
+        }
+
+        private static bool walkingPreview;
+        private static bool bossPreview;
+        private static string checkedDeerName;
+        public static void RenderBossPreviewBatch()
+        {
+            bossPreview = walkingPreview = true;
+            RenderPreviewBatch();
+        }
+        public static void RenderWalkingPreviewBatch()
+        {
+            walkingPreview = true;
+            RenderPreviewBatch();
+        }
 
         public static void RenderPreviewBatch()
         {
             if (!Application.isBatchMode) throw new InvalidOperationException("Batch mode only");
             EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
-            Transform model = GameObject.Find("Prototype Deer/Deer 1").transform;
+            Transform model = GameObject.Find(bossPreview ? "Boss Deer" : "Prototype Deer/Deer 1").transform;
+            if (walkingPreview)
+            {
+                var legs = model.GetComponent<DeerAnimation>().LegPivots;
+                for (int i = 0; i < legs.Length; i++)
+                    legs[i].localRotation = Quaternion.Euler(i == 0 || i == 3 ? 28 : -28, 0, 0);
+            }
             var cameraObject = new GameObject("Temporary Deer Preview Camera");
             var camera = cameraObject.AddComponent<Camera>();
             cameraObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
@@ -68,7 +93,7 @@ namespace HuntHappens.Editor
                     RenderTexture.active = target;
                     pixels.ReadPixels(new Rect(0, 0, 960, 960), 0, 0);
                     pixels.Apply();
-                    System.IO.File.WriteAllBytes("Logs/Deer-preview.png", pixels.EncodeToPNG());
+                    System.IO.File.WriteAllBytes(bossPreview ? "Logs/Boss-deer-preview.png" : walkingPreview ? "Logs/Deer-walking-preview.png" : "Logs/Deer-preview.png", pixels.EncodeToPNG());
                     Debug.Log("Deer preview rendered to Logs/Deer-preview.png");
                     EditorApplication.update -= RenderFrame;
                     target.Release();
@@ -91,6 +116,8 @@ namespace HuntHappens.Editor
         {
             if (state != PlayModeStateChange.EnteredPlayMode || !SessionState.GetBool(Pending, false)) return;
             SessionState.SetBool(Pending, false);
+            checkedDeerName = SessionState.GetBool("HuntHappens.CheckBoss", false) ? "Boss Deer" : "Deer 1";
+            SessionState.SetBool("HuntHappens.CheckBoss", false);
             stage = 0;
             started = stageStarted = Time.time;
             deadline = EditorApplication.timeSinceStartup + 100;
@@ -107,27 +134,27 @@ namespace HuntHappens.Editor
                 if (stage == 0 && elapsed > 0.2f)
                 {
                     DeerAI[] deerList = UnityEngine.Object.FindObjectsByType<DeerAI>();
-                    Check(deerList.Length == 3, "Three deer are present");
+                    Check(deerList.Length >= 3, "Original deer are present");
                     foreach (DeerAI candidate in deerList)
                     {
-                        Check(candidate.GetComponent<NavMeshAgent>().isOnNavMesh, "All three agents are on NavMesh");
-                        if (candidate.name == "Deer 1") deer = candidate;
+                        Check(candidate.GetComponent<NavMeshAgent>().isOnNavMesh, "All agents are on NavMesh");
+                        if (candidate.name == checkedDeerName) deer = candidate;
                     }
-                    Check(deer != null, "Deer 1 exists");
+                    Check(deer != null, checkedDeerName + " exists");
                     agent = deer.GetComponent<NavMeshAgent>();
                     perception = deer.GetComponent<DeerPerception>();
                     threat = new GameObject("Temporary AI Check Threat").transform;
                     threat.position = new Vector3(100, 0, 100);
                     perception.SetPlayer(threat);
                     initialPosition = deer.transform.position;
-                    initialLegRotation = deer.transform.Find("Visual/Leg Pivot 0").localRotation;
+                    initialLegRotation = deer.GetComponent<DeerAnimation>().LegPivots[0].localRotation;
                     Next();
                 }
                 else if (stage == 1)
                 {
                     observedIdle |= deer.State == DeerAI.DeerState.Idle;
                     observedWander |= deer.State == DeerAI.DeerState.Wander;
-                    legsMoved |= Quaternion.Angle(initialLegRotation, deer.transform.Find("Visual/Leg Pivot 0").localRotation) > 5;
+                    legsMoved |= Quaternion.Angle(initialLegRotation, deer.GetComponent<DeerAnimation>().LegPivots[0].localRotation) > 5;
                     if (observedIdle && observedWander && legsMoved && Vector3.Distance(initialPosition, deer.transform.position) > 1)
                     {
                         Check(agent.pathStatus == NavMeshPathStatus.PathComplete, "Wander has complete path");
@@ -195,7 +222,7 @@ namespace HuntHappens.Editor
                     Check(deer.State != DeerAI.DeerState.Alert, "Losing player ends Alert after memory delay");
                     foreach (DeerAI candidate in UnityEngine.Object.FindObjectsByType<DeerAI>())
                         Check(candidate.GetComponent<NavMeshAgent>().isOnNavMesh, "All agents remain on NavMesh");
-                    Debug.Log("Deer Play checks PASSED: three agents, natural Idle/Wander, movement and legs, root sync, delayed Alert, Flee, hysteresis, calm recovery, line-of-sight occlusion and recovery.");
+                    Debug.Log(checkedDeerName + " Play checks PASSED: agents, natural Idle/Wander, movement and legs, root sync, delayed Alert, Flee, hysteresis, calm recovery, line-of-sight occlusion and recovery.");
                     Finish(0);
                 }
             }
