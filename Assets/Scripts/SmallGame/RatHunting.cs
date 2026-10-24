@@ -21,24 +21,24 @@ namespace HuntHappens.SmallGame
         public string EscapeNotice { get; private set; }
         public float EscapeNoticeUntil { get; private set; }
         private static double Now => System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
-        public int Cages { get; private set; }
-        public int Bread { get; private set; }
+        private PlayerInventory Inventory => GetComponent<PlayerInventory>();
+        public int Cages => Inventory.Count(InventoryKind.Cage) + Deployed;
+        public int Bread => Inventory.Count(InventoryKind.Bread);
         public int Rats { get; private set; }
         public int GreyRats { get; private set; }
         public int LargeRats { get; private set; }
         public int SaleTotal => (Rats - GreyRats - LargeRats) * 10 + GreyRats * 15 + LargeRats * 25;
-        public int Darts { get; private set; }
+        public int Darts => Inventory.Count(InventoryKind.Darts);
         public int Deployed { get; private set; }
         public int Available => Cages - Deployed;
-        public bool Selected { get; private set; }
+        public bool Selected => Inventory.IsEquipped(InventoryKind.Cage);
         public event System.Action Placed;
         public string Hint { get; private set; } = "";
         public string Stock => "Клетки: " + Available + " | Хлеб: " + Bread + " | Крысы: " + (Rats - GreyRats - LargeRats) + " чёрн., " + GreyRats + " сер., " + LargeRats + " крупн." + " | Дротики: " + Darts;
         public void Reload()
         {
             var data = ShopProgress.Load();
-            Cages = Mathf.Clamp(data.cages, 1, 20); Bread = Mathf.Clamp(data.bread, 0, 999);
-            Rats = Mathf.Clamp(data.rats, 0, 999); Darts = Mathf.Clamp(data.darts, 0, 999);
+            Rats = Mathf.Clamp(data.rats, 0, 999);
             GreyRats = Mathf.Clamp(data.greyRats, 0, Rats);
             LargeRats = Mathf.Clamp(data.largeRats, 0, Rats - GreyRats);
             carriedRats.Clear();
@@ -99,10 +99,13 @@ namespace HuntHappens.SmallGame
         public bool Buy(int kind)
         {
             if (shop == null || !shop.CanTradeSupplies) return false;
-            int price = kind == 0 ? 15 : kind == 1 ? 2 : 12;
-            if (kind < 0 || kind > 2 || (kind == 0 ? Cages >= 20 : kind == 1 ? Bread >= 999 : Darts >= 999)) return false;
+            int price = WorldShopItem.PriceFor(kind);
+            if (kind < 0 || kind > 5 || kind == 3 ||
+                (kind == 2 ? Darts >= PlayerInventory.MaximumDarts : !Inventory.CanReceive)) return false;
             if (!shop.Wallet.TrySpend(price)) return false;
-            if (kind == 0) Cages++; else if (kind == 1) Bread++; else Darts++;
+            if (kind == 2) { Inventory.AddDarts(1); Save(); return true; }
+            Inventory.Receive(new InventoryEntry { kind = kind == 0 ? InventoryKind.Cage : kind == 1 ? InventoryKind.Bread :
+                kind == 4 ? InventoryKind.Gun : InventoryKind.Trap });
             Save(); return true;
         }
         public bool Sell()
@@ -117,9 +120,9 @@ namespace HuntHappens.SmallGame
             shop.Wallet.RestoreBalance((int)System.Math.Min(int.MaxValue, (long)shop.Wallet.Balance + reward));
             return true;
         }
-        public bool UseBread() { if (Bread <= 0) return false; Bread--; Save(); return true; }
-        public bool UseDart() { if (Darts <= 0) return false; Darts--; Save(); return true; }
-        public bool CollectBread() { if (Bread >= 999) return false; Bread++; Save(); return true; }
+        public bool UseBread() => Inventory.Consume(InventoryKind.Bread);
+        public bool UseDart() => Inventory.Consume(InventoryKind.Darts);
+        public bool CollectBread() => Inventory.Receive(new InventoryEntry { kind = InventoryKind.Bread });
         public bool TryCollectSleepingRat(RatAI rat)
         {
             if (!isActiveAndEnabled || input == null || input.GameplayBlocked || holder == null || holder.IsHolding || Rats >= 999 || rat == null || !rat.CanPickUp) return false;
@@ -153,16 +156,20 @@ namespace HuntHappens.SmallGame
             }
             return false;
         }
-        public void SelectCageTool() { Selected = true; gun.SelectTool(false); }
+        public void SelectCageTool()
+        {
+            if (Selected) return;
+            for (int i = 0; i < PlayerInventory.Capacity; i++)
+                if (Inventory.Slot(i)?.kind == InventoryKind.Cage) { Inventory.SelectSlot(i); return; }
+        }
         public RatCage TryPlace()
         {
             if (!Selected || input.GameplayBlocked || !Evaluate(out var point)) return null;
-            var cage = Instantiate(cagePrefab, point, Quaternion.identity); cage.Owner = this; Deployed++; Placed?.Invoke(); return cage;
+            var cage = Instantiate(cagePrefab, point, Quaternion.identity); cage.Owner = this;
+            Inventory.Consume(InventoryKind.Cage); Deployed++; Placed?.Invoke(); return cage;
         }
         private void LateUpdate()
         {
-            if (input.SelectCagePressed) SelectCageTool();
-            if (input.SelectTranquilizerPressed || input.SelectTrapPressed || input.SelectInteractionPressed) Selected = false;
             Hint = Available <= 0 ? "Все клетки установлены — заберите их клавишей E" : Evaluate(out _) ? "ЛКМ — поставить клетку. Затем E — положить хлеб" : "Наведите на свободную землю рядом с собой";
             if (Selected && input.ThrowPressed && GetComponent<PlayerInteraction>().LastHandledFrame != Time.frameCount) TryPlace();
         }

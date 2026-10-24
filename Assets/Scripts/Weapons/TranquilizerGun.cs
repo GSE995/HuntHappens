@@ -18,7 +18,6 @@ namespace HuntHappens.Weapons
         [SerializeField, Min(0.05f)] private float shotInterval = 0.7f;
         [SerializeField, Min(0.1f)] private float dartLifetime = 10f;
         [SerializeField, Min(0.01f)] private float tranquilizerStrength = 1f;
-        [SerializeField] private bool selected;
         private PrototypeInput input;
         private ItemHolder holder;
         private PlayerInteraction interaction;
@@ -28,8 +27,8 @@ namespace HuntHappens.Weapons
         private float nextShot;
         private float recoil;
         private float flashUntil;
-        public bool Selected => selected;
-        public bool TrapSelected { get; private set; }
+        public bool Selected => GetComponent<PlayerInventory>()?.IsEquipped(InventoryKind.Gun) == true;
+        public bool TrapSelected => GetComponent<PlayerInventory>()?.IsEquipped(InventoryKind.Trap) == true;
         public TranquilizerDart LastDart { get; private set; }
         public Transform WeaponVisual => weaponVisual;
         public event System.Action Fired;
@@ -38,8 +37,16 @@ namespace HuntHappens.Weapons
 
         public void Configure(Camera camera, Transform visual, Transform barrelEnd, GameObject muzzleFlash, TranquilizerDart projectile)
         { view = camera; weaponVisual = visual; muzzle = barrelEnd; flash = muzzleFlash; dartPrefab = projectile; }
-        public void SelectTool(bool tranquilizer) { selected = tranquilizer; TrapSelected = false; }
-        public void SelectTrapTool() { selected = false; TrapSelected = true; }
+        public void SelectTool(bool tranquilizer) { SelectOwned(tranquilizer ? InventoryKind.Gun : (InventoryKind?)null); }
+        public void SelectTrapTool() { SelectOwned(InventoryKind.Trap); }
+        private void SelectOwned(InventoryKind? kind)
+        {
+            var inventory = GetComponent<PlayerInventory>(); if (inventory == null) return;
+            if (kind == null) { if (inventory.HandSlot >= 0) inventory.SelectSlot(inventory.HandSlot); return; }
+            if (inventory.IsEquipped(kind.Value)) return;
+            for (int i = 0; i < PlayerInventory.Capacity; i++)
+                if (inventory.Slot(i)?.kind == kind) { inventory.SelectSlot(i); return; }
+        }
 
         private void Awake()
         {
@@ -57,16 +64,12 @@ namespace HuntHappens.Weapons
 
         private void LateUpdate()
         {
-            if (input.SelectTranquilizerPressed) SelectTool(true);
-            if (input.SelectInteractionPressed) SelectTool(false);
-            if (input.SelectTrapPressed) SelectTrapTool();
-            if (input.SelectCagePressed) SelectTool(false);
             if (input.ThrowPressed)
             {
                 if (TrapSelected) GetComponent<HuntHappens.Traps.TrapPlacement>()?.TryPlace();
                 else TryFire();
             }
-            bool visible = selected && !holder.IsHolding && !input.GameplayBlocked;
+            bool visible = Selected && !holder.IsHolding && !input.GameplayBlocked;
             if (weaponVisual != null)
             {
                 weaponVisual.gameObject.SetActive(visible);
@@ -81,7 +84,7 @@ namespace HuntHappens.Weapons
 
         public bool TryFire()
         {
-            if (!isActiveAndEnabled || input.GameplayBlocked || !selected || holder.IsHolding || interaction.LastHandledFrame == Time.frameCount ||
+            if (!isActiveAndEnabled || input.GameplayBlocked || !Selected || holder.IsHolding || interaction.LastHandledFrame == Time.frameCount ||
                 Time.time < nextShot || dartPrefab == null || view == null || muzzle == null) return false;
             Vector3 origin = muzzle.position;
             Vector3 target = view.transform.position + view.transform.forward * 80f;

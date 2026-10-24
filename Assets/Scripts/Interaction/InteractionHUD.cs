@@ -118,7 +118,8 @@ namespace HuntHappens.Interaction
             crosshair.SetActive(visible && !inventoryOpen);
             float flash = health != null ? Mathf.Clamp01(1f - (Time.time - health.LastHitAt) / 0.65f) : 0;
             damageFlash.color = new Color(0.85f, 0.02f, 0.02f, 0.32f * flash * flash);
-            prompt.text = !visible || inventoryOpen ? "" : interaction.IsHolding ? "E — Отпустить | ЛКМ — Бросить" :
+            prompt.text = !visible || inventoryOpen ? "" : interaction.IsHolding ? "1–4 — в пустую ячейку | Q — отпустить | ЛКМ — бросить" :
+                interaction.InventoryTarget != null ? interaction.InventoryTarget.Prompt :
                 interaction.ProductTarget != null ? interaction.ProductTarget.Prompt :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :
                 interaction.ShopTarget != null ? "E — Купить улучшения" :
@@ -129,13 +130,9 @@ namespace HuntHappens.Interaction
                 interaction.TrapTarget != null ? interaction.TrapTarget.Prompt :
                 interaction.Target != null ? interaction.Target.PickupPrompt :
                 gun != null && gun.TrapSelected && traps != null ? traps.PlacementHint : "";
+            if (visible && !inventoryOpen && string.IsNullOrEmpty(prompt.text)) prompt.text = interaction.GetComponent<PlayerInventory>().Hint;
             promptBackdrop.gameObject.SetActive(!string.IsNullOrEmpty(prompt.text));
-            if (tools != null)
-                tools.text = gun == null ? "" : (rats != null && rats.Selected ? "Клетка для крыс" : gun.TrapSelected ? "Ловушка" : gun.Selected ? "Транквилизатор" : "Взаимодействие") +
-                    (traps != null && traps.Manager != null ? " | Ловушки: " + traps.Manager.PlacedCount + "/" + traps.Manager.MaximumTraps : "") +
-                    "\n1 — Транквилизатор | 2 — Взаимодействие | 3 — Ловушка\nE — Поднять / Отпустить | ЛКМ — " +
-                    (interaction != null && interaction.IsHolding ? "Бросить" : rats != null && rats.Selected ? "Поставить клетку" : gun.TrapSelected ? "Установить ловушку" : gun.Selected ? "Выстрел" : "Бросить предмет");
-            if (rats != null) tools.text += "\n4 — Клетка для крыс | " + rats.Stock;
+            if (tools != null) tools.text = interaction.GetComponent<PlayerInventory>().Hint;
             if (health != null) tools.text += "\n" + health.Status;
             trapNotice.text = rats != null && Time.unscaledTime < rats.EscapeNoticeUntil ? rats.EscapeNotice :
                 traps != null && traps.Manager != null && Time.time < traps.Manager.NotificationUntil ? traps.Manager.Notification : "";

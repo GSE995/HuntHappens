@@ -74,6 +74,7 @@ namespace HuntHappens.Traps
             if (tools == null || !tools.TrapSelected || holder.IsHolding || interaction.GameplayBlocked || interaction.LastHandledFrame == Time.frameCount) return false;
             if (!Evaluate(out Vector3 position, out Quaternion rotation)) return false;
             if (manager.TryPlace(position, rotation) == null) return false;
+            GetComponent<PlayerInventory>().Consume(InventoryKind.Trap);
             Placed?.Invoke();
             return true;
         }

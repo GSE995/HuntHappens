@@ -6,7 +6,7 @@ using UnityEngine;
 namespace HuntHappens.Interaction
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(PrototypeInput), typeof(ItemHolder))]
+    [RequireComponent(typeof(PrototypeInput), typeof(ItemHolder), typeof(PlayerInventory))]
     public sealed class PlayerInteraction : MonoBehaviour
     {
         [SerializeField] private Camera view;
@@ -38,6 +38,7 @@ namespace HuntHappens.Interaction
         public HuntHappens.SmallGame.BreadBasket BreadTarget { get; private set; }
         public HuntHappens.Shop.WorldShopItem ProductTarget { get; private set; }
         public PickupItem Target { get; private set; }
+        public WorldInventoryItem InventoryTarget { get; private set; }
         public HuntHappens.Traps.AnimalTrap TrapTarget { get; private set; }
         public DeerSedation ObservedDeer { get; private set; }
         public int LastHandledFrame { get; private set; } = -1;
@@ -50,6 +51,7 @@ namespace HuntHappens.Interaction
 
         private void Awake()
         {
+            if (GetComponent<PlayerInventory>() == null) gameObject.AddComponent<PlayerInventory>();
             input = GetComponent<PrototypeInput>();
             holder = GetComponent<ItemHolder>();
             if (view == null) view = GetComponentInChildren<Camera>();
@@ -60,6 +62,7 @@ namespace HuntHappens.Interaction
         private void LateUpdate()
         {
             ProductTarget = null;
+            InventoryTarget = null;
             CageTarget = null; BreadTarget = null;
             RatTarget = null;
             Target = null;
@@ -75,9 +78,7 @@ namespace HuntHappens.Interaction
             if (GameplayBlocked || view == null || Cursor.lockState != CursorLockMode.Locked) return;
             if (holder.IsHolding)
             {
-                if (input.InteractPressed || input.ThrowPressed) LastHandledFrame = Time.frameCount;
-                if (input.InteractPressed) holder.Drop();
-                else if (input.ThrowPressed) holder.Throw();
+                if (input.ThrowPressed) { LastHandledFrame = Time.frameCount; holder.Throw(); }
                 return;
             }
             ProductTarget = HuntHappens.Shop.WorldShopItem.FindTarget(view, transform);
@@ -107,6 +108,7 @@ namespace HuntHappens.Interaction
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 if (hit.distance <= interactionDistance)
                 {
+                    InventoryTarget = hit.collider.GetComponentInParent<WorldInventoryItem>();
                     CageTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatCage>();
                     BreadTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.BreadBasket>();
                     var rat = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatAI>();
@@ -118,7 +120,9 @@ namespace HuntHappens.Interaction
                 if (hit.distance <= interactionDistance && item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
                 break;
             }
-            if (input.InteractPressed && RatTarget != null)
+            if (input.InteractPressed && InventoryTarget != null)
+            { LastHandledFrame = Time.frameCount; InventoryTarget.Take(GetComponent<PlayerInventory>()); }
+            else if (input.InteractPressed && RatTarget != null)
             { LastHandledFrame = Time.frameCount; GetComponent<HuntHappens.SmallGame.RatHunting>()?.TryCollectSleepingRat(RatTarget); }
             else if (input.InteractPressed && CageTarget != null)
             { LastHandledFrame = Time.frameCount; CageTarget.Interact(GetComponent<HuntHappens.SmallGame.RatHunting>()); }

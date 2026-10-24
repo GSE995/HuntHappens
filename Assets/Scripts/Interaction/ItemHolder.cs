@@ -53,7 +53,10 @@ namespace HuntHappens.Interaction
         public bool TryPickUp(PickupItem item)
         {
             if (GetComponent<HuntHappens.Player.PrototypeInput>()?.GameplayBlocked == true ||
-                IsHolding || view == null || item == null || !item.TryClaim(this, MaximumMass)) return false;
+                view == null || item == null || !item.CanPickUp(MaximumMass)) return false;
+            var inventory = GetComponent<PlayerInventory>();
+            if (inventory != null && !inventory.ChangingPhysical && !inventory.PreparePhysicalPickup()) return false;
+            if (IsHolding || !item.TryClaim(this, MaximumMass)) return false;
             held = item;
             Rigidbody body = held.Body;
             originalGravity = body.useGravity;
@@ -77,6 +80,7 @@ namespace HuntHappens.Interaction
                     ignored.Add(new CollisionPair { Item = itemCollider, Player = playerCollider });
                 }
             }
+            if (inventory != null && !inventory.ChangingPhysical) inventory.RegisterPhysical(item);
             return true;
         }
 

@@ -1,4 +1,5 @@
 using TMPro;
+using HuntHappens.Interaction;
 using UnityEngine;
 using HuntHappens.Player;
 using HuntHappens.SmallGame;
@@ -16,11 +17,10 @@ namespace HuntHappens.UI
         RectTransform root; GameObject inventory;
         TextMeshProUGUI money, total, selectedName;
         readonly TextMeshProUGUI[] counts = new TextMeshProUGUI[4], supplies = new TextMeshProUGUI[4], catchLabels = new TextMeshProUGUI[3];
+        readonly UnityEngine.UI.Image[] slotIcons = new UnityEngine.UI.Image[4];
         readonly SketchPanel[] slots = new SketchPanel[4];
         UnityEngine.UI.Image healthFill;
         readonly Sprite[] sprites = new Sprite[9];
-        static readonly string[] ToolNames={"Транквилизатор","Свободные руки","Ловушка","Клетка для крыс"};
-        int lastSelected = -1; float showNameUntil;
         public bool IsOpen => inventory != null && inventory.activeSelf;
         public void Build(Transform parent, RatHunting hunting, TMP_FontAsset typeface, Texture2D atlas)
         {
@@ -43,11 +43,11 @@ namespace HuntHappens.UI
             for(int i=0;i<4;i++)
             {
                 slots[i]=Panel("Quick Slot "+(i+1),root,new Vector2((i-1.5f)*108,85),new Vector2(96,94));Anchor(slots[i].rectTransform,new Vector2(0.5f,0));
-                Image("Icon",slots[i].transform,new Vector2(0,5),new Vector2(82,65),sprites[i]);
+                slotIcons[i]=Image("Icon",slots[i].transform,new Vector2(0,5),new Vector2(82,65),null);
                 counts[i]=Label("Count",slots[i].transform,new Vector2(28,-28),new Vector2(40,28),26,"");
                 Label("Key",slots[i].transform,new Vector2(0,-65),new Vector2(40,32),29,(i+1).ToString());
             }
-            selectedName=Label("Selected Tool",root,new Vector2(0,158),new Vector2(450,40),30,"");Anchor(selectedName.rectTransform,new Vector2(0.5f,0));
+            selectedName=Label("Selected Tool",root,new Vector2(0,177),new Vector2(850,75),26,"");Anchor(selectedName.rectTransform,new Vector2(0.5f,0));
             var hint=Label("Inventory Hint",root,new Vector2(-150,40),new Vector2(260,38),28,"TAB  ·  Рюкзак");Anchor(hint.rectTransform,new Vector2(1,0));
             var window=Panel("Inventory",root,new Vector2(0,50),new Vector2(1100,640));inventory=window.gameObject;window.color=new Color(0.055f,0.065f,0.035f,0.92f);
             Label("Title",window.transform,new Vector2(-330,265),new Vector2(370,65),50,"РЮКЗАК");
@@ -84,15 +84,19 @@ namespace HuntHappens.UI
         {
             if(hunt == null)return;
             if(IsOpen && input.MenuClosePressed)SetOpen(false);
-            int selected=hunt.Selected?3:gun.TrapSelected?2:gun.Selected?0:1;
-            if(selected!=lastSelected)
+            var bag = hunt.GetComponent<PlayerInventory>();
+            int selected = bag.HandSlot;
+            for (int i = 0; i < 4; i++)
             {
-                lastSelected=selected;showNameUntil=Time.unscaledTime+2;
-                for(int i=0;i<4;i++){slots[i].ink=i==selected?Orange:new Color(0.9f,0.86f,0.69f,0.55f);slots[i].thickness=i==selected?3:1.5f;slots[i].SetVerticesDirty();}
+                var entry = bag.Slot(i);
+                slotIcons[i].enabled = entry != null;
+                if (entry != null) slotIcons[i].sprite = sprites[entry.Icon];
+                counts[i].text = entry?.kind == InventoryKind.Gun ? hunt.Darts.ToString() : entry != null && entry.quantity > 1 ? entry.quantity.ToString() : "";
+                slots[i].ink = i == selected ? Orange : new Color(0.9f,0.86f,0.69f,0.55f);
+                slots[i].thickness = i == selected ? 3 : 1.5f; slots[i].SetVerticesDirty();
             }
-            selectedName.text=Time.unscaledTime<showNameUntil?ToolNames[selected]:"";
-            int availableTraps=traps != null && traps.Manager != null ? traps.Manager.MaximumTraps-traps.Manager.PlacedCount:0;
-            counts[0].text=hunt.Darts.ToString();counts[1].text="";counts[2].text=availableTraps.ToString();counts[3].text=hunt.Available.ToString();
+            selectedName.text = bag.Hand != null ? bag.Hand.Title + (bag.HasUnassignedItem ? " · в руках" : "") + "\n1–4 — в пустую ячейку · Q — выбросить" : "";
+            int availableTraps = bag.Count(InventoryKind.Trap);
             int current=health != null?health.Current:100;
             healthFill.rectTransform.sizeDelta=new Vector2(402*Mathf.Clamp01(current/100f),27);
             healthFill.color=current<=25?Color.red:Orange;

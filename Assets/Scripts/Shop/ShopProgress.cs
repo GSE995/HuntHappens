@@ -8,7 +8,8 @@ namespace HuntHappens.Shop
     {
         public const string PlayerKey = "HuntHappens.Shop.Progress.v1";
         public const string TestKey = "HuntHappens.Shop.AutomatedChecks.v1";
-        public static string Key => Application.isBatchMode ? TestKey : PlayerKey;
+        public static bool InventoryChecksRunning { get; set; }
+        public static string Key => Application.isBatchMode || InventoryChecksRunning ? TestKey : PlayerKey;
         public static bool PersistenceProbe => Application.isBatchMode && Array.IndexOf(Environment.GetCommandLineArgs(), "-huntShopPersistenceProbe") >= 0;
         [Serializable]
         public sealed class CarriedRat
@@ -21,7 +22,10 @@ namespace HuntHappens.Shop
         [Serializable]
         public sealed class Data
         {
-            public int cages = 1, bread = 5, rats = 0, darts = 6;
+            public int cages, bread, rats, darts;
+            public int inventoryVersion;
+            public HuntHappens.Interaction.InventoryEntry[] inventory;
+            public HuntHappens.Interaction.InventoryEntry hand;
             public int greyRats;
             public int largeRats;
             public CarriedRat[] carriedRats = new CarriedRat[0];
@@ -64,5 +68,21 @@ namespace HuntHappens.Shop
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data)); PlayerPrefs.Save();
         }
         public static void Reset() { PlayerPrefs.DeleteKey(Key); PlayerPrefs.Save(); }
+        public static void SaveInventory(HuntHappens.Interaction.InventoryEntry[] slots, HuntHappens.Interaction.InventoryEntry hand, int darts)
+        {
+            var data = Load(); data.inventoryVersion = 2; data.darts = darts;
+            // JsonUtility's inline class serialization cannot represent null entries reliably.
+            // Copy into explicit empty records so serialization never mutates the live inventory.
+            data.inventory = new HuntHappens.Interaction.InventoryEntry[slots.Length];
+            for (int i = 0; i < slots.Length; i++) data.inventory[i] = SavedEntry(slots[i]);
+            data.hand = SavedEntry(hand);
+            PlayerPrefs.SetString(Key, JsonUtility.ToJson(data)); PlayerPrefs.Save();
+        }
+        private static HuntHappens.Interaction.InventoryEntry SavedEntry(HuntHappens.Interaction.InventoryEntry entry)
+        {
+            if (entry == null || entry.kind == HuntHappens.Interaction.InventoryKind.Physical)
+                return new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.None, quantity = 0 };
+            return new HuntHappens.Interaction.InventoryEntry { kind = entry.kind, quantity = entry.quantity };
+        }
     }
 }

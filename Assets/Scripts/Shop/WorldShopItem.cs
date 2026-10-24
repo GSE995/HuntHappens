@@ -8,13 +8,14 @@ namespace HuntHappens.Shop
     public sealed class WorldShopItem : MonoBehaviour
     {
         [SerializeField] private ShopManager shop;
-        [SerializeField, Range(0, 3)] private int kind;
+        [SerializeField, Range(0, 5)] private int kind;
         private string feedback;
         private float feedbackUntil;
         public int Kind => kind;
         public ShopManager Shop => shop;
-        public string Title => kind == 0 ? "Клетка для крыс" : kind == 1 ? "Хлеб для приманки" : kind == 2 ? "Дротик с транквилизатором" : "Приём крыс";
-        public int Price => kind == 0 ? 15 : kind == 1 ? 2 : kind == 2 ? 12 : 10;
+        public string Title => kind == 0 ? "Клетка для крыс" : kind == 1 ? "Хлеб для приманки" : kind == 2 ? "Дротик с транквилизатором" : kind == 4 ? "Транквилизатор" : kind == 5 ? "Ловушка" : "Приём крыс";
+        public static int PriceFor(int kind) => kind == 0 ? 15 : kind == 1 ? 2 : kind == 2 ? 12 : kind == 4 ? 50 : kind == 5 ? 25 : 10;
+        public int Price => PriceFor(kind);
         public string Prompt => (kind == 3 ? "Приём крыс: чёрная — $10, серая — $15, крупная — $25\nE — сдать пойманных крыс" : Title + " — $" + Price + "\nE — купить 1 шт.") +
             (Time.unscaledTime < feedbackUntil ? "\n" + feedback : "");
         public void Configure(ShopManager manager, int product) { shop = manager; kind = product; }

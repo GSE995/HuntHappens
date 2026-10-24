@@ -40,6 +40,7 @@ namespace HuntHappens.Traps
             if (holder == null || holder.IsHolding || !isActiveAndEnabled) return false;
             if (CaughtDeer != null) return holder.TryPickUp(CaughtDeer.GetComponent<PickupItem>());
             if (manager == null) return false;
+            if (!holder.GetComponent<PlayerInventory>().Receive(new InventoryEntry { kind = InventoryKind.Trap })) return false;
             manager.Retrieve(this);
             return true;
         }

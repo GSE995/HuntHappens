@@ -15,6 +15,7 @@ namespace HuntHappens.SmallGame
             if (recovered || player == null || player != Owner) return false;
             if (!Baited && Captive == null && player.Bread > 0)
             { player.UseBread(); Baited = true; bait.SetActive(true); return true; }
+            if (!player.GetComponent<HuntHappens.Interaction.PlayerInventory>().Receive(new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.Cage })) return false;
             recovered = true;
             bool caught = Captive != null;
             if (caught) Captive.ReleaseForRespawn();
