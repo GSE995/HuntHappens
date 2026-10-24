@@ -34,6 +34,7 @@ namespace HuntHappens.Interaction
             return deliveryTruck.Submit(transform, view.transform.position, holder) > 0;
         }
         public HuntHappens.SmallGame.RatCage CageTarget { get; private set; }
+        public HuntHappens.SmallGame.RatAI RatTarget { get; private set; }
         public HuntHappens.SmallGame.BreadBasket BreadTarget { get; private set; }
         public HuntHappens.Shop.WorldShopItem ProductTarget { get; private set; }
         public PickupItem Target { get; private set; }
@@ -60,6 +61,7 @@ namespace HuntHappens.Interaction
         {
             ProductTarget = null;
             CageTarget = null; BreadTarget = null;
+            RatTarget = null;
             Target = null;
             ObservedDeer = null;
             DeliveryTarget = null;
@@ -70,7 +72,7 @@ namespace HuntHappens.Interaction
                 if (input.MenuClosePressed) { LastHandledFrame = Time.frameCount; shop.Close(); }
                 return;
             }
-            if (view == null || Cursor.lockState != CursorLockMode.Locked) return;
+            if (GameplayBlocked || view == null || Cursor.lockState != CursorLockMode.Locked) return;
             if (holder.IsHolding)
             {
                 if (input.InteractPressed || input.ThrowPressed) LastHandledFrame = Time.frameCount;
@@ -107,6 +109,8 @@ namespace HuntHappens.Interaction
                 {
                     CageTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatCage>();
                     BreadTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.BreadBasket>();
+                    var rat = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatAI>();
+                    if (rat != null && rat.CanPickUp) RatTarget = rat;
                 }
                 PickupItem item = hit.rigidbody != null ? hit.rigidbody.GetComponent<PickupItem>() : null;
                 ObservedDeer = hit.collider.GetComponentInParent<DeerSedation>();
@@ -114,7 +118,9 @@ namespace HuntHappens.Interaction
                 if (hit.distance <= interactionDistance && item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
                 break;
             }
-            if (input.InteractPressed && CageTarget != null)
+            if (input.InteractPressed && RatTarget != null)
+            { LastHandledFrame = Time.frameCount; GetComponent<HuntHappens.SmallGame.RatHunting>()?.TryCollectSleepingRat(RatTarget); }
+            else if (input.InteractPressed && CageTarget != null)
             { LastHandledFrame = Time.frameCount; CageTarget.Interact(GetComponent<HuntHappens.SmallGame.RatHunting>()); }
             else if (input.InteractPressed && BreadTarget != null)
             { LastHandledFrame = Time.frameCount; BreadTarget.Take(GetComponent<HuntHappens.SmallGame.RatHunting>()); }
@@ -134,6 +140,7 @@ namespace HuntHappens.Interaction
         {
             ProductTarget = null;
             CageTarget = null; BreadTarget = null;
+            RatTarget = null;
             Target = null;
             ObservedDeer = null;
             DeliveryTarget = null;

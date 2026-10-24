@@ -122,6 +122,7 @@ namespace HuntHappens.Interaction
                 interaction.ProductTarget != null ? interaction.ProductTarget.Prompt :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :
                 interaction.ShopTarget != null ? "E — Купить улучшения" :
+                interaction.RatTarget != null ? interaction.RatTarget.PickupPrompt :
                 interaction.CageTarget != null ? interaction.CageTarget.Prompt :
                 interaction.BreadTarget != null ? interaction.BreadTarget.Prompt :
                 gun != null && gun.Selected && rats != null && rats.Darts == 0 ? "Дротики закончились — купите их в магазине" :
@@ -138,7 +139,8 @@ namespace HuntHappens.Interaction
                     (interaction != null && interaction.IsHolding ? "Бросить" : rats != null && rats.Selected ? "Поставить клетку" : gun.TrapSelected ? "Установить ловушку" : gun.Selected ? "Выстрел" : "Бросить предмет");
             if (rats != null) tools.text += "\n4 — Клетка для крыс | " + rats.Stock;
             if (health != null) tools.text += "\n" + health.Status;
-            trapNotice.text = traps != null && traps.Manager != null && Time.time < traps.Manager.NotificationUntil ? traps.Manager.Notification : "";
+            trapNotice.text = rats != null && Time.unscaledTime < rats.EscapeNoticeUntil ? rats.EscapeNotice :
+                traps != null && traps.Manager != null && Time.time < traps.Manager.NotificationUntil ? traps.Manager.Notification : "";
         }
 
         private void OnDisable()

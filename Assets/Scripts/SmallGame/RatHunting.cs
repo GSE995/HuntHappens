@@ -17,6 +17,10 @@ namespace HuntHappens.SmallGame
         private ItemHolder holder;
         private Camera view;
         private TranquilizerGun gun;
+        private readonly System.Collections.Generic.List<ShopProgress.CarriedRat> carriedRats = new System.Collections.Generic.List<ShopProgress.CarriedRat>();
+        public string EscapeNotice { get; private set; }
+        public float EscapeNoticeUntil { get; private set; }
+        private static double Now => System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
         public int Cages { get; private set; }
         public int Bread { get; private set; }
         public int Rats { get; private set; }
@@ -36,13 +40,61 @@ namespace HuntHappens.SmallGame
             Rats = Mathf.Clamp(data.rats, 0, 999); Darts = Mathf.Clamp(data.darts, 0, 999);
             GreyRats = Mathf.Clamp(data.greyRats, 0, Rats);
             LargeRats = Mathf.Clamp(data.largeRats, 0, Rats - GreyRats);
+            carriedRats.Clear();
+            int[] remaining = { Rats - GreyRats - LargeRats, GreyRats, LargeRats };
+            foreach (var record in data.carriedRats ?? new ShopProgress.CarriedRat[0])
+            {
+                if (record == null || record.kind < 0 || record.kind > 2 || remaining[record.kind] <= 0 || double.IsNaN(record.wakeAt) || double.IsInfinity(record.wakeAt)) continue;
+                remaining[record.kind]--;
+                carriedRats.Add(record);
+            }
+            BindCarriedRats();
+            RefreshCarriedRats();
         }
         private void Start()
         {
             input = GetComponent<PrototypeInput>(); holder = GetComponent<ItemHolder>();
             view = GetComponentInChildren<Camera>(); gun = GetComponent<TranquilizerGun>(); Reload();
         }
-        private void Save() => ShopProgress.SaveSupplies(Cages, Bread, Rats, Darts, GreyRats, LargeRats);
+        private void Save() => ShopProgress.SaveSupplies(Cages, Bread, Rats, Darts, GreyRats, LargeRats, carriedRats.ToArray());
+        private void BindCarriedRats()
+        {
+            if (carriedRats.Count == 0) return;
+            var animals = FindObjectsByType<RatAI>(FindObjectsSortMode.None);
+            var assigned = new System.Collections.Generic.HashSet<RatAI>();
+            foreach (var record in carriedRats)
+            {
+                if (record.animal != null) { assigned.Add(record.animal); continue; }
+                foreach (var animal in animals)
+                {
+                    if (assigned.Contains(animal) || animal.Kind != record.kind || (animal.Home - record.home).sqrMagnitude > 0.01f) continue;
+                    record.animal = animal;
+                    animal.HoldForCarrier();
+                    assigned.Add(animal);
+                    break;
+                }
+            }
+        }
+        public void RefreshCarriedRats()
+        {
+            bool changed = false;
+            for (int i = carriedRats.Count - 1; i >= 0; i--)
+            {
+                var record = carriedRats[i];
+                if (Now < record.wakeAt) continue;
+                if (record.animal == null) BindCarriedRats();
+                if (record.animal == null || !record.animal.TryEscapeFromCarrier(transform)) continue;
+                Rats = Mathf.Max(0, Rats - 1);
+                if (record.kind == 2) LargeRats = Mathf.Max(0, LargeRats - 1);
+                else if (record.kind == 1) GreyRats = Mathf.Max(0, GreyRats - 1);
+                carriedRats.RemoveAt(i);
+                EscapeNotice = "Крыса проснулась и убежала!";
+                EscapeNoticeUntil = Time.unscaledTime + 4f;
+                changed = true;
+            }
+            if (changed) Save();
+        }
+        private void Update() => RefreshCarriedRats();
         public bool Buy(int kind)
         {
             if (shop == null || !shop.CanTradeSupplies) return false;
@@ -54,7 +106,12 @@ namespace HuntHappens.SmallGame
         }
         public bool Sell()
         {
+            RefreshCarriedRats();
             if (shop == null || !shop.CanTradeSupplies || Rats == 0) return false;
+            // A rat already awake cannot be sold while waiting for a safe NavMesh spawn.
+            foreach (var record in carriedRats) if (Now >= record.wakeAt) return false;
+            foreach (var record in carriedRats) if (record.animal != null) record.animal.ReleaseForRespawn();
+            carriedRats.Clear();
             int reward = SaleTotal; Rats = 0; GreyRats = 0; LargeRats = 0; Save();
             shop.Wallet.RestoreBalance((int)System.Math.Min(int.MaxValue, (long)shop.Wallet.Balance + reward));
             return true;
@@ -62,6 +119,17 @@ namespace HuntHappens.SmallGame
         public bool UseBread() { if (Bread <= 0) return false; Bread--; Save(); return true; }
         public bool UseDart() { if (Darts <= 0) return false; Darts--; Save(); return true; }
         public bool CollectBread() { if (Bread >= 999) return false; Bread++; Save(); return true; }
+        public bool TryCollectSleepingRat(RatAI rat)
+        {
+            if (!isActiveAndEnabled || input == null || input.GameplayBlocked || holder == null || holder.IsHolding || Rats >= 999 || rat == null || !rat.CanPickUp) return false;
+            var record = new ShopProgress.CarriedRat { kind = rat.Kind, home = rat.Home, wakeAt = Now + rat.RemainingSleep, animal = rat };
+            if (!rat.TryCollectSleeping()) return false;
+            carriedRats.Add(record);
+            Rats++;
+            if (rat.isAggressive) LargeRats++; else if (rat.isGrey) GreyRats++;
+            Save();
+            return true;
+        }
         public void Recover(bool caught, bool grey = false, bool large = false) { Deployed = Mathf.Max(0, Deployed - 1); if (caught) { Rats++; if (large) LargeRats++; else if (grey) GreyRats++; } Save(); }
         public bool Evaluate(out Vector3 point)
         {

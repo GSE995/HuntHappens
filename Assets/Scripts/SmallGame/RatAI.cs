@@ -12,6 +12,12 @@ namespace HuntHappens.SmallGame
         private Quaternion normalVisualRotation;
         private float fallAsleepAt, wakeAt, sleepPose;
         public bool IsSedated { get; private set; }
+        public bool CanPickUp => isActiveAndEnabled && !Caught && IsSedated && Time.time >= fallAsleepAt && Time.time < wakeAt;
+        public float RemainingSleep => IsSedated ? Mathf.Max(0, wakeAt - Time.time) : 0;
+        public int Kind => isAggressive ? 2 : isGrey ? 1 : 0;
+        public Vector3 Home => home;
+        private float escapeUntil;
+        public string PickupPrompt => (isAggressive ? "Крупная крыса — $25" : isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — подобрать спящую крысу";
         private float biteAt = -1, nextBite;
         private HuntHappens.Player.PlayerHealth health;
         public int SalePrice => isAggressive ? 25 : isGrey ? 15 : 10;
@@ -83,6 +89,44 @@ namespace HuntHappens.SmallGame
             transform.SetPositionAndRotation(cage.transform.position + new Vector3(0, 0.04f, 0), cage.transform.rotation);
         }
         public void ReleaseForRespawn() { visual.gameObject.SetActive(false); respawnAt = Time.time + 20; }
+        public bool TryCollectSleeping()
+        {
+            if (!CanPickUp) return false;
+            HoldForCarrier();
+            return true;
+        }
+        public void HoldForCarrier()
+        {
+            Caught = true;
+            IsSedated = false;
+            sleepPose = 0;
+            biteAt = -1;
+            respawnAt = 0;
+            visual.localRotation = normalVisualRotation;
+            agent.enabled = false;
+            visual.gameObject.SetActive(false);
+        }
+        public bool TryEscapeFromCarrier(Transform carrier)
+        {
+            if (carrier == null || !Caught) return false;
+            if (!NavMesh.SamplePosition(carrier.position + carrier.right * 1.5f, out var spawn, 2f, agent.areaMask)) return false;
+            Vector3 previous = transform.position;
+            transform.position = spawn.position;
+            agent.enabled = true;
+            if (!agent.isOnNavMesh || !agent.Warp(spawn.position))
+            { agent.enabled = false; transform.position = previous; return false; }
+            agent.isStopped = false;
+            visual.localScale = normalVisualScale;
+            visual.localRotation = normalVisualRotation;
+            visual.gameObject.SetActive(true);
+            Caught = false;
+            IsSedated = false;
+            respawnAt = 0;
+            escapeUntil = Time.time + 5f;
+            nextDecision = 0;
+            nextBite = escapeUntil + 1.5f;
+            return true;
+        }
         private void Update()
         {
             if (Caught)
@@ -99,6 +143,13 @@ namespace HuntHappens.SmallGame
             float distance = Vector3.Distance(transform.position, player.transform.position);
             if (Time.time < nextDecision) return;
             nextDecision = Time.time + 0.4f;
+            if (Time.time < escapeUntil)
+            {
+                Vector3 away = transform.position - player.transform.position; away.y = 0;
+                if (away.sqrMagnitude < 0.01f) away = transform.forward;
+                Move(transform.position + away.normalized * 6f, 6f);
+                return;
+            }
             if (!isAggressive && distance < 3)
             { restUntil = 0; Move(transform.position + (transform.position - player.transform.position).normalized * 4, 4.5f); return; }
             RatCage closest = null; float best = 14;

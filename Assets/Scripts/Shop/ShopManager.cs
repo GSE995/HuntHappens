@@ -80,6 +80,7 @@ namespace HuntHappens.Shop
         {
             var supplies = input.GetComponent<HuntHappens.SmallGame.RatHunting>();
             if (!CanTradeSupplies || supplies == null) return false;
+            supplies.RefreshCarriedRats();
             int reward = supplies.SaleTotal;
             bool success = kind == 3 ? supplies.Sell() : supplies.Buy(kind);
             Message = success ? (kind == 3 ? "Крысы сданы: +$" + reward : "Покупка добавлена в запас") : "Недостаточно денег, нет крыс или достигнут лимит запаса";
