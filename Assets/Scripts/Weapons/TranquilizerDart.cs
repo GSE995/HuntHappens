@@ -73,6 +73,8 @@ namespace HuntHappens.Weapons
             impacted = true; // Set before applying the effect: collision and sweep can report the same hit.
             DeerSedation deer = collider.GetComponentInParent<DeerSedation>();
             if (deer != null) deer.ApplyDose(strength, sedationDurationMultiplier);
+            var rat = collider.GetComponentInParent<HuntHappens.SmallGame.RatAI>();
+            if (rat != null) rat.ApplyDose(strength, sedationDurationMultiplier);
             body.linearVelocity = body.angularVelocity = Vector3.zero;
             body.collisionDetectionMode = CollisionDetectionMode.Discrete;
             body.isKinematic = true;

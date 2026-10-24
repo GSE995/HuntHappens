@@ -9,6 +9,9 @@ namespace HuntHappens.SmallGame
         public bool isGrey;
         public bool isAggressive;
         private Vector3 normalVisualScale;
+        private Quaternion normalVisualRotation;
+        private float fallAsleepAt, wakeAt, sleepPose;
+        public bool IsSedated { get; private set; }
         private float biteAt = -1, nextBite;
         private HuntHappens.Player.PlayerHealth health;
         public int SalePrice => isAggressive ? 25 : isGrey ? 15 : 10;
@@ -20,9 +23,60 @@ namespace HuntHappens.SmallGame
         private RatGatheringSpot[] gatheringSpots;
         private float restUntil;
         public bool Caught { get; private set; }
-        private void Start() { agent = GetComponent<NavMeshAgent>(); home = transform.position; normalVisualScale = visual.localScale; player = FindAnyObjectByType<RatHunting>(); gatheringSpots = FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None); if (player != null) health = player.GetComponent<HuntHappens.Player.PlayerHealth>(); }
+        private void Start() { agent = GetComponent<NavMeshAgent>(); home = transform.position; normalVisualScale = visual.localScale; normalVisualRotation = visual.localRotation; EnsureHitCollider(); player = FindAnyObjectByType<RatHunting>(); gatheringSpots = FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None); if (player != null) health = player.GetComponent<HuntHappens.Player.PlayerHealth>(); }
+        private void EnsureHitCollider()
+        {
+            if (GetComponentInChildren<Collider>() != null) return;
+            var renderers = visual.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+            var bounds = new Bounds();
+            bool initialized = false;
+            foreach (var renderer in renderers)
+            {
+                Bounds mesh = renderer.localBounds;
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    Vector3 point = mesh.center + Vector3.Scale(mesh.extents, new Vector3((corner & 1) == 0 ? -1 : 1, (corner & 2) == 0 ? -1 : 1, (corner & 4) == 0 ? -1 : 1));
+                    point = visual.InverseTransformPoint(renderer.transform.TransformPoint(point));
+                    if (!initialized) { bounds = new Bounds(point, Vector3.zero); initialized = true; }
+                    else bounds.Encapsulate(point);
+                }
+            }
+            var hitbox = visual.gameObject.AddComponent<BoxCollider>();
+            hitbox.center = bounds.center;
+            hitbox.size = bounds.size;
+        }
+        public bool ApplyDose(float strength, float durationMultiplier = 1)
+        {
+            if (!isActiveAndEnabled || Caught || strength <= 0 || agent == null || !agent.enabled || !agent.isOnNavMesh) return false;
+            if (IsSedated)
+            {
+                wakeAt = Mathf.Max(wakeAt, Time.time + 25f);
+                return true;
+            }
+            IsSedated = true;
+            fallAsleepAt = Time.time + Mathf.Max(0.5f, Mathf.Clamp(durationMultiplier, 0.25f, 1f));
+            wakeAt = fallAsleepAt + 25f;
+            biteAt = -1;
+            restUntil = 0;
+            agent.ResetPath();
+            agent.isStopped = true;
+            return true;
+        }
+        private void UpdateSedation()
+        {
+            float target = Time.time < wakeAt ? Mathf.InverseLerp(fallAsleepAt - 0.5f, fallAsleepAt, Time.time) : 0;
+            sleepPose = Mathf.MoveTowards(sleepPose, target, Time.deltaTime * 2f);
+            visual.localRotation = normalVisualRotation * Quaternion.Euler(0, 0, 80f * Mathf.SmoothStep(0, 1, sleepPose));
+            if (Time.time < wakeAt || sleepPose > 0) return;
+            IsSedated = false;
+            if (agent.enabled && agent.isOnNavMesh) agent.isStopped = false;
+            nextBite = Time.time + 1.5f;
+            nextDecision = 0;
+        }
         public void Capture(RatCage cage)
         {
+            IsSedated = false; sleepPose = 0; visual.localRotation = normalVisualRotation;
             Caught = true; biteAt = -1; agent.enabled = false;
             // Fold the larger animal into the existing cage without clipping through its bars.
             if (isAggressive) visual.localScale = normalVisualScale / 1.4f;
@@ -34,9 +88,10 @@ namespace HuntHappens.SmallGame
             if (Caught)
             {
                 if (respawnAt > 0 && Time.time >= respawnAt && NavMesh.SamplePosition(home, out var spawn, 3, NavMesh.AllAreas))
-                { transform.position = spawn.position; agent.enabled = true; visual.localScale = normalVisualScale; nextBite = Time.time + 1.5f; Caught = false; respawnAt = 0; visual.gameObject.SetActive(true); }
+                { transform.position = spawn.position; agent.enabled = true; agent.isStopped = false; visual.localScale = normalVisualScale; nextBite = Time.time + 1.5f; Caught = false; respawnAt = 0; visual.gameObject.SetActive(true); }
                 return;
             }
+            if (IsSedated) { UpdateSedation(); return; }
             if (!agent.isOnNavMesh || player == null) return;
             // NavMesh can sit slightly above the ground. Keep the small body on the actual surface.
             if (player != null && player.ground != null && player.ground.Raycast(new Ray(transform.position + Vector3.up, Vector3.down), out var floor, 2f))
