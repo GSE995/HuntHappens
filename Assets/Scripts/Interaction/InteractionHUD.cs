@@ -122,14 +122,12 @@ namespace HuntHappens.Interaction
                 interaction.ProductTarget != null ? interaction.ProductTarget.Prompt :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :
                 interaction.ShopTarget != null ? "E — Купить улучшения" :
-                interaction.RatTarget != null ? interaction.RatTarget.PickupPrompt :
+                interaction.RatTarget != null || interaction.ObservedDeer != null ? "" :
                 interaction.CageTarget != null ? interaction.CageTarget.Prompt :
                 interaction.BreadTarget != null ? interaction.BreadTarget.Prompt :
-                gun != null && gun.Selected && rats != null && rats.Darts == 0 ? "Дротики закончились — купите их в магазине" :
                 rats != null && rats.Selected ? rats.Hint :
                 interaction.TrapTarget != null ? interaction.TrapTarget.Prompt :
                 interaction.Target != null ? interaction.Target.PickupPrompt :
-                interaction.ObservedDeer != null ? interaction.ObservedDeer.StatusText :
                 gun != null && gun.TrapSelected && traps != null ? traps.PlacementHint : "";
             promptBackdrop.gameObject.SetActive(!string.IsNullOrEmpty(prompt.text));
             if (tools != null)
