@@ -7,6 +7,12 @@ using UnityEngine.AI;
 
 namespace HuntHappens.Editor
 {
+    [DefaultExecutionOrder(10000)]
+    public sealed class DeerGroundingProbe : MonoBehaviour
+    {
+        private void LateUpdate() => DeerPlayChecks.CheckGroundingAfterAnimation();
+    }
+
     // Drives a temporary threat in Play Mode; never saves test positions back into the scene.
     [InitializeOnLoad]
     public static class DeerPlayChecks
@@ -131,6 +137,7 @@ namespace HuntHappens.Editor
             {
                 Check(EditorApplication.timeSinceStartup < deadline && Time.time - started < 70, "Timed out at stage " + stage);
                 float elapsed = Time.time - stageStarted;
+
                 if (stage == 0 && elapsed > 0.2f)
                 {
                     DeerAI[] deerList = UnityEngine.Object.FindObjectsByType<DeerAI>();
@@ -141,6 +148,7 @@ namespace HuntHappens.Editor
                         if (candidate.name == checkedDeerName) deer = candidate;
                     }
                     Check(deer != null, checkedDeerName + " exists");
+                    deer.gameObject.AddComponent<DeerGroundingProbe>();
                     agent = deer.GetComponent<NavMeshAgent>();
                     perception = deer.GetComponent<DeerPerception>();
                     threat = new GameObject("Temporary AI Check Threat").transform;
@@ -227,6 +235,35 @@ namespace HuntHappens.Editor
                 }
             }
             catch (Exception exception) { Debug.LogException(exception); Finish(1); }
+        }
+
+        public static void CheckGroundingAfterAnimation()
+        {
+            if (deer == null || (stage != 1 && stage != 4)) return;
+            try { CheckGrounding(); }
+            catch (Exception exception) { Debug.LogException(exception); Finish(1); }
+        }
+
+        private static void CheckGrounding()
+        {
+            float lowest = float.PositiveInfinity;
+            var baked = new Mesh();
+            foreach (var skin in deer.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                // BakeMesh(false) already includes hierarchy scale.
+                skin.BakeMesh(baked, false);
+                foreach (Vector3 point in baked.vertices)
+                    lowest = Mathf.Min(lowest, (skin.transform.position + skin.transform.rotation * point).y);
+            }
+            UnityEngine.Object.DestroyImmediate(baked);
+            float ground = float.NegativeInfinity;
+            foreach (var hit in Physics.RaycastAll(deer.transform.position + Vector3.up, Vector3.down, 2.5f,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                if (!hit.collider.transform.IsChildOf(deer.transform) && hit.rigidbody == null && hit.normal.y > 0.5f)
+                    ground = Mathf.Max(ground, hit.point.y);
+            Check(!float.IsInfinity(lowest) && !float.IsInfinity(ground), "Grounding geometry available");
+            Check(lowest - ground >= -0.02f && lowest - ground <= 0.025f,
+                "Hooves touch ground, gap=" + (lowest - ground));
         }
 
         private static void PlaceThreat(float distance)

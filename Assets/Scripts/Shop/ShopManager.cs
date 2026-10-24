@@ -15,6 +15,8 @@ namespace HuntHappens.Shop
         [SerializeField] private PrototypeInput input;
         [SerializeField, Min(0.1f)] private float purchaseCooldown = 0.4f;
         private bool changingProgress;
+        private bool worldTrade;
+        public bool CanTradeSupplies => isActiveAndEnabled && Time.unscaledTime >= nextPurchase && (IsOpen || worldTrade);
         private float nextPurchase;
         public bool IsOpen { get; private set; }
         public string Message { get; private set; } = "";
@@ -64,6 +66,26 @@ namespace HuntHappens.Shop
             if (ui != null) ui.Show(false);
             if (input != null) input.SetGameplayBlocked(false);
         }
+        public bool TryTradeWorld(WorldShopItem product, PrototypeInput player)
+        {
+            if (!isActiveAndEnabled || IsOpen || player != input || input.GameplayBlocked ||
+                input.GetComponent<ItemHolder>().IsHolding || product == null || product.Shop != this ||
+                WorldShopItem.FindTarget(input.GetComponentInChildren<Camera>(), input.transform) != product) return false;
+            if (Time.unscaledTime < nextPurchase) { Message = "Подождите перед следующей покупкой"; return false; }
+            worldTrade = true;
+            try { return BuySupply(product.Kind); }
+            finally { worldTrade = false; }
+        }
+        public bool BuySupply(int kind)
+        {
+            var supplies = input.GetComponent<HuntHappens.SmallGame.RatHunting>();
+            if (!CanTradeSupplies || supplies == null) return false;
+            int reward = supplies.SaleTotal;
+            bool success = kind == 3 ? supplies.Sell() : supplies.Buy(kind);
+            Message = success ? (kind == 3 ? "Крысы сданы: +$" + reward : "Покупка добавлена в запас") : "Недостаточно денег, нет крыс или достигнут лимит запаса";
+            if (success) nextPurchase = Time.unscaledTime + purchaseCooldown;
+            return success;
+        }
         public bool TryBuy(UpgradeKind kind)
         {
             if (!CanPurchaseNow || changingProgress || upgrades == null || !upgrades.IsConfigured) return false;
@@ -92,6 +114,7 @@ namespace HuntHappens.Shop
             wallet.RestoreBalance(0);
             upgrades.RestoreLevels(null);
             changingProgress = false;
+            input.GetComponent<HuntHappens.SmallGame.RatHunting>()?.Reload();
             nextPurchase = 0;
             Message = "Прогресс сброшен";
         }

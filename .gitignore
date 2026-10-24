@@ -14,6 +14,9 @@
 # See: https://github.com/github/gitignore/tree/main/Global
 #
 .utmp/
+.DS_Store
+# Meshy API snapshots contain temporary signed download links; keep them local.
+/meshy_output/**/task_*.json
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/

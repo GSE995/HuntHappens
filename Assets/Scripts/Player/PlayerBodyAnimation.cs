@@ -19,7 +19,7 @@ namespace HuntHappens.Player
             Vector3 velocity = motor.velocity;
             velocity.y = 0;
             // The supplied asset has a walking clip only. Freeze it while idle or airborne.
-            animator.speed = motor.isGrounded ? Mathf.Clamp(velocity.magnitude / 1.6f, 0, 2f) : 0;
+            animator.speed = motor.isGrounded ? Mathf.Clamp(velocity.magnitude / 2.5f, 0, 3.2f) : 0;
         }
     }
 }

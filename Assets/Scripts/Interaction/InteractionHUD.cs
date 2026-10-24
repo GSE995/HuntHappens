@@ -15,6 +15,7 @@ namespace HuntHappens.Interaction
         private Canvas canvas;
         private TextMeshProUGUI tools;
         private TranquilizerGun gun;
+        private HuntHappens.SmallGame.RatHunting rats;
         private HuntHappens.Traps.TrapPlacement traps;
         private TextMeshProUGUI trapNotice;
         public void SetInteraction(PlayerInteraction value) => interaction = value;
@@ -49,8 +50,8 @@ namespace HuntHappens.Interaction
             prompt.color = Color.white;
             prompt.raycastTarget = false;
             prompt.rectTransform.anchorMin = prompt.rectTransform.anchorMax = Vector2.one * 0.5f;
-            prompt.rectTransform.anchoredPosition = new Vector2(0, -55);
-            prompt.rectTransform.sizeDelta = new Vector2(800, 65);
+            prompt.rectTransform.anchoredPosition = new Vector2(0, -85);
+            prompt.rectTransform.sizeDelta = new Vector2(1000, 120);
             var toolObject = new GameObject("Selected Tool", typeof(RectTransform));
             toolObject.transform.SetParent(canvas.transform, false);
             tools = toolObject.AddComponent<TextMeshProUGUI>();
@@ -62,6 +63,7 @@ namespace HuntHappens.Interaction
             tools.rectTransform.pivot = Vector2.zero;
             tools.rectTransform.anchoredPosition = new Vector2(30, 25);
             tools.rectTransform.sizeDelta = new Vector2(1800, 145);
+            if (interaction != null) rats = interaction.GetComponent<HuntHappens.SmallGame.RatHunting>();
             if (interaction != null) gun = interaction.GetComponent<TranquilizerGun>();
             if (interaction != null) traps = interaction.GetComponent<HuntHappens.Traps.TrapPlacement>();
             var notice = new GameObject("Trap Notification", typeof(RectTransform));
@@ -82,17 +84,23 @@ namespace HuntHappens.Interaction
             bool visible = interaction != null && interaction.isActiveAndEnabled && !interaction.GameplayBlocked && Cursor.lockState == CursorLockMode.Locked;
             canvas.enabled = visible;
             prompt.text = !visible ? "" : interaction.IsHolding ? "E — Отпустить | ЛКМ — Бросить" :
+                interaction.ProductTarget != null ? interaction.ProductTarget.Prompt :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :
-                interaction.ShopTarget != null ? "E — Открыть магазин" :
+                interaction.ShopTarget != null ? "E — Купить улучшения" :
+                interaction.CageTarget != null ? interaction.CageTarget.Prompt :
+                interaction.BreadTarget != null ? interaction.BreadTarget.Prompt :
+                gun != null && gun.Selected && rats != null && rats.Darts == 0 ? "Дротики закончились — купите их в магазине" :
+                rats != null && rats.Selected ? rats.Hint :
                 interaction.TrapTarget != null ? interaction.TrapTarget.Prompt :
                 interaction.Target != null ? interaction.Target.PickupPrompt :
                 interaction.ObservedDeer != null ? interaction.ObservedDeer.StatusText :
                 gun != null && gun.TrapSelected && traps != null ? traps.PlacementHint : "";
             if (tools != null)
-                tools.text = gun == null ? "" : (gun.TrapSelected ? "Ловушка" : gun.Selected ? "Транквилизатор" : "Взаимодействие") +
+                tools.text = gun == null ? "" : (rats != null && rats.Selected ? "Клетка для крыс" : gun.TrapSelected ? "Ловушка" : gun.Selected ? "Транквилизатор" : "Взаимодействие") +
                     (traps != null && traps.Manager != null ? " | Ловушки: " + traps.Manager.PlacedCount + "/" + traps.Manager.MaximumTraps : "") +
                     "\n1 — Транквилизатор | 2 — Взаимодействие | 3 — Ловушка\nE — Поднять / Отпустить | ЛКМ — " +
-                    (interaction != null && interaction.IsHolding ? "Бросить" : gun.TrapSelected ? "Установить ловушку" : gun.Selected ? "Выстрел" : "Бросить предмет");
+                    (interaction != null && interaction.IsHolding ? "Бросить" : rats != null && rats.Selected ? "Поставить клетку" : gun.TrapSelected ? "Установить ловушку" : gun.Selected ? "Выстрел" : "Бросить предмет");
+            if (rats != null) tools.text += "\n4 — Клетка для крыс | " + rats.Stock;
             trapNotice.text = traps != null && traps.Manager != null && Time.time < traps.Manager.NotificationUntil ? traps.Manager.Notification : "";
         }
 

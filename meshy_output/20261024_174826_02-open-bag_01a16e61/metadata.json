@@ -1,0 +1,46 @@
+{
+  "schema_version": 2,
+  "project_name": "02-open-bag",
+  "folder": "20261024_174826_02-open-bag_01a16e61",
+  "root_task_id": "01a16e61-ffe4-75ed-98e2-c6e169cfbf6d",
+  "created_at": "2026-10-24T14:48:26.221Z",
+  "updated_at": "2026-10-24T14:49:51.298Z",
+  "tasks": [
+    {
+      "task_id": "01a16e61-ffe4-75ed-98e2-c6e169cfbf6d",
+      "task_type": "image-to-3d",
+      "resource": "image-to-3d",
+      "endpoint": "/openapi/v1/image-to-3d",
+      "stage": "generation",
+      "parent_task_id": null,
+      "status": "SUCCEEDED",
+      "files": [],
+      "task_json": "task_01a16e61-ffe4-75ed-98e2-c6e169cfbf6d.json",
+      "operation_id": null,
+      "created_at": "2026-10-24T14:48:47.104Z",
+      "updated_at": "2026-10-24T14:48:47.104Z"
+    },
+    {
+      "task_id": "01a16e61-ffe4-75ed-98e2-c6e169cfbf6d",
+      "task_type": "image-to-3d",
+      "resource": "image-to-3d",
+      "endpoint": "/openapi/v1/image-to-3d",
+      "stage": "delivered",
+      "parent_task_id": null,
+      "status": "SUCCEEDED",
+      "files": [
+        "model.glb",
+        "model.fbx",
+        "thumbnail.png",
+        "texture_0_base_color.png",
+        "texture_0_metallic.png",
+        "texture_0_roughness.png",
+        "texture_0_normal.png"
+      ],
+      "task_json": null,
+      "operation_id": null,
+      "created_at": "2026-10-24T14:49:51.298Z",
+      "updated_at": "2026-10-24T14:49:51.298Z"
+    }
+  ]
+}

@@ -63,7 +63,7 @@ namespace HuntHappens.Editor
             }
             catch (Exception exception) { Debug.LogException(exception); EditorApplication.update -= Tick; EditorApplication.Exit(1); }
         }
-        private static void Capture(Camera camera, Canvas canvas, string path)
+        internal static void Capture(Camera camera, Canvas canvas, string path)
         {
             var target = new RenderTexture(1920, 1080, 24);
             var texture = new Texture2D(1920, 1080, TextureFormat.RGB24, false);

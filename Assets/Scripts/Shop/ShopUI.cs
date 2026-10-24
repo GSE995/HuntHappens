@@ -34,16 +34,16 @@ namespace HuntHappens.Shop
             shade.offsetMin = shade.offsetMax = Vector2.zero;
             var panel = Box("Shop Panel", root.transform, Vector2.zero, new Vector2(1520, 920), new Color(0.08f, 0.17f, 0.23f));
             var title = Label("Title", panel, new Vector2(0, 390), new Vector2(1000, 65), 46);
-            title.text = "SHOP — ЛЕСНЫЕ УЛУЧШЕНИЯ";
+            title.text = "УЛУЧШЕНИЯ СНАРЯЖЕНИЯ";
             title.color = new Color(1, 0.8f, 0.3f);
             balance = Label("Balance", panel, new Vector2(0, 325), new Vector2(1100, 45), 29);
             for (int i = 0; i < 4; i++)
             {
                 int index = i;
                 UpgradeDefinition definition = manager.Upgrades.Definition((UpgradeKind)i);
-                var card = Box(definition.Title, panel, new Vector2(i % 2 == 0 ? -360 : 360, i < 2 ? 130 : -165),
-                    new Vector2(680, 270), new Color(0.14f, 0.28f, 0.31f));
-                var name = Label("Name", card, new Vector2(0, 96), new Vector2(620, 38), 29);
+                var card = Box(definition.Title, panel, new Vector2(i % 2 == 0 ? -360 : 360, i < 2 ? 135 : -120),
+                    new Vector2(680, 245), new Color(0.14f, 0.28f, 0.31f));
+                var name = Label("Name", card, new Vector2(0, 88), new Vector2(620, 38), 29);
                 name.alignment = TextAlignmentOptions.Left;
                 name.text = definition.Title;
                 var description = Label("Effect", card, new Vector2(0, 49), new Vector2(620, 48), 21);
@@ -51,7 +51,7 @@ namespace HuntHappens.Shop
                 description.text = definition.Description;
                 details[i] = Label("Levels", card, new Vector2(0, -21), new Vector2(620, 82), 21);
                 details[i].alignment = TextAlignmentOptions.Left;
-                buttons[i] = MakeButton("Buy", card, new Vector2(175, -100), new Vector2(270, 43), out prices[i]);
+                buttons[i] = MakeButton("Buy", card, new Vector2(175, -95), new Vector2(270, 43), out prices[i]);
                 buttons[i].onClick.AddListener(() => manager.TryBuy((UpgradeKind)index));
             }
             message = Label("Message", panel, new Vector2(0, -365), new Vector2(1390, 50), 25);
@@ -67,7 +67,9 @@ namespace HuntHappens.Shop
         private void LateUpdate()
         {
             if (!Visible || manager == null) return;
-            balance.text = "Ваш баланс: $" + manager.Wallet.Balance;
+            var supplies = FindAnyObjectByType<HuntHappens.SmallGame.RatHunting>();
+            balance.text = "Ваш баланс: $" + manager.Wallet.Balance + (supplies != null ? "\n" + supplies.Stock : "");
+            balance.fontSize = 23; balance.rectTransform.sizeDelta = new Vector2(1400, 75);
             message.text = manager.Message;
             for (int i = 0; i < 4; i++)
             {

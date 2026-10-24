@@ -60,6 +60,7 @@ namespace HuntHappens.Weapons
             if (input.SelectTranquilizerPressed) SelectTool(true);
             if (input.SelectInteractionPressed) SelectTool(false);
             if (input.SelectTrapPressed) SelectTrapTool();
+            if (input.SelectCagePressed) SelectTool(false);
             if (input.ThrowPressed)
             {
                 if (TrapSelected) GetComponent<HuntHappens.Traps.TrapPlacement>()?.TryPlace();
@@ -98,6 +99,8 @@ namespace HuntHappens.Weapons
                 if (!hit.collider.transform.IsChildOf(transform) && hit.collider.GetComponentInParent<TranquilizerDart>() == null)
                 { origin = view.transform.position; break; }
             if ((target - origin).sqrMagnitude < 0.0001f) return false;
+            var supplies = GetComponent<HuntHappens.SmallGame.RatHunting>();
+            if (supplies != null && !supplies.UseDart()) return false;
             Vector3 direction = (target - origin).normalized;
             LastDart = Instantiate(dartPrefab, origin, Quaternion.LookRotation(direction));
             LastDart.Launch(transform, direction * dartSpeed, tranquilizerStrength, dartLifetime, SedationDurationMultiplier);
