@@ -14,10 +14,10 @@ namespace HuntHappens.UI
         TMP_FontAsset font;
         RatHunting hunt; PrototypeInput input; PlayerHealth health; TranquilizerGun gun; TrapPlacement traps;
         RectTransform root; GameObject inventory;
-        TextMeshProUGUI money, hp, total, selectedName;
+        TextMeshProUGUI money, total, selectedName;
         readonly TextMeshProUGUI[] counts = new TextMeshProUGUI[4], supplies = new TextMeshProUGUI[4], catchLabels = new TextMeshProUGUI[3];
         readonly SketchPanel[] slots = new SketchPanel[4];
-        readonly UnityEngine.UI.Image[] bars = new UnityEngine.UI.Image[5];
+        UnityEngine.UI.Image healthFill;
         readonly Sprite[] sprites = new Sprite[9];
         static readonly string[] ToolNames={"Транквилизатор","Свободные руки","Ловушка","Клетка для крыс"};
         int lastSelected = -1; float showNameUntil;
@@ -33,14 +33,11 @@ namespace HuntHappens.UI
                 Rect[] regions={new Rect(0,100,515,300),new Rect(515,45,275,370),new Rect(795,85,480,330),new Rect(0,470,442,330),new Rect(445,470,410,330),new Rect(855,460,420,340),new Rect(0,875,425,340),new Rect(425,875,420,340),new Rect(845,865,430,350)};
                 for(int i=0;i<9;i++){var r=regions[i];float scale=atlas.width/1280f;sprites[i]=Sprite.Create(atlas,new Rect(r.x*scale,(1280-r.y-r.height)*scale,r.width*scale,r.height*scale),Vector2.one*0.5f,100);}
             }
-            var healthPanel = Panel("Health",root,new Vector2(235,72),new Vector2(410,72));Anchor(healthPanel.rectTransform,new Vector2(0,0));
-            Label("Cross",healthPanel.transform,new Vector2(-172,0),new Vector2(46,48),44,"+").color=Orange;
-            for(int i=0;i<5;i++)
-            {
-                var cell=Panel("Health Segment "+i,healthPanel.transform,new Vector2(-125+i*39,0),new Vector2(32,27));
-                bars[i]=Image("Fill",cell.transform,new Vector2(0,0),new Vector2(28,23),null);bars[i].color=Orange;
-            }
-            hp=Label("Health Value",healthPanel.transform,new Vector2(135,0),new Vector2(125,45),32,"");
+            var healthPanel = Panel("Health",root,new Vector2(235,72),new Vector2(410,35));Anchor(healthPanel.rectTransform,new Vector2(0,0));
+            healthFill=Image("Health Fill",healthPanel.transform,new Vector2(4,0),new Vector2(402,27),null);
+            healthFill.rectTransform.anchorMin=healthFill.rectTransform.anchorMax=new Vector2(0,0.5f);
+            healthFill.rectTransform.pivot=new Vector2(0,0.5f);
+            healthFill.color=Orange;
             var wallet=Panel("Wallet",root,new Vector2(-115,-65),new Vector2(170,65));Anchor(wallet.rectTransform,new Vector2(1,1));
             money=Label("Balance",wallet.transform,Vector2.zero,new Vector2(160,55),40,"");
             for(int i=0;i<4;i++)
@@ -96,8 +93,9 @@ namespace HuntHappens.UI
             selectedName.text=Time.unscaledTime<showNameUntil?ToolNames[selected]:"";
             int availableTraps=traps != null && traps.Manager != null ? traps.Manager.MaximumTraps-traps.Manager.PlacedCount:0;
             counts[0].text=hunt.Darts.ToString();counts[1].text="";counts[2].text=availableTraps.ToString();counts[3].text=hunt.Available.ToString();
-            int current=health != null?health.Current:100;hp.text=current+" / 100";
-            for(int i=0;i<5;i++){float fraction=Mathf.Clamp01((current-i*20)/20f);bars[i].rectTransform.localScale=new Vector3(fraction,1,1);bars[i].color=current<=25?Color.red:Orange;}
+            int current=health != null?health.Current:100;
+            healthFill.rectTransform.sizeDelta=new Vector2(402*Mathf.Clamp01(current/100f),27);
+            healthFill.color=current<=25?Color.red:Orange;
             money.text="$"+hunt.shop.Wallet.Balance;
             supplies[0].text="Хлеб ×"+hunt.Bread;supplies[1].text="Дротики ×"+hunt.Darts;supplies[2].text="Клетки ×"+hunt.Available;supplies[3].text="Ловушки ×"+availableTraps;
             catchLabels[0].text="Чёрная ×"+(hunt.Rats-hunt.GreyRats-hunt.LargeRats)+"\n<color=#FF812F>$10 / шт.</color>";

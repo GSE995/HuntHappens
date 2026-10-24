@@ -65,8 +65,8 @@ namespace HuntHappens.SmallGame
         }
         private bool HuntPlayer(float distance)
         {
-            bool inTerritory = Vector3.Distance(player.transform.position, home) < 8f;
-            if (!inTerritory || distance > 4f || health == null || player.GetComponent<HuntHappens.Player.PrototypeInput>().GameplayBlocked)
+            bool inTerritory = Vector3.Distance(player.transform.position, home) < 16f;
+            if (!inTerritory || distance > 8f || health == null || player.GetComponent<HuntHappens.Player.PrototypeInput>().GameplayBlocked)
             {
                 biteAt = -1;
                 if (Vector3.Distance(transform.position, home) > 2.5f) { Move(home, 1.2f); return true; }
@@ -75,7 +75,7 @@ namespace HuntHappens.SmallGame
             restUntil = 0;
             Vector3 delta = player.transform.position - transform.position; delta.y = 0;
             if (delta.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(delta);
-            if (distance > 1.1f) { biteAt = -1; Move(player.transform.position, 3f); return true; }
+            if (distance > 1.1f) { biteAt = -1; Move(player.transform.position, 6f); return true; }
             agent.ResetPath();
             // Visible pause before the bite allows the player to step away.
             if (Time.time < nextBite) return true;
@@ -86,7 +86,7 @@ namespace HuntHappens.SmallGame
             Vector3 to = player.transform.position + Vector3.up * 0.25f;
             foreach (var hit in Physics.RaycastAll(from, to - from, Vector3.Distance(from, to), ~0, QueryTriggerInteraction.Ignore))
                 if (!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(player.transform)) return true;
-            health.TakeDamage(5);
+            health.TakeDamage(20);
             return true;
         }
         private void Wander()

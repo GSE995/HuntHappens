@@ -45,11 +45,11 @@ namespace HuntHappens.Editor
             var home=rat.transform.position;var playerSpawn=hunt.transform.position;
             agent.ResetPath();hunt.transform.position=home+Vector3.right*0.8f;Physics.SyncTransforms();
             yield return new WaitForSeconds(0.25f);Check(health.Current==100,"bite telegraph");
-            yield return new WaitForSeconds(1.1f);Check(health.Current==95,"first bite deals 5");
-            yield return new WaitForSeconds(0.5f);Check(health.Current==95,"bite cooldown");
+            yield return new WaitForSeconds(1.1f);Check(health.Current==80,"first bite deals 20");
+            yield return new WaitForSeconds(0.5f);Check(health.Current==80,"bite cooldown");
             var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.transform.position=home+new Vector3(0.4f,0.35f,0);wall.transform.localScale=new Vector3(0.1f,0.7f,1);Physics.SyncTransforms();
-            yield return new WaitForSeconds(2.5f);Check(health.Current==95,"no biting through walls");Destroy(wall);yield return null;
-            hunt.transform.position=home+Vector3.right*12;
+            yield return new WaitForSeconds(2.5f);Check(health.Current==80,"no biting through walls");Destroy(wall);yield return null;
+            hunt.transform.position=home+Vector3.right*24;
             yield return new WaitForSeconds(3);Check(Vector3.Distance(rat.transform.position,home)<3,"territory leash");
             var cage=Instantiate(hunt.cagePrefab,home,Quaternion.identity);cage.Owner=hunt;Check(cage.Interact(hunt),"bait accepted");
             float until=Time.time+20;while(!rat.Caught&&Time.time<until)yield return null;
