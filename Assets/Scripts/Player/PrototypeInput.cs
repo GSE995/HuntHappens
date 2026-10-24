@@ -20,6 +20,7 @@ namespace HuntHappens.Player
         public bool SelectTrapPressed { get; private set; }
         public bool GameplayBlocked { get; private set; }
         public bool MenuClosePressed { get; private set; }
+        public event System.Action InventoryToggleRequested;
         private int suppressThroughFrame = -1;
         public void SetGameplayBlocked(bool blocked)
         {
@@ -47,9 +48,11 @@ namespace HuntHappens.Player
         private InputAction selectInteraction;
         private InputAction selectTrap;
         private InputAction selectCage;
+        private InputAction inventory;
 
         private void Awake()
         {
+            inventory = new InputAction("Inventory", InputActionType.Button, "<Keyboard>/tab");
             move = new InputAction("Move", InputActionType.Value);
             move.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/w").With("Down", "<Keyboard>/s")
@@ -69,7 +72,7 @@ namespace HuntHappens.Player
 
         private void OnEnable()
         {
-            move.Enable(); look.Enable(); jump.Enable(); sprint.Enable();
+            inventory.Enable(); move.Enable(); look.Enable(); jump.Enable(); sprint.Enable();
             releaseCursor.Enable(); captureCursor.Enable();
             interact.Enable();
             selectTranquilizer.Enable(); selectInteraction.Enable();
@@ -80,6 +83,7 @@ namespace HuntHappens.Player
         public void ReadFrame()
         {
             MenuClosePressed = false;
+            if (Time.frameCount > suppressThroughFrame && inventory.WasPressedThisFrame()) InventoryToggleRequested?.Invoke();
             if (GameplayBlocked)
             {
                 ClearGameplayFrame();
@@ -108,7 +112,7 @@ namespace HuntHappens.Player
 
         private void OnDisable()
         {
-            move.Disable(); look.Disable(); jump.Disable(); sprint.Disable();
+            inventory.Disable(); move.Disable(); look.Disable(); jump.Disable(); sprint.Disable();
             releaseCursor.Disable(); captureCursor.Disable();
             interact.Disable();
             selectTranquilizer.Disable(); selectInteraction.Disable();
@@ -123,7 +127,7 @@ namespace HuntHappens.Player
 
         private void OnDestroy()
         {
-            move?.Dispose(); look?.Dispose(); jump?.Dispose(); sprint?.Dispose();
+            inventory?.Dispose(); move?.Dispose(); look?.Dispose(); jump?.Dispose(); sprint?.Dispose();
             releaseCursor?.Dispose(); captureCursor?.Dispose();
             interact?.Dispose();
             selectTranquilizer?.Dispose(); selectInteraction?.Dispose();

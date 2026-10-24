@@ -21,26 +21,28 @@ namespace HuntHappens.SmallGame
         public int Bread { get; private set; }
         public int Rats { get; private set; }
         public int GreyRats { get; private set; }
-        public int SaleTotal => (Rats - GreyRats) * 10 + GreyRats * 15;
+        public int LargeRats { get; private set; }
+        public int SaleTotal => (Rats - GreyRats - LargeRats) * 10 + GreyRats * 15 + LargeRats * 25;
         public int Darts { get; private set; }
         public int Deployed { get; private set; }
         public int Available => Cages - Deployed;
         public bool Selected { get; private set; }
         public string Hint { get; private set; } = "";
-        public string Stock => "Клетки: " + Available + " | Хлеб: " + Bread + " | Крысы: " + (Rats - GreyRats) + " чёрн., " + GreyRats + " сер." + " | Дротики: " + Darts;
+        public string Stock => "Клетки: " + Available + " | Хлеб: " + Bread + " | Крысы: " + (Rats - GreyRats - LargeRats) + " чёрн., " + GreyRats + " сер., " + LargeRats + " крупн." + " | Дротики: " + Darts;
         public void Reload()
         {
             var data = ShopProgress.Load();
             Cages = Mathf.Clamp(data.cages, 1, 20); Bread = Mathf.Clamp(data.bread, 0, 999);
             Rats = Mathf.Clamp(data.rats, 0, 999); Darts = Mathf.Clamp(data.darts, 0, 999);
             GreyRats = Mathf.Clamp(data.greyRats, 0, Rats);
+            LargeRats = Mathf.Clamp(data.largeRats, 0, Rats - GreyRats);
         }
         private void Start()
         {
             input = GetComponent<PrototypeInput>(); holder = GetComponent<ItemHolder>();
             view = GetComponentInChildren<Camera>(); gun = GetComponent<TranquilizerGun>(); Reload();
         }
-        private void Save() => ShopProgress.SaveSupplies(Cages, Bread, Rats, Darts, GreyRats);
+        private void Save() => ShopProgress.SaveSupplies(Cages, Bread, Rats, Darts, GreyRats, LargeRats);
         public bool Buy(int kind)
         {
             if (shop == null || !shop.CanTradeSupplies) return false;
@@ -53,14 +55,14 @@ namespace HuntHappens.SmallGame
         public bool Sell()
         {
             if (shop == null || !shop.CanTradeSupplies || Rats == 0) return false;
-            int reward = SaleTotal; Rats = 0; GreyRats = 0; Save();
+            int reward = SaleTotal; Rats = 0; GreyRats = 0; LargeRats = 0; Save();
             shop.Wallet.RestoreBalance((int)System.Math.Min(int.MaxValue, (long)shop.Wallet.Balance + reward));
             return true;
         }
         public bool UseBread() { if (Bread <= 0) return false; Bread--; Save(); return true; }
         public bool UseDart() { if (Darts <= 0) return false; Darts--; Save(); return true; }
         public bool CollectBread() { if (Bread >= 999) return false; Bread++; Save(); return true; }
-        public void Recover(bool caught, bool grey = false) { Deployed = Mathf.Max(0, Deployed - 1); if (caught) { Rats++; if (grey) GreyRats++; } Save(); }
+        public void Recover(bool caught, bool grey = false, bool large = false) { Deployed = Mathf.Max(0, Deployed - 1); if (caught) { Rats++; if (large) LargeRats++; else if (grey) GreyRats++; } Save(); }
         public bool Evaluate(out Vector3 point)
         {
             point = default;

@@ -17,10 +17,12 @@ namespace HuntHappens.UI
         private void Awake()
         {
             Canvas canvas = GetComponentInChildren<Canvas>();
+            font = GetComponent<InteractionHUD>().ThemeFont;
             if (canvas == null) { Debug.LogError("Delivery HUD needs the existing Interaction Canvas.", this); enabled = false; return; }
-            score = Label("Balance and Goal", canvas.transform, new Vector2(0, 1), new Vector2(25, -25), new Vector2(950, 160));
+            score = Label("Balance and Goal", canvas.transform, new Vector2(0, 1), new Vector2(25, -25), new Vector2(600, 70));
             score.alignment = TextAlignmentOptions.TopLeft;
-            score.fontSize = 28;
+            score.fontSize = 30;
+            score.color = new Color(0.96f,0.92f,0.79f);
             notification = Label("Delivery Notification", canvas.transform, Vector2.one * 0.5f, new Vector2(0, -150), new Vector2(950, 160));
             notification.alignment = TextAlignmentOptions.Center;
             notification.color = new Color(1, 0.9f, 0.3f);
@@ -42,9 +44,8 @@ namespace HuntHappens.UI
         private void LateUpdate()
         {
             if (manager == null || score == null) return;
-            score.text = "$" + manager.Balance + "\nДоставить " + manager.Goal + " оленей: " +
-                Mathf.Min(manager.DeliveredCount, manager.Goal) + "/" + manager.Goal + "\n" +
-                (manager.QuestComplete ? "Задание выполнено!" : "Усыпи оленя | отпусти в кузов | E у заднего борта");
+            bool inventoryOpen = GetComponent<InteractionHUD>().Field != null && GetComponent<InteractionHUD>().Field.IsOpen;
+            score.text = inventoryOpen ? "" : manager.QuestComplete ? "Олени доставлены!" : "Доставить оленей: " + Mathf.Min(manager.DeliveredCount, manager.Goal) + "/" + manager.Goal;
             notification.text = Time.time - manager.LastRewardTime < 3.5f ? manager.Notification : "";
         }
     }

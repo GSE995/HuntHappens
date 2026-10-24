@@ -40,8 +40,8 @@ namespace HuntHappens.Editor
             var hunt=FindAnyObjectByType<RatHunting>();var input=hunt.GetComponent<PrototypeInput>();var camera=hunt.GetComponentInChildren<Camera>();var shop=hunt.shop;
             hunt.GetComponent<FirstPersonMotor>().enabled=false;hunt.GetComponent<CharacterController>().enabled=false;
             var rats=FindObjectsByType<RatAI>(FindObjectsSortMode.None);
-            Check(rats.Count(r=>r.isGrey)==2 && rats.Count(r=>!r.isGrey)==6,"rare grey population");
-            foreach(var rat in new[]{rats.First(r=>!r.isGrey),rats.First(r=>r.isGrey)})
+            Check(rats.Count(r=>r.isGrey)==2 && rats.Count(r=>!r.isGrey&&!r.isAggressive)==6,"rare grey population");
+            foreach(var rat in new[]{rats.First(r=>!r.isGrey&&!r.isAggressive),rats.First(r=>r.isGrey)})
             {
                 var cage=Instantiate(hunt.cagePrefab,rat.transform.position,Quaternion.identity);cage.Owner=hunt;
                 Check(cage.Interact(hunt)&&cage.TryCapture(rat)&&cage.Interact(hunt),"capture and collect species");
@@ -73,7 +73,7 @@ namespace HuntHappens.Editor
             var ui=shop.GetComponent<ShopUI>();Check(ui.BuyButton(UpgradeKind.MoreTraps)!=null,"upgrade button preserved");
             foreach(var button in ui.GetComponentsInChildren<UnityEngine.UI.Button>()) Check(!button.name.StartsWith("Supply"),"no supplies in interface");
             shop.Close();
-            var black=rats.First(r=>!r.isGrey);var grey=rats.First(r=>r.isGrey);
+            var black=rats.First(r=>!r.isGrey&&!r.isAggressive);var grey=rats.First(r=>r.isGrey);
             black.transform.position=new Vector3(-0.35f,0,0);grey.transform.position=new Vector3(0.35f,0,0);
             black.visual.gameObject.SetActive(true);grey.visual.gameObject.SetActive(true);
             camera.transform.position=new Vector3(1.1f,0.9f,1.5f);camera.transform.LookAt(new Vector3(0,0.12f,0));

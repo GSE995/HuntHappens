@@ -15,6 +15,7 @@ namespace HuntHappens.Shop
         {
             public int cages = 1, bread = 5, rats = 0, darts = 6;
             public int greyRats;
+            public int largeRats;
             public int version = 1;
             public int balance;
             public int[] levels = new int[4];
@@ -47,9 +48,9 @@ namespace HuntHappens.Shop
             }
             catch (PlayerPrefsException exception) { Debug.LogWarning("Cannot save shop progress: " + exception.Message); }
         }
-        public static void SaveSupplies(int cages, int bread, int rats, int darts, int greyRats = 0)
+        public static void SaveSupplies(int cages, int bread, int rats, int darts, int greyRats = 0, int largeRats = 0)
         {
-            var data = Load(); data.cages = cages; data.bread = bread; data.rats = rats; data.darts = darts; data.greyRats = greyRats;
+            var data = Load(); data.cages = cages; data.bread = bread; data.rats = rats; data.darts = darts; data.greyRats = greyRats; data.largeRats = largeRats;
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data)); PlayerPrefs.Save();
         }
         public static void Reset() { PlayerPrefs.DeleteKey(Key); PlayerPrefs.Save(); }

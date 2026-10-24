@@ -9,7 +9,7 @@ namespace HuntHappens.SmallGame
         public RatAI Captive { get; private set; }
         public bool Baited { get; private set; }
         private bool recovered;
-        public string Prompt => Captive != null ? (Captive.isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — забрать крысу и клетку" : Baited ? "Ждём крысу. Отойдите на 3 м | E — забрать клетку" : "E — положить хлеб | без хлеба: забрать клетку";
+        public string Prompt => Captive != null ? (Captive.isAggressive ? "Крупная крыса — $25" : Captive.isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — забрать крысу и клетку" : Baited ? "Ждём крысу. Отойдите на 3 м | E — забрать клетку" : "E — положить хлеб | без хлеба: забрать клетку";
         public bool Interact(RatHunting player)
         {
             if (recovered || player == null || player != Owner) return false;
@@ -18,7 +18,7 @@ namespace HuntHappens.SmallGame
             recovered = true;
             bool caught = Captive != null;
             if (caught) Captive.ReleaseForRespawn();
-            player.Recover(caught, caught && Captive.isGrey); gameObject.SetActive(false); Destroy(gameObject); return true;
+            player.Recover(caught, caught && Captive.isGrey, caught && Captive.isAggressive); gameObject.SetActive(false); Destroy(gameObject); return true;
         }
         public bool TryCapture(RatAI rat)
         {

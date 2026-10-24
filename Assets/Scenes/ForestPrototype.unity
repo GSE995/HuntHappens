@@ -9403,7 +9403,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u041F\u0420\u0418\u0401\u041C \u041A\u0420\u042B\u0421\n$10 / $15"
+  m_text: "\u041F\u0420\u0418\u0401\u041C \u041A\u0420\u042B\u0421\n$10 / $15 / $25"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
   m_sharedMaterial: {fileID: -4335012557909071665, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
@@ -9905,6 +9905,7 @@ Transform:
   - {fileID: 48196375}
   - {fileID: 1954649536}
   - {fileID: 908451236}
+  - {fileID: 1628041551}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &822116695
@@ -14832,7 +14833,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.InteractionHUD
   interaction: {fileID: 7632009958039229846}
-  promptFont: {fileID: 11400000, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
+  promptFont: {fileID: 11400000, guid: 80284aa202d3243418b20ecc2a3435b2, type: 2}
+  iconAtlas: {fileID: 2800000, guid: e5762974865fe42289fee51adedb9657, type: 3}
 --- !u!4 &1142409096
 Transform:
   m_ObjectHideFlags: 0
@@ -20827,6 +20829,68 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1623501089}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1628041550
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 805165150}
+    m_Modifications:
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 22
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 24.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1138891743505962263, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+      propertyPath: m_Name
+      value: Large Guard Rat
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+--- !u!4 &1628041551 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 318083976333910653, guid: 1feeb6dd81fa84d64940c203bf9f98a9, type: 3}
+  m_PrefabInstance: {fileID: 1628041550}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1629747795
 GameObject:
   m_ObjectHideFlags: 0
@@ -26593,6 +26657,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2488339307112536309, guid: b596a01f59c6fd649a8a088df73b4bf5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7632009958039229850}
+    - targetCorrespondingSourceObject: {fileID: 2488339307112536309, guid: b596a01f59c6fd649a8a088df73b4bf5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7632009958039229851}
   m_SourcePrefab: {fileID: 100100000, guid: b596a01f59c6fd649a8a088df73b4bf5, type: 3}
 --- !u!20 &7632009958039229843 stripped
 Camera:
@@ -26712,6 +26779,18 @@ MonoBehaviour:
   cagePrefab: {fileID: 7990031392495399263, guid: fac97f4ed60584e20999ea641f4eea8b, type: 3}
   ground: {fileID: 1825201902}
   shop: {fileID: 1176876493}
+--- !u!114 &7632009958039229851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7632009958039229845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 218e1f96e976b4ce29ef93114a7bfb08, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.PlayerHealth
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

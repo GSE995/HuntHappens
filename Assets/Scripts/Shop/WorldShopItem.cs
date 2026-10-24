@@ -15,7 +15,7 @@ namespace HuntHappens.Shop
         public ShopManager Shop => shop;
         public string Title => kind == 0 ? "Клетка для крыс" : kind == 1 ? "Хлеб для приманки" : kind == 2 ? "Дротик с транквилизатором" : "Приём крыс";
         public int Price => kind == 0 ? 15 : kind == 1 ? 2 : kind == 2 ? 12 : 10;
-        public string Prompt => (kind == 3 ? "Приём крыс: чёрная — $10, серая — $15\nE — сдать пойманных крыс" : Title + " — $" + Price + "\nE — купить 1 шт.") +
+        public string Prompt => (kind == 3 ? "Приём крыс: чёрная — $10, серая — $15, крупная — $25\nE — сдать пойманных крыс" : Title + " — $" + Price + "\nE — купить 1 шт.") +
             (Time.unscaledTime < feedbackUntil ? "\n" + feedback : "");
         public void Configure(ShopManager manager, int product) { shop = manager; kind = product; }
         public bool TryUse(PrototypeInput player)
