@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -21,6 +22,9 @@ namespace HuntHappens.Animals
         private float idlePhase;
         private DeerSedation sedation;
         private Quaternion restRotation;
+        private Vector3[][] hoofPoints;
+        private readonly RaycastHit[] groundHits = new RaycastHit[32];
+        public Transform[] LegPivots => legs;
 
         public void Configure(Transform model, Transform head, Transform[] legPivots)
         { visual = model; headPivot = head; legs = legPivots; }
@@ -34,6 +38,7 @@ namespace HuntHappens.Animals
             if (headPivot != null) headRest = headPivot.localRotation;
             legRest = new Quaternion[legs.Length];
             for (int i = 0; i < legs.Length; i++) if (legs[i] != null) legRest[i] = legs[i].localRotation;
+            if (visual != null) CacheHooves();
             idlePhase = Random.value * 6.28f;
         }
 
@@ -60,9 +65,71 @@ namespace HuntHappens.Animals
                 float swing = Mathf.Sin(phase + offset) * Mathf.Lerp(walkSwing, runSwing, running) * moving;
                 legs[i].localRotation = legRest[i] * Quaternion.Euler(swing, 0, 0);
             }
+            GroundHooves();
             if (headPivot != null)
                 headPivot.localRotation = headRest * Quaternion.Euler(Mathf.Sin(idle * 0.6f) * 3f * (1 - moving),
                     Mathf.Sin(idle * 0.37f) * 14f * (1 - moving), 0);
+        }
+
+        // Cache only sole vertices, in bone space, rather than baking the entire skin every frame.
+        private void CacheHooves()
+        {
+            var points = new List<Vector3>[legs.Length];
+            for (int i = 0; i < legs.Length; i++) points[i] = new List<Vector3>();
+            foreach (var skin in visual.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                Mesh mesh = skin.sharedMesh;
+                if (mesh == null || !mesh.isReadable) continue;
+                Vector3[] vertices = mesh.vertices;
+                BoneWeight[] weights = mesh.boneWeights;
+                Transform[] bones = skin.bones;
+                Matrix4x4[] bindPoses = mesh.bindposes;
+                for (int v = 0; v < weights.Length; v++)
+                {
+                    BoneWeight weight = weights[v];
+                    if (weight.weight0 < 0.999f) continue;
+                    int leg = System.Array.IndexOf(legs, bones[weight.boneIndex0]);
+                    if (leg < 0) continue;
+                    points[leg].Add(bindPoses[weight.boneIndex0].MultiplyPoint3x4(vertices[v]));
+                }
+            }
+            hoofPoints = new Vector3[legs.Length][];
+            for (int i = 0; i < legs.Length; i++)
+            {
+                float bottom = float.PositiveInfinity;
+                foreach (Vector3 point in points[i]) bottom = Mathf.Min(bottom, point.y);
+                // Retain the sole's real outline, including toe and heel during rotation.
+                points[i].RemoveAll(p => p.y > bottom + 0.06f);
+                hoofPoints[i] = points[i].ToArray();
+            }
+        }
+
+        private void GroundHooves()
+        {
+            if (!agent.enabled || !agent.isOnNavMesh) return;
+            float lowest = float.PositiveInfinity;
+            for (int i = 0; i < legs.Length; i++)
+            {
+                if (legs[i] == null) continue;
+                Matrix4x4 matrix = legs[i].localToWorldMatrix;
+                foreach (Vector3 point in hoofPoints[i])
+                    lowest = Mathf.Min(lowest, matrix.MultiplyPoint3x4(point).y);
+            }
+            if (float.IsPositiveInfinity(lowest)) return;
+            int count = Physics.RaycastNonAlloc(transform.position + Vector3.up, Vector3.down,
+                groundHits, 2.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            float distance = float.PositiveInfinity;
+            float groundY = 0;
+            for (int i = 0; i < count; i++)
+            {
+                RaycastHit hit = groundHits[i];
+                if (hit.collider.transform.IsChildOf(transform) || hit.rigidbody != null || hit.normal.y < 0.5f) continue;
+                if (hit.distance >= distance) continue;
+                distance = hit.distance;
+                groundY = hit.point.y;
+            }
+            if (!float.IsPositiveInfinity(distance))
+                visual.position += Vector3.up * (groundY + 0.005f - lowest);
         }
 
         private void AnimateSedation()

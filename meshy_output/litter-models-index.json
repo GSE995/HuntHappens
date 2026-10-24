@@ -1,0 +1,65 @@
+{
+  "total_credits": 90,
+  "models": [
+    {
+      "name": "02-open-bag",
+      "resource": "image-to-3d",
+      "task_id": "01a16e61-ffe4-75ed-98e2-c6e169cfbf6d",
+      "project_dir": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174826_02-open-bag_01a16e61",
+      "model_fbx": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174826_02-open-bag_01a16e61/model.fbx",
+      "model_glb": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174826_02-open-bag_01a16e61/model.glb",
+      "preview": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174826_02-open-bag_01a16e61/thumbnail.png",
+      "consumed_credits": 15
+    },
+    {
+      "name": "03-bottle",
+      "resource": "image-to-3d",
+      "task_id": "01a16e62-0e41-77c1-a15d-a825a4e3f5cf",
+      "project_dir": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174828_03-bottle_01a16e62",
+      "model_fbx": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174828_03-bottle_01a16e62/model.fbx",
+      "model_glb": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174828_03-bottle_01a16e62/model.glb",
+      "preview": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174828_03-bottle_01a16e62/thumbnail.png",
+      "consumed_credits": 15
+    },
+    {
+      "name": "05-food-box",
+      "resource": "image-to-3d",
+      "task_id": "01a16e62-19e0-700a-a880-f3df227d819a",
+      "project_dir": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174830_05-food-box_01a16e62",
+      "model_fbx": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174830_05-food-box_01a16e62/model.fbx",
+      "model_glb": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174830_05-food-box_01a16e62/model.glb",
+      "preview": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174830_05-food-box_01a16e62/thumbnail.png",
+      "consumed_credits": 15
+    },
+    {
+      "name": "06-paper-cup",
+      "resource": "image-to-3d",
+      "task_id": "01a16e62-250f-754e-9720-326c03173fb2",
+      "project_dir": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174833_06-paper-cup_01a16e62",
+      "model_fbx": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174833_06-paper-cup_01a16e62/model.fbx",
+      "model_glb": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174833_06-paper-cup_01a16e62/model.glb",
+      "preview": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174833_06-paper-cup_01a16e62/thumbnail.png",
+      "consumed_credits": 15
+    },
+    {
+      "name": "07-wrapper",
+      "resource": "image-to-3d",
+      "task_id": "01a16e62-3179-7712-bd57-ac1d0fcfb567",
+      "project_dir": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174835_07-wrapper_01a16e62",
+      "model_fbx": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174835_07-wrapper_01a16e62/model.fbx",
+      "model_glb": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174835_07-wrapper_01a16e62/model.glb",
+      "preview": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174835_07-wrapper_01a16e62/thumbnail.png",
+      "consumed_credits": 15
+    },
+    {
+      "name": "08-bread",
+      "resource": "image-to-3d",
+      "task_id": "01a16e62-3d2f-76f5-9298-b10b497bc7c0",
+      "project_dir": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174837_08-bread_01a16e62",
+      "model_fbx": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174837_08-bread_01a16e62/model.fbx",
+      "model_glb": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174837_08-bread_01a16e62/model.glb",
+      "preview": "/Users/goryunov-se/Projects/HuntHappens/meshy_output/20261024_174837_08-bread_01a16e62/thumbnail.png",
+      "consumed_credits": 15
+    }
+  ]
+}

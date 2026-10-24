@@ -91,9 +91,10 @@ namespace HuntHappens.Editor
                     Check(holder.TryPickUp(item), "Pickup before stuck test");
                     var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     wall.name = "Temporary Play Check Wall";
-                    wall.transform.position = view.position + view.forward * 1.2f;
+                    wall.transform.position = view.position + view.forward * 1.7f;
                     wall.transform.localScale = new Vector3(4, 4, 0.3f);
-                    item.Body.position = view.position + view.forward * 0.6f;
+                    // Put the item beyond the wall: the closer carry target must not pull it through.
+                    item.Body.position = view.position + view.forward * 2.5f;
                     item.Body.linearVelocity = Vector3.zero;
                     Next();
                 }
@@ -117,12 +118,12 @@ namespace HuntHappens.Editor
 
         private static void PlaceAtTarget()
         {
-            item.Body.position = view.position + view.forward * 2;
+            item.Body.position = holder.HoldTarget;
             item.Body.linearVelocity = Vector3.zero;
             item.Body.angularVelocity = Vector3.zero;
         }
 
-        private static float TargetError() => Vector3.Distance(item.Body.worldCenterOfMass, view.position + view.forward * 2);
+        private static float TargetError() => Vector3.Distance(item.Body.worldCenterOfMass, holder.HoldTarget);
         private static void Next() { stage++; stageStart = Time.time; }
         private static void Check(bool condition, string message)
         {

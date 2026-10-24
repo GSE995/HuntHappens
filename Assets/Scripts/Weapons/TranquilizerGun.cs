@@ -13,6 +13,7 @@ namespace HuntHappens.Weapons
         [SerializeField] private Transform muzzle;
         [SerializeField] private GameObject flash;
         [SerializeField] private TranquilizerDart dartPrefab;
+        [SerializeField] private Vector3 viewOffset = new Vector3(0.06f, -0.10f, 0.12f);
         [SerializeField, Min(1)] private float dartSpeed = 38f;
         [SerializeField, Min(0.05f)] private float shotInterval = 0.7f;
         [SerializeField, Min(0.1f)] private float dartLifetime = 10f;
@@ -46,7 +47,12 @@ namespace HuntHappens.Weapons
             holder = GetComponent<ItemHolder>();
             interaction = GetComponent<PlayerInteraction>();
             look = GetComponent<FirstPersonLook>();
-            if (weaponVisual != null) { restPosition = weaponVisual.localPosition; restRotation = weaponVisual.localRotation; }
+            if (weaponVisual != null)
+            {
+                restPosition = weaponVisual.localPosition + viewOffset;
+                restRotation = weaponVisual.localRotation;
+                weaponVisual.localPosition = restPosition;
+            }
         }
 
         private void LateUpdate()
@@ -54,6 +60,7 @@ namespace HuntHappens.Weapons
             if (input.SelectTranquilizerPressed) SelectTool(true);
             if (input.SelectInteractionPressed) SelectTool(false);
             if (input.SelectTrapPressed) SelectTrapTool();
+            if (input.SelectCagePressed) SelectTool(false);
             if (input.ThrowPressed)
             {
                 if (TrapSelected) GetComponent<HuntHappens.Traps.TrapPlacement>()?.TryPlace();
@@ -92,6 +99,8 @@ namespace HuntHappens.Weapons
                 if (!hit.collider.transform.IsChildOf(transform) && hit.collider.GetComponentInParent<TranquilizerDart>() == null)
                 { origin = view.transform.position; break; }
             if ((target - origin).sqrMagnitude < 0.0001f) return false;
+            var supplies = GetComponent<HuntHappens.SmallGame.RatHunting>();
+            if (supplies != null && !supplies.UseDart()) return false;
             Vector3 direction = (target - origin).normalized;
             LastDart = Instantiate(dartPrefab, origin, Quaternion.LookRotation(direction));
             LastDart.Launch(transform, direction * dartSpeed, tranquilizerStrength, dartLifetime, SedationDurationMultiplier);

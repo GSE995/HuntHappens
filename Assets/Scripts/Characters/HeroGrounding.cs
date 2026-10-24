@@ -12,11 +12,13 @@ namespace HuntHappens.Characters
         private Matrix4x4[] bindposes;
         private Matrix4x4[] matrices;
         private Transform[] bones;
+        private CharacterController player;
         private readonly RaycastHit[] hits = new RaycastHit[16];
 
         private void Awake()
         {
             visual = GetComponentInChildren<Animator>().transform;
+            player = GetComponentInParent<CharacterController>();
             skin = GetComponentInChildren<SkinnedMeshRenderer>();
             vertices = skin.sharedMesh.vertices;
             weights = skin.sharedMesh.boneWeights;
@@ -46,10 +48,16 @@ namespace HuntHappens.Characters
 
         private void LateUpdate()
         {
+            if (player != null && !player.isGrounded)
+            {
+                Measure(out float airborneBottom, out _);
+                visual.position += Vector3.up * (player.transform.position.y - airborneBottom);
+                return;
+            }
             float floor = float.NegativeInfinity;
             int count = Physics.RaycastNonAlloc(transform.position + Vector3.up * 0.5f, Vector3.down, hits, 2f, ~0, QueryTriggerInteraction.Ignore);
             for (int i = 0; i < count; i++)
-                if (!hits[i].transform.IsChildOf(transform)) floor = Mathf.Max(floor, hits[i].point.y);
+                if (!hits[i].transform.IsChildOf(player != null ? player.transform : transform)) floor = Mathf.Max(floor, hits[i].point.y);
             if (float.IsNegativeInfinity(floor)) return;
             Measure(out float bottom, out _);
             visual.position += Vector3.up * (floor - bottom);

@@ -38,6 +38,7 @@ namespace HuntHappens.Editor
         private static GameObject wall;
         private static bool walked;
         private static int previousFrame;
+        private static PlayerBodyAnimation playerBody;
         static FirstPersonArmsChecks() => EditorApplication.playModeStateChanged += OnPlay;
         public static void RunBatch()
         {
@@ -70,6 +71,9 @@ namespace HuntHappens.Editor
                     animator = arms.GetComponent<FirstPersonArmsAnimator>();
                     motor = UnityEngine.Object.FindAnyObjectByType<FirstPersonMotor>();
                     controller = motor.GetComponent<CharacterController>();
+                    playerBody = motor.GetComponentInChildren<PlayerBodyAnimation>();
+                    Check(playerBody != null && playerBody.GetComponentsInChildren<UnityEngine.AI.NavMeshAgent>().Length == 0,
+                        "Hero body belongs to player without autonomous navigation");
                     view = arms.View; holder = arms.Holder; gun = arms.Gun; placement = arms.Placement;
                     shop = UnityEngine.Object.FindAnyObjectByType<ShopManager>();
                     motor.enabled = false;
@@ -88,6 +92,18 @@ namespace HuntHappens.Editor
                         "Idle breathing moves empty hands");
                     Check(VisibleHands(), "Both hands visible at startup");
                     Capture("Arms-Idle");
+                    var look = motor.GetComponent<FirstPersonLook>();
+                    look.ApplyLook(new Vector2(0, -10000));
+                    Check(Mathf.Abs(Mathf.DeltaAngle(0, view.transform.localEulerAngles.x) - 55f) < 0.01f,
+                        "Downward view stops at 55 degrees");
+                    look.ApplyLook(new Vector2(0, -10000));
+                    Check(Mathf.Abs(Mathf.DeltaAngle(0, view.transform.localEulerAngles.x) - 55f) < 0.01f,
+                        "Further mouse input cannot look through the body");
+                    Capture("Player-Body-LookDown");
+                    look.ApplyLook(new Vector2(0, 10000));
+                    Check(Mathf.Abs(Mathf.DeltaAngle(0, view.transform.localEulerAngles.x) + 85f) < 0.01f,
+                        "Upward view retains its original range");
+                    look.ApplyLook(new Vector2(0, -85f / 0.12f));
                     sampleHand = arms.LeftHand.localPosition;
                     Next();
                 }
@@ -95,12 +111,21 @@ namespace HuntHappens.Editor
                 {
                     controller.Move((motor.transform.forward * 4 + Vector3.down * 2) * Time.deltaTime);
                     walked |= animator.WalkSpeed > 1 && Vector3.Distance(sampleHand, arms.LeftHand.localPosition) > 0.003f;
-                    if (elapsed > 0.65f) { Check(walked, "Character velocity drives walking animation"); Next(); }
+                    if (elapsed > 0.65f)
+                    {
+                        Check(walked && playerBody.GetComponentInChildren<Animator>().speed > 0.1f, "Movement drives hands and body animation");
+                        Next();
+                    }
                 }
                 else if (stage == 3)
                 {
                     controller.Move(Vector3.up * (3 * Time.deltaTime));
-                    if (elapsed > 0.2f) { Check(animator.JumpOffset > 0.015f, "Ascent lifts hands"); Next(); }
+                    if (elapsed > 0.2f)
+                    {
+                        playerBody.GetComponent<HuntHappens.Characters.HeroGrounding>().Measure(out float feet, out _);
+                        Check(Mathf.Abs(feet - motor.transform.position.y) < 0.2f, "Body follows player during jump");
+                        Check(animator.JumpOffset > 0.015f, "Ascent lifts hands"); Next();
+                    }
                 }
                 else if (stage == 4)
                 {
@@ -133,10 +158,13 @@ namespace HuntHappens.Editor
                     Check(holder.TryPickUp(crate), "Existing crate pickup");
                     Next();
                 }
-                else if (stage == 7 && elapsed > 0.4f)
+                else if (stage == 7 && elapsed > 1f)
                 {
                     Check(arms.Mode == FirstPersonArms.VisualMode.Carry && !gun.WeaponVisual.gameObject.activeSelf && arms.LeftHand.localPosition.z > 0.65f,
                         "Carry takes priority over selected gun and extends hands");
+                    Vector3 carryPosition = view.transform.InverseTransformPoint(crate.Body.worldCenterOfMass);
+                    Check(carryPosition.z > 1.25f && carryPosition.z < 1.6f && carryPosition.y < -0.1f,
+                        "Carried crate leaves clearance for hands and stays below eye level");
                     Capture("Arms-Crate");
                     holder.Drop();
                     crate.Body.position = view.transform.position + view.transform.right * 4;
@@ -224,7 +252,11 @@ namespace HuntHappens.Editor
             }
             catch (Exception exception) { Debug.LogException(exception); Finish(1); }
         }
-        private static bool VisibleHands() => arms.LeftHand.GetComponentsInChildren<Renderer>().Any(r => r.enabled) && arms.RightHand.GetComponentsInChildren<Renderer>().Any(r => r.enabled);
+        private static bool VisibleHands()
+        {
+            var heroArms = arms.GetComponentInChildren<HeroFirstPersonArms>();
+            return heroArms != null && heroArms.GetComponentsInChildren<SkinnedMeshRenderer>().Any(r => r.enabled && r.sharedMesh == AssetDatabase.LoadAssetAtPath<Mesh>("Assets/Art/Hero/FirstPersonArms.asset"));
+        }
         private static void MovePlayer(Vector3 position)
         { controller.enabled = false; motor.transform.position = position; controller.enabled = true; }
         private static bool FindMovementSpot()

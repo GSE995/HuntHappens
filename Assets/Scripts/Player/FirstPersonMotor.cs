@@ -6,6 +6,7 @@ namespace HuntHappens.Player
     public sealed class FirstPersonMotor : MonoBehaviour
     {
         [SerializeField, Min(0f)] private float moveSpeed = 5f;
+        [SerializeField, Min(1f)] private float sprintMultiplier = 1.6f;
         [SerializeField, Min(0f)] private float jumpHeight = 1.2f;
         [SerializeField] private float gravity = -20f;
         private CharacterController controller;
@@ -30,7 +31,8 @@ namespace HuntHappens.Player
 
             verticalSpeed += gravity * Time.deltaTime;
             Vector2 movement = Vector2.ClampMagnitude(input.Move, 1f);
-            Vector3 velocity = (transform.right * movement.x + transform.forward * movement.y) * moveSpeed;
+            float speed = moveSpeed * (input.SprintHeld ? sprintMultiplier : 1f);
+            Vector3 velocity = (transform.right * movement.x + transform.forward * movement.y) * speed;
             velocity.y = verticalSpeed;
             CollisionFlags collision = controller.Move(velocity * Time.deltaTime);
             if ((collision & CollisionFlags.Above) != 0 && verticalSpeed > 0f) verticalSpeed = 0f;
