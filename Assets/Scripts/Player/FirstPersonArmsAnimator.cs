@@ -17,6 +17,7 @@ namespace HuntHappens.Player
         [SerializeField] private Pose empty = new Pose(new Vector3(-0.28f, -0.27f, 0.57f), new Vector3(0.28f, -0.27f, 0.57f), new Vector3(10, -12, -12), new Vector3(10, 12, 12));
         [SerializeField] private Pose carry = new Pose(new Vector3(-0.32f, -0.21f, 0.73f), new Vector3(0.32f, -0.21f, 0.73f), new Vector3(-18, 25, -15), new Vector3(-18, -25, 15));
         [SerializeField] private Pose trap = new Pose(new Vector3(-0.30f, -0.25f, 0.61f), new Vector3(0.29f, -0.29f, 0.56f), new Vector3(0, -10, -4), new Vector3(10, 15, 10));
+        [SerializeField] private Pose cage = new Pose(new Vector3(-0.16f, -0.27f, 0.68f), new Vector3(0.16f, -0.27f, 0.68f), new Vector3(-18, 25, -15), new Vector3(-18, -25, 15));
         [Header("Hand framing")]
         [SerializeField, Min(0)] private float restingHandLowering = 0.18f;
         [SerializeField, Min(0)] private float carryingHandLowering = 0.25f;
@@ -75,6 +76,7 @@ namespace HuntHappens.Player
             if (arms.Gun != null) arms.Gun.Fired += OnFired;
             if (arms.Holder != null) arms.Holder.Released += OnReleased;
             if (arms.Placement != null) arms.Placement.Placed += OnPlaced;
+            if (arms.Hunting != null) arms.Hunting.Placed += OnPlaced;
         }
         private void OnDisable()
         {
@@ -83,6 +85,7 @@ namespace HuntHappens.Player
             if (arms.Gun != null) arms.Gun.Fired -= OnFired;
             if (arms.Holder != null) arms.Holder.Released -= OnReleased;
             if (arms.Placement != null) arms.Placement.Placed -= OnPlaced;
+            if (arms.Hunting != null) arms.Hunting.Placed -= OnPlaced;
         }
         private void OnFired() { lastShot = Time.time; lastThrow = float.NegativeInfinity; }
         private void OnReleased(bool thrown) { if (thrown) lastThrow = Time.time; }
@@ -107,7 +110,7 @@ namespace HuntHappens.Player
             wasGrounded = grounded;
             Vector2 mouse = arms.Input != null ? Vector2.ClampMagnitude(arms.Input.Look, 20) : Vector2.zero;
             sway = Vector3.Lerp(sway, new Vector3(-mouse.x, -mouse.y, 0) * (mouseSway / 20), blend);
-            Pose pose = mode == FirstPersonArms.VisualMode.Carry ? carry : mode == FirstPersonArms.VisualMode.Trap ? trap : empty;
+            Pose pose = mode == FirstPersonArms.VisualMode.Carry ? carry : mode == FirstPersonArms.VisualMode.Trap ? trap : mode == FirstPersonArms.VisualMode.Cage ? cage : empty;
             Vector3 targetLeft = pose.leftPosition, targetRight = pose.rightPosition;
             Quaternion targetLeftRotation = Quaternion.Euler(pose.leftEuler), targetRightRotation = Quaternion.Euler(pose.rightEuler);
             bool weaponPose = mode == FirstPersonArms.VisualMode.Tranquilizer && arms.Gun.WeaponVisual != null;
@@ -126,6 +129,8 @@ namespace HuntHappens.Player
             float walking = Mathf.Clamp01(speed / 3);
             Vector3 leftWalk = new Vector3(Mathf.Sin(walkPhase) * 0.3f, Mathf.Sin(walkPhase), 0) * walkingAmount * walking;
             Vector3 rightWalk = new Vector3(-leftWalk.x, -leftWalk.y, 0);
+            bool cagePose = mode == FirstPersonArms.VisualMode.Cage;
+            if (cagePose) rightWalk = leftWalk;
             // The gun remains owned by its existing script; hands track its animated grip points.
             if (!weaponPose)
             {
@@ -136,6 +141,7 @@ namespace HuntHappens.Player
                 targetLeft += motion + leftWalk + Vector3.forward * (ThrowPulse * 0.13f);
                 targetRight += motion + rightWalk + Vector3.forward * (ThrowPulse * 0.13f);
                 targetLeft += new Vector3(0, -0.10f, 0.13f) * PlacementPulse;
+                if (cagePose) targetRight += new Vector3(0, -0.10f, 0.13f) * PlacementPulse;
             }
             float nearest = obstructionDistance;
             if (arms.View != null)
@@ -166,11 +172,22 @@ namespace HuntHappens.Player
             }
             leftRotation = Quaternion.Slerp(leftRotation, targetLeftRotation, blend);
             rightRotation = Quaternion.Slerp(rightRotation, targetRightRotation, blend);
-            miniatureBlend = Mathf.Lerp(miniatureBlend, mode == FirstPersonArms.VisualMode.Trap ? 1 : 0, blend);
+            miniatureBlend = Mathf.Lerp(miniatureBlend, mode == FirstPersonArms.VisualMode.Trap || mode == FirstPersonArms.VisualMode.Cage ? 1 : 0, blend);
             if (keepWristsAtBottom && !weaponPose && arms.View != null)
             {
-                KeepWristAtBottom(ref left);
-                KeepWristAtBottom(ref right);
+                if (cagePose)
+                {
+                    Vector3 center = (left + right) * 0.5f;
+                    Vector3 framed = center;
+                    KeepWristAtBottom(ref framed);
+                    left += framed - center;
+                    right += framed - center;
+                }
+                else
+                {
+                    KeepWristAtBottom(ref left);
+                    KeepWristAtBottom(ref right);
+                }
             }
             arms.Draw(left, leftRotation, right, rightRotation, mode != FirstPersonArms.VisualMode.Hidden && nearest > 0.25f, throwing ? 0 : miniatureBlend);
         }

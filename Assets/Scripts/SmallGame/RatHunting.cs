@@ -31,6 +31,7 @@ namespace HuntHappens.SmallGame
         public int Deployed { get; private set; }
         public int Available => Cages - Deployed;
         public bool Selected { get; private set; }
+        public event System.Action Placed;
         public string Hint { get; private set; } = "";
         public string Stock => "Клетки: " + Available + " | Хлеб: " + Bread + " | Крысы: " + (Rats - GreyRats - LargeRats) + " чёрн., " + GreyRats + " сер., " + LargeRats + " крупн." + " | Дротики: " + Darts;
         public void Reload()
@@ -156,7 +157,7 @@ namespace HuntHappens.SmallGame
         public RatCage TryPlace()
         {
             if (!Selected || input.GameplayBlocked || !Evaluate(out var point)) return null;
-            var cage = Instantiate(cagePrefab, point, Quaternion.identity); cage.Owner = this; Deployed++; return cage;
+            var cage = Instantiate(cagePrefab, point, Quaternion.identity); cage.Owner = this; Deployed++; Placed?.Invoke(); return cage;
         }
         private void LateUpdate()
         {

@@ -39,8 +39,8 @@ namespace HuntHappens.Player
         private void LateUpdate()
         {
             if(!arms || joints==null)return;
-            float target=arms.Mode==FirstPersonArms.VisualMode.Carry ? .72f : arms.Mode==FirstPersonArms.VisualMode.Tranquilizer ? (left ? .52f : .85f) : arms.Mode==FirstPersonArms.VisualMode.Trap ? .42f : .08f;
-            if(motion){target=Mathf.Lerp(target,.02f,motion.ThrowPulse);if(left)target=Mathf.Lerp(target,.08f,motion.PlacementPulse);}
+            float target=arms.Mode==FirstPersonArms.VisualMode.Carry ? .72f : arms.Mode==FirstPersonArms.VisualMode.Tranquilizer ? (left ? .52f : .85f) : arms.Mode==FirstPersonArms.VisualMode.Trap ? .42f : arms.Mode==FirstPersonArms.VisualMode.Cage ? .9f : .08f;
+            if(motion){target=Mathf.Lerp(target,.02f,motion.ThrowPulse);if(left && arms.Mode!=FirstPersonArms.VisualMode.Cage)target=Mathf.Lerp(target,.08f,motion.PlacementPulse);}
             curl=Mathf.Lerp(curl,target,1-Mathf.Exp(-16*Time.deltaTime));
             for(int i=0;i<joints.Length;i++)
             {
