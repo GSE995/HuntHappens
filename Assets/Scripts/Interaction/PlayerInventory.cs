@@ -35,8 +35,7 @@ namespace HuntHappens.Interaction
         public bool CanReceive => !HasUnassignedItem;
         public string Notice { get; private set; }
         private float noticeUntil;
-        public string Hint => Time.unscaledTime < noticeUntil ? Notice : Hand == null ? "1–4 — выбрать предмет" :
-            Hand.Title + (HasUnassignedItem ? " · в руках\n1–4 — в пустую ячейку | Q — выбросить" : "\n1–4 — выбрать / переместить | Q — выбросить");
+        public string Hint => Time.unscaledTime < noticeUntil ? Notice : "";
         private ItemHolder holder;
         private PrototypeInput input;
         private bool changing;
@@ -100,7 +99,7 @@ namespace HuntHappens.Interaction
         {
             Hand = new InventoryEntry { kind = InventoryKind.Physical, physical = item }; Save();
         }
-        private void Warn() { Notice = "Сначала уберите предмет в пустую ячейку или нажмите Q"; noticeUntil = Time.unscaledTime + 2; }
+        private void Warn() { Notice = "Руки заняты"; noticeUntil = Time.unscaledTime + 2; }
         public bool SelectSlot(int index)
         {
             if (index < 0 || index >= Capacity || input.GameplayBlocked) return false;

@@ -49,6 +49,25 @@ namespace HuntHappens.Animals
             previous?.Release(this);
         }
         public bool IsDelivered { get; private set; }
+        public void PlaceInEnclosure(Vector3 position, Quaternion rotation)
+        {
+            GetComponent<HuntHappens.Interaction.PickupItem>().Holder?.Drop();
+            IsDelivered = true;
+            deliveryReservation = null;
+            currentState = SedationState.Awake;
+            ai.enabled = false;
+            agent.enabled = false;
+            physicsBody.enabled = false;
+            var body = GetComponent<Rigidbody>();
+            if (!body.isKinematic) body.linearVelocity = body.angularVelocity = Vector3.zero;
+            body.collisionDetectionMode = CollisionDetectionMode.Discrete;
+            body.isKinematic = true;
+            body.useGravity = false;
+            GetComponent<HuntHappens.Interaction.PickupItem>().enabled = false;
+            foreach (var collider in GetComponentsInChildren<Collider>()) collider.enabled = false;
+            transform.SetPositionAndRotation(position, rotation);
+            if (sleepIndicator != null) sleepIndicator.gameObject.SetActive(false);
+        }
         public bool DeliveryReserved => deliveryReservation != null && deliveryReservation.isActiveAndEnabled;
         public void ReserveForDelivery(MonoBehaviour owner) { if (deliveryReservation == null || deliveryReservation == owner) deliveryReservation = owner; }
         public void ReleaseDeliveryReservation(MonoBehaviour owner) { if (deliveryReservation == owner) deliveryReservation = null; }
@@ -78,7 +97,7 @@ namespace HuntHappens.Animals
 
         public bool ApplyDose(float strength, float durationMultiplier = 1)
         {
-            if (!isActiveAndEnabled || strength <= 0 || currentState == SedationState.Recovering || currentState == SedationState.Trapped) return false;
+            if (IsDelivered || !isActiveAndEnabled || strength <= 0 || currentState == SedationState.Recovering || currentState == SedationState.Trapped) return false;
             if (currentState == SedationState.Unconscious)
             { elapsed = Mathf.Max(0, elapsed - strength * 2f); return true; }
             if (currentState == SedationState.Sedated)

@@ -8,6 +8,7 @@ namespace HuntHappens.SmallGame
         public Transform visual;
         public bool isGrey;
         public bool isAggressive;
+        [Min(0)] public float territoryRadius;
         private Vector3 normalVisualScale;
         private Quaternion normalVisualRotation;
         private float fallAsleepAt, wakeAt, sleepPose;
@@ -221,6 +222,11 @@ namespace HuntHappens.SmallGame
             }
         }
         private void Move(Vector3 point, float speed)
-        { if (NavMesh.SamplePosition(point, out var hit, 2, NavMesh.AllAreas)) { agent.speed = speed; agent.SetDestination(hit.position); } }
+        {
+            if (territoryRadius > 0) point = home + Vector3.ClampMagnitude(point - home, territoryRadius);
+            if (NavMesh.SamplePosition(point, out var hit, 2, NavMesh.AllAreas) &&
+                (territoryRadius <= 0 || Vector3.Distance(hit.position, home) <= territoryRadius + 0.5f))
+            { agent.speed = speed; agent.SetDestination(hit.position); }
+        }
     }
 }

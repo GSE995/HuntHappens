@@ -23,6 +23,7 @@ namespace HuntHappens.Interaction
         }
         public Rigidbody Body => GetComponent<Rigidbody>();
         public ItemHolder Holder { get; private set; }
+        public ItemHolder LastHolder { get; private set; }
         public float LastReleasedTime { get; private set; } = float.NegativeInfinity;
 
         public bool CanPickUp(float maximumMass)
@@ -41,6 +42,7 @@ namespace HuntHappens.Interaction
             if (holder == null || !CanPickUp(maximumMass)) return false;
             GetComponent<HuntHappens.Animals.DeerSedation>()?.ReleaseTrapForCarry();
             Holder = holder;
+            LastHolder = holder;
             return true;
         }
 

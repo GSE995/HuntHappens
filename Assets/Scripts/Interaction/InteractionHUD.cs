@@ -118,7 +118,8 @@ namespace HuntHappens.Interaction
             crosshair.SetActive(visible && !inventoryOpen);
             float flash = health != null ? Mathf.Clamp01(1f - (Time.time - health.LastHitAt) / 0.65f) : 0;
             damageFlash.color = new Color(0.85f, 0.02f, 0.02f, 0.32f * flash * flash);
-            prompt.text = !visible || inventoryOpen ? "" : interaction.IsHolding ? "1–4 — в пустую ячейку | Q — отпустить | ЛКМ — бросить" :
+            prompt.text = !visible || inventoryOpen || interaction.IsHolding ? "" :
+                interaction.FarmerTarget != null ? "E — Поговорить с фермером" :
                 interaction.InventoryTarget != null ? interaction.InventoryTarget.Prompt :
                 interaction.ProductTarget != null ? interaction.ProductTarget.Prompt :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :

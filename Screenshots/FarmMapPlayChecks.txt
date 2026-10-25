@@ -1,0 +1,37 @@
+PASSED
+PASS Player spawns in courtyard
+PASS Five routes complete on baked NavMesh
+PASS Shop walking path available
+PASS Play Mode advances frames
+PASS CharacterController walks from start to shop: (2.20, 0.08, -29.02)
+PASS Existing shop opens at new counter
+PASS Existing contract upgrade can be purchased
+PASS Rats move around litter
+PASS Deer move in forest
+PASS No rats in farm courtyard
+PASS Existing sedation accepts dart dose
+PASS Player picks up sleeping deer through ItemHolder
+PASS Reception automatically accepts carried deer
+PASS One immediate payment at upgraded contract price
+PASS Carry and inventory state released
+PASS Accepted deer cannot be caught again
+PASS Delivered deer is visible inside enclosure
+PASS Repeat delivery cannot pay twice
+PASS Wallet and accepted count saved in existing snapshot
+PASS Delivery notice visible in HUD
+PASS HUD balance updated
+PASS Wild deer inside reception rejected
+PASS Unclaimed sleeping deer rejected
+PASS Player can pick up next deer
+PASS Released owned deer with multiple colliders pays exactly once
+PASS Non-deer candidates rejected
+PASS Re-entering reception gives no duplicate reward
+PASS Wild replacements spawned successfully
+PASS Replacement deer spawn on forest clearings
+PASS Real player save unchanged by checks
+
+RESTORE
+PASS Wallet restored after new Play session
+PASS Two accepted deer restored inside pen
+PASS Restored deer remain uncatchable
+PASS Real save unchanged after restore test

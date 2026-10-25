@@ -31,6 +31,7 @@ namespace HuntHappens.Shop
             public CarriedRat[] carriedRats = new CarriedRat[0];
             public int version = 1;
             public int balance;
+            public int acceptedDeer;
             public int[] levels = new int[4];
         }
         public static Data Load()

@@ -18,6 +18,7 @@ namespace HuntHappens.Interaction
         [SerializeField] private HuntHappens.Shop.ShopManager shop;
         public HuntHappens.Shop.ShopInteractable ShopTarget { get; private set; }
         public bool GameplayBlocked => input != null && input.GameplayBlocked;
+        public HuntHappens.Characters.FarmerDialogue FarmerTarget { get; private set; }
         public void ConfigureShop(HuntHappens.Shop.ShopManager value) => shop = value;
         public bool TryOpenShop()
         {
@@ -70,6 +71,7 @@ namespace HuntHappens.Interaction
             DeliveryTarget = null;
             TrapTarget = null;
             ShopTarget = null;
+            FarmerTarget = null;
             if (shop != null && shop.IsOpen)
             {
                 if (input.MenuClosePressed) { LastHandledFrame = Time.frameCount; shop.Close(); }
@@ -108,6 +110,7 @@ namespace HuntHappens.Interaction
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 if (hit.distance <= interactionDistance)
                 {
+                    FarmerTarget = hit.collider.GetComponentInParent<HuntHappens.Characters.FarmerDialogue>();
                     InventoryTarget = hit.collider.GetComponentInParent<WorldInventoryItem>();
                     CageTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatCage>();
                     BreadTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.BreadBasket>();
@@ -120,7 +123,13 @@ namespace HuntHappens.Interaction
                 if (hit.distance <= interactionDistance && item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
                 break;
             }
-            if (input.InteractPressed && InventoryTarget != null)
+            if (input.InteractPressed && FarmerTarget != null)
+            {
+                var hud = GetComponentInChildren<InteractionHUD>();
+                if (hud == null) hud = Object.FindAnyObjectByType<InteractionHUD>();
+                if (FarmerTarget.TryOpen(input, hud != null ? hud.ThemeFont : null)) LastHandledFrame = Time.frameCount;
+            }
+            else if (input.InteractPressed && InventoryTarget != null)
             { LastHandledFrame = Time.frameCount; InventoryTarget.Take(GetComponent<PlayerInventory>()); }
             else if (input.InteractPressed && RatTarget != null)
             { LastHandledFrame = Time.frameCount; GetComponent<HuntHappens.SmallGame.RatHunting>()?.TryCollectSleepingRat(RatTarget); }
@@ -142,6 +151,7 @@ namespace HuntHappens.Interaction
 
         private void OnDisable()
         {
+            FarmerTarget = null;
             ProductTarget = null;
             CageTarget = null; BreadTarget = null;
             RatTarget = null;

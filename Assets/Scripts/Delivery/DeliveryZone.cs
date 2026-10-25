@@ -12,6 +12,21 @@ namespace HuntHappens.Delivery
         [SerializeField, Min(0)] private float maximumSpeed = 0.6f;
         [SerializeField, Min(0)] private float maximumAngularSpeed = 1f;
         [SerializeField, Range(0, 0.1f)] private float containmentTolerance = 0.04f;
+        [Header("Automatic farm reception (off for truck beds)")]
+        [SerializeField] private bool automaticReception;
+        [SerializeField] private ItemHolder player;
+        [SerializeField] private DeliveryManager manager;
+        [SerializeField] private DeerEnclosure enclosure;
+        public bool AutomaticReception => automaticReception;
+        public DeerEnclosure Enclosure => enclosure;
+        public void ConfigureReception(ItemHolder owner, DeliveryManager wallet, DeerEnclosure pen)
+        { automaticReception = true; player = owner; manager = wallet; enclosure = pen; }
+        private bool Inside(Vector3 point)
+        {
+            Vector3 p = transform.InverseTransformPoint(point) - Volume.center;
+            Vector3 h = Volume.size * 0.5f;
+            return Mathf.Abs(p.x) <= h.x && Mathf.Abs(p.y) <= h.y && Mathf.Abs(p.z) <= h.z;
+        }
         private BoxCollider volume;
         private readonly HashSet<DeerSedation> touching = new HashSet<DeerSedation>();
         private readonly HashSet<DeerSedation> current = new HashSet<DeerSedation>();
@@ -37,6 +52,16 @@ namespace HuntHappens.Delivery
 
         private void FixedUpdate()
         {
+            if (automaticReception)
+            {
+                if (manager == null || player == null) return;
+                // Carried bodies can lag behind the player's collider at the gate.
+                if (Inside(player.transform.position) && player.HeldItem != null)
+                    manager.TryDeliver(player.HeldItem.GetComponent<DeerSedation>(), this);
+                foreach (var deer in FindObjectsByType<DeerSedation>())
+                    if (IsReady(deer)) manager.TryDeliver(deer, this);
+                return;
+            }
             current.Clear();
             // Reconcile trigger membership: collider swaps, disable/destruction and multiple colliders
             // must not leave stale candidates or accidentally remove a still-overlapping animal.
@@ -97,6 +122,15 @@ namespace HuntHappens.Delivery
 
         public bool IsReady(DeerSedation deer)
         {
+            if (automaticReception)
+            {
+                if (!isActiveAndEnabled || player == null || deer == null || !deer.isActiveAndEnabled ||
+                    deer.IsDelivered || deer.State != DeerSedation.SedationState.Unconscious) return false;
+                var pickup = deer.GetComponent<PickupItem>();
+                return pickup != null && pickup.LastHolder == player &&
+                    (pickup.Holder == null || pickup.Holder == player) &&
+                    (Inside(deer.transform.position) || (pickup.Holder == player && Inside(player.transform.position)));
+            }
             if (!Eligible(deer) || !settledSince.TryGetValue(deer, out float since)) return false;
             Rigidbody body = deer.GetComponent<Rigidbody>();
             return Time.time - deer.GetComponent<PickupItem>().LastReleasedTime >= settleDuration &&

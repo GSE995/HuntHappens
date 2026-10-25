@@ -13,6 +13,7 @@ namespace HuntHappens.Delivery
         [SerializeField, Min(1)] private int maximumPopulation = 3;
         [SerializeField] private Vector3 spawnCenter;
         [SerializeField, Min(1)] private float spawnRadius = 38f;
+        [SerializeField] private Transform[] clearingCenters;
         [SerializeField, Min(1)] private float minimumPlayerDistance = 20f;
         [SerializeField, Min(1)] private float minimumAnimalSpacing = 6f;
         [SerializeField, Min(0.1f)] private float spawnDelay = 3f;
@@ -64,7 +65,9 @@ namespace HuntHappens.Delivery
             for (int attempt = 0; attempt < attemptsPerRetry; attempt++)
             {
                 Vector2 circle = Random.insideUnitCircle * spawnRadius;
-                Vector3 candidate = spawnCenter + new Vector3(circle.x, 0, circle.y);
+                Vector3 center = clearingCenters != null && clearingCenters.Length > 0
+                    ? clearingCenters[Random.Range(0, clearingCenters.Length)].position : spawnCenter;
+                Vector3 candidate = center + new Vector3(circle.x, 0, circle.y);
                 if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, filter) ||
                     Vector3.Distance(hit.position, player.position) < minimumPlayerDistance) continue;
                 bool nearAnimal = false;

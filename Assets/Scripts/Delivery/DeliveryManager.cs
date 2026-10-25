@@ -32,17 +32,19 @@ namespace HuntHappens.Delivery
 
         public bool TryDeliver(DeerSedation deer, DeliveryZone zone)
         {
-            if (!isActiveAndEnabled || zone == null || !zone.IsReady(deer) || !deer.TryMarkDelivered()) return false;
+            if (!isActiveAndEnabled || zone == null || !zone.IsReady(deer)) return false;
+            if (zone.AutomaticReception) deer.GetComponent<HuntHappens.Interaction.PickupItem>().Holder?.Drop();
+            if (!deer.TryMarkDelivered()) return false;
             // Claim on the animal before paying: even another zone/manager cannot pay for it twice.
             Balance = (int)System.Math.Min(int.MaxValue, (long)Balance + RewardPerDeer);
             DeliveredCount++;
             if (notificationFrame != Time.frameCount) Notification = "";
-            Notification += (Notification.Length == 0 ? "" : "\n") + "Олень доставлен! +$" + RewardPerDeer;
+            Notification += (Notification.Length == 0 ? "" : "\n") + "Олень сдан: +" + RewardPerDeer;
             notificationFrame = Time.frameCount;
             LastRewardTime = Time.time;
+            if (zone.Enclosure != null) zone.Enclosure.Accept(deer);
+            else { deer.gameObject.SetActive(false); Destroy(deer.gameObject); }
             BalanceChanged?.Invoke();
-            deer.gameObject.SetActive(false);
-            Destroy(deer.gameObject);
             if (spawner != null) spawner.RequestReplacement();
             return true;
         }

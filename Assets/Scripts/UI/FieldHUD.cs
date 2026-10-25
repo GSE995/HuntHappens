@@ -48,13 +48,12 @@ namespace HuntHappens.UI
                 Label("Key",slots[i].transform,new Vector2(0,-65),new Vector2(40,32),29,(i+1).ToString());
             }
             selectedName=Label("Selected Tool",root,new Vector2(0,177),new Vector2(850,75),26,"");Anchor(selectedName.rectTransform,new Vector2(0.5f,0));
-            var hint=Label("Inventory Hint",root,new Vector2(-150,40),new Vector2(260,38),28,"TAB  ·  Рюкзак");Anchor(hint.rectTransform,new Vector2(1,0));
             var window=Panel("Inventory",root,new Vector2(0,50),new Vector2(1100,640));inventory=window.gameObject;window.color=new Color(0.055f,0.065f,0.035f,0.92f);
             Label("Title",window.transform,new Vector2(-330,265),new Vector2(370,65),50,"РЮКЗАК");
             var closeRect=Rect("Close",window.transform,new Vector2(360,265),new Vector2(310,50));
             var closeImage=closeRect.gameObject.AddComponent<UnityEngine.UI.Image>();closeImage.color=new Color(0,0,0,0.01f);
             var close=closeRect.gameObject.AddComponent<UnityEngine.UI.Button>();close.targetGraphic=closeImage;close.onClick.AddListener(()=>SetOpen(false));
-            Label("Caption",closeRect,Vector2.zero,new Vector2(300,50),29,"TAB / Esc  ·  Закрыть");
+            Label("Caption",closeRect,Vector2.zero,new Vector2(300,50),29,"Закрыть");
             Label("Supplies",window.transform,new Vector2(-350,200),new Vector2(330,40),34,"ПРИПАСЫ").color=new Color(0.73f,0.8f,0.55f);
             int[] icons={4,5,3,2};
             for(int i=0;i<4;i++)
@@ -95,7 +94,7 @@ namespace HuntHappens.UI
                 slots[i].ink = i == selected ? Orange : new Color(0.9f,0.86f,0.69f,0.55f);
                 slots[i].thickness = i == selected ? 3 : 1.5f; slots[i].SetVerticesDirty();
             }
-            selectedName.text = bag.Hand != null ? bag.Hand.Title + (bag.HasUnassignedItem ? " · в руках" : "") + "\n1–4 — в пустую ячейку · Q — выбросить" : "";
+            selectedName.text = bag.Hand != null ? bag.Hand.Title + (bag.HasUnassignedItem ? " · в руках" : "") : "";
             int availableTraps = bag.Count(InventoryKind.Trap);
             int current=health != null?health.Current:100;
             healthFill.rectTransform.sizeDelta=new Vector2(402*Mathf.Clamp01(current/100f),27);

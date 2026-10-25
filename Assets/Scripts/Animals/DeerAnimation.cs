@@ -51,7 +51,7 @@ namespace HuntHappens.Animals
                 return;
             }
             visual.localRotation = restRotation;
-            speed = Mathf.Lerp(speed, agent.velocity.magnitude, 1f - Mathf.Exp(-blendSpeed * Time.deltaTime));
+            speed = Mathf.Lerp(speed, agent.enabled && agent.isOnNavMesh ? agent.velocity.magnitude : 0, 1f - Mathf.Exp(-blendSpeed * Time.deltaTime));
             float moving = Mathf.Clamp01(speed / 0.7f);
             float running = Mathf.InverseLerp(2f, 6f, speed);
             phase += speed * Time.deltaTime * Mathf.Lerp(5f, 4f, running);
