@@ -3,6 +3,7 @@ namespace HuntHappens.Player
 {
     public sealed class PlayerHealth : MonoBehaviour
     {
+        public int Maximum => 100;
         public int Current { get; private set; } = 100;
         public float LastHitAt { get; private set; } = -100;
         private Vector3 spawn;
@@ -20,7 +21,8 @@ namespace HuntHappens.Player
                 var controller = GetComponent<CharacterController>();
                 bool enabledBefore = controller.enabled; controller.enabled = false;
                 transform.position = spawn; controller.enabled = enabledBefore;
-                Current = 100; immuneUntil = Time.time + 3; returnedUntil = Time.time + 4;
+                GetComponent<FirstPersonMotor>()?.ApplyImpulse(Vector3.zero);
+                Current = Maximum; immuneUntil = Time.time + 3; returnedUntil = Time.time + 4;
             }
             return true;
         }

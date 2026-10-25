@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HuntHappens.Interaction
 {
-    public enum InventoryKind { None, Gun, Trap, Cage, Bread, Darts, Physical }
+    public enum InventoryKind { None, Gun, Trap, Cage, Bread, Darts, Physical, Chocolate }
 
     [Serializable]
     public sealed class InventoryEntry
@@ -15,7 +15,7 @@ namespace HuntHappens.Interaction
         [NonSerialized] public PickupItem physical;
         public string Title => kind == InventoryKind.Gun ? "Транквилизатор" : kind == InventoryKind.Trap ? "Ловушка" :
             kind == InventoryKind.Cage ? "Клетка для крыс" : kind == InventoryKind.Bread ? "Хлеб" :
-            kind == InventoryKind.Darts ? "Дротики" : physical != null ? physical.name : "Предмет";
+            kind == InventoryKind.Chocolate ? "Шоколад" : kind == InventoryKind.Darts ? "Дротики" : physical != null ? physical.name : "Предмет";
         public int Icon => kind == InventoryKind.Gun ? 0 : kind == InventoryKind.Trap ? 2 : kind == InventoryKind.Cage ? 3 :
             kind == InventoryKind.Bread ? 4 : kind == InventoryKind.Darts ? 5 : 1;
     }
@@ -78,7 +78,7 @@ namespace HuntHappens.Interaction
             }
             loaded = true; Save();
         }
-        private static bool Valid(InventoryEntry entry) => entry != null && entry.quantity > 0 && entry.kind >= InventoryKind.Gun && entry.kind < InventoryKind.Physical && entry.kind != InventoryKind.Darts;
+        private static bool Valid(InventoryEntry entry) => entry != null && entry.quantity > 0 && entry.kind >= InventoryKind.Gun && (entry.kind < InventoryKind.Physical || entry.kind == InventoryKind.Chocolate) && entry.kind != InventoryKind.Darts;
         public void Save()
         {
             if (!loaded) return;
@@ -150,6 +150,14 @@ namespace HuntHappens.Interaction
             int slot = HandSlot; if (slot >= 0) slots[slot] = null;
             Hand = null; Save();
         }
+        public WorldInventoryItem ThrowChocolate()
+        {
+            if (input.GameplayBlocked || !IsEquipped(InventoryKind.Chocolate)) return null;
+            var camera = GetComponentInChildren<Camera>();
+            var item = WorldInventoryItem.Spawn(this, new InventoryEntry { kind = InventoryKind.Chocolate }, camera.transform.position + camera.transform.forward * .75f, camera.transform.rotation);
+            holder.ThrowBody(item.GetComponent<Rigidbody>());
+            Consume(InventoryKind.Chocolate); return item;
+        }
         public bool DropHand()
         {
             if (Hand == null || input.GameplayBlocked) return false;
@@ -191,7 +199,8 @@ namespace HuntHappens.Interaction
         {
             if (!input.GameplayBlocked)
             {
-                if (input.DropPressed) DropHand();
+                if (input.ThrowPressed && IsEquipped(InventoryKind.Chocolate)) ThrowChocolate();
+                else if (input.DropPressed) DropHand();
                 else if (input.SlotPressed >= 0) SelectSlot(input.SlotPressed);
             }
             if (visualEntry != Hand)

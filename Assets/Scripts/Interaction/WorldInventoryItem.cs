@@ -18,6 +18,11 @@ namespace HuntHappens.Interaction
         }
         public InventoryEntry Entry { get; private set; }
         public string Prompt => "E — поднять: " + Entry.Title;
+        public void ConsumeOne()
+        {
+            if (Entry == null) return;
+            if (--Entry.quantity <= 0) { Entry = null; gameObject.SetActive(false); Destroy(gameObject); }
+        }
         public bool Take(PlayerInventory inventory)
         {
             if (Entry == null || inventory == null || !inventory.Receive(Entry)) return false;
@@ -50,8 +55,9 @@ namespace HuntHappens.Interaction
                 }
             if (root.transform.childCount == 0)
             {
-                var visual = GameObject.CreatePrimitive(entry.kind == InventoryKind.Bread ? PrimitiveType.Cube : PrimitiveType.Capsule);
+                var visual = GameObject.CreatePrimitive(entry.kind == InventoryKind.Bread || entry.kind == InventoryKind.Chocolate ? PrimitiveType.Cube : PrimitiveType.Capsule);
                 visual.transform.SetParent(root.transform, false); visual.transform.localScale = new Vector3(0.25f, 0.12f, 0.18f);
+                if (entry.kind == InventoryKind.Chocolate) visual.GetComponent<Renderer>().material.color = new Color(.23f, .09f, .035f);
                 Object.Destroy(visual.GetComponent<Collider>());
             }
             var bounds = new Bounds(Vector3.zero, Vector3.one * 0.1f);

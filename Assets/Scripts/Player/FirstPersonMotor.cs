@@ -13,6 +13,9 @@ namespace HuntHappens.Player
         private PrototypeInput input;
         private FirstPersonLook look;
         private float verticalSpeed;
+        private Vector3 impulse;
+        public Vector3 ExternalVelocity => impulse + Vector3.up * verticalSpeed;
+        public void ApplyImpulse(Vector3 value) { impulse = Vector3.ProjectOnPlane(value, Vector3.up); verticalSpeed = value.y; }
 
         private void Awake()
         {
@@ -34,7 +37,8 @@ namespace HuntHappens.Player
             float speed = moveSpeed * (input.SprintHeld ? sprintMultiplier : 1f);
             Vector3 velocity = (transform.right * movement.x + transform.forward * movement.y) * speed;
             velocity.y = verticalSpeed;
-            CollisionFlags collision = controller.Move(velocity * Time.deltaTime);
+            CollisionFlags collision = controller.Move((velocity + impulse) * Time.deltaTime);
+            impulse = Vector3.MoveTowards(impulse, Vector3.zero, 14 * Time.deltaTime);
             if ((collision & CollisionFlags.Above) != 0 && verticalSpeed > 0f) verticalSpeed = 0f;
         }
     }

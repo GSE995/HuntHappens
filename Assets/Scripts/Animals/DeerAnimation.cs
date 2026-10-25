@@ -67,7 +67,7 @@ namespace HuntHappens.Animals
             }
             GroundHooves();
             if (headPivot != null)
-                headPivot.localRotation = headRest * Quaternion.Euler(Mathf.Sin(idle * 0.6f) * 3f * (1 - moving),
+                headPivot.localRotation = headRest * Quaternion.Euler((GetComponent<DeerLeader>()?.LowerHead == true ? 32f : Mathf.Sin(idle * 0.6f) * 3f * (1 - moving)),
                     Mathf.Sin(idle * 0.37f) * 14f * (1 - moving), 0);
         }
 

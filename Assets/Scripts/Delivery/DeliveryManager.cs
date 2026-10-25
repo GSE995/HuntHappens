@@ -9,6 +9,25 @@ namespace HuntHappens.Delivery
         [SerializeField, Min(1)] private int rewardPerDeer = 100;
         [SerializeField, Min(1)] private int goal = 3;
         [SerializeField] private DeerSpawner spawner;
+        [SerializeField, Min(0)] private int startingAdvance = 100;
+        private readonly System.Collections.Generic.HashSet<string> roster = new System.Collections.Generic.HashSet<string>();
+        private readonly System.Collections.Generic.HashSet<string> returned = new System.Collections.Generic.HashSet<string>();
+        private void Start()
+        {
+            var zones = FindObjectsByType<DeerCaptureZone>();
+            if (zones.Length == 0) return;
+            foreach (var zone in zones) for (int i = 0; i < zone.Count; i++) roster.Add(zone.AnimalId(i));
+            goal = roster.Count;
+            var data = HuntHappens.Shop.ShopProgress.Load();
+            foreach (string id in data.returnedDeerIds ?? new string[0]) if (roster.Contains(id)) returned.Add(id);
+            DeliveredCount = returned.Count;
+            if (!data.deerAdvanceGranted)
+            {
+                data.deerAdvanceGranted = true; data.balance += startingAdvance;
+                PlayerPrefs.SetString(HuntHappens.Shop.ShopProgress.Key, JsonUtility.ToJson(data));
+                PlayerPrefs.Save(); RestoreBalance(data.balance);
+            }
+        }
         public int Balance { get; private set; }
         public event System.Action BalanceChanged;
         private int upgradedReward;
@@ -34,7 +53,15 @@ namespace HuntHappens.Delivery
         {
             if (!isActiveAndEnabled || zone == null || !zone.IsReady(deer)) return false;
             if (zone.AutomaticReception) deer.GetComponent<HuntHappens.Interaction.PickupItem>().Holder?.Drop();
+            if (roster.Count > 0 && (string.IsNullOrEmpty(deer.QuestId) || !roster.Contains(deer.QuestId) || returned.Contains(deer.QuestId))) return false;
             if (!deer.TryMarkDelivered()) return false;
+            if (roster.Count > 0)
+            {
+                returned.Add(deer.QuestId);
+                var data = HuntHappens.Shop.ShopProgress.Load();
+                data.returnedDeerIds = new System.Collections.Generic.List<string>(returned).ToArray();
+                PlayerPrefs.SetString(HuntHappens.Shop.ShopProgress.Key, JsonUtility.ToJson(data));
+            }
             // Claim on the animal before paying: even another zone/manager cannot pay for it twice.
             Balance = (int)System.Math.Min(int.MaxValue, (long)Balance + RewardPerDeer);
             DeliveredCount++;
@@ -45,7 +72,7 @@ namespace HuntHappens.Delivery
             if (zone.Enclosure != null) zone.Enclosure.Accept(deer);
             else { deer.gameObject.SetActive(false); Destroy(deer.gameObject); }
             BalanceChanged?.Invoke();
-            if (spawner != null) spawner.RequestReplacement();
+            if (spawner != null && roster.Count == 0) spawner.RequestReplacement();
             return true;
         }
     }

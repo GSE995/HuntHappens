@@ -32,6 +32,8 @@ namespace HuntHappens.Shop
             public int version = 1;
             public int balance;
             public int acceptedDeer;
+            public string[] returnedDeerIds = new string[0];
+            public bool deerAdvanceGranted;
             public int[] levels = new int[4];
         }
         public static Data Load()

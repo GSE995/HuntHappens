@@ -29,6 +29,7 @@ namespace HuntHappens.Animals
         {
             if (trap == null || !isActiveAndEnabled || IsDelivered || currentState != SedationState.Awake || physicsBody.IsHeld) return false;
             Trap = trap;
+            foreach (var leader in FindObjectsByType<DeerLeader>()) leader.NoticeAttack(this);
             beforeTrapConstraints = physicsBody.Body.constraints;
             physicsBody.FallAsleep();
             physicsBody.Body.constraints = RigidbodyConstraints.FreezeAll;
@@ -48,6 +49,7 @@ namespace HuntHappens.Animals
             Trap = null;
             previous?.Release(this);
         }
+        public string QuestId { get; set; }
         public bool IsDelivered { get; private set; }
         public void PlaceInEnclosure(Vector3 position, Quaternion rotation)
         {
@@ -102,6 +104,7 @@ namespace HuntHappens.Animals
             { elapsed = Mathf.Max(0, elapsed - strength * 2f); return true; }
             if (currentState == SedationState.Sedated)
             { elapsed = Mathf.Min(CurrentSedationDuration - 0.1f, elapsed + strength * 0.5f); return true; }
+            foreach (var leader in FindObjectsByType<DeerLeader>()) leader.NoticeAttack(this);
             dose += strength;
             if (dose < requiredDose) return true;
             speedBeforeHit = agent.enabled && agent.isOnNavMesh ? agent.speed : 0;

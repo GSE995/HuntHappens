@@ -14,6 +14,7 @@ namespace HuntHappens.Delivery
         private void Start()
         {
             accepted = Mathf.Max(0, ShopProgress.Load().acceptedDeer);
+            if (FindAnyObjectByType<DeerCaptureZone>() != null) { accepted = (ShopProgress.Load().returnedDeerIds ?? new string[0]).Length; return; }
             if (displayPrefab == null || restingPlaces == null) return;
             for (int i = 0; i < Mathf.Min(accepted, restingPlaces.Length); i++)
                 Place(Instantiate(displayPrefab), i);
@@ -28,6 +29,7 @@ namespace HuntHappens.Delivery
             PlayerPrefs.SetString(ShopProgress.Key, JsonUtility.ToJson(data));
             if (successSound != null) AudioSource.PlayClipAtPoint(successSound, transform.position);
         }
+        public void RestoreAnimal(DeerSedation deer, int index) => Place(deer, index);
         private void Place(DeerSedation deer, int index)
         {
             if (restingPlaces == null || index >= restingPlaces.Length)

@@ -99,13 +99,13 @@ namespace HuntHappens.SmallGame
         public bool Buy(int kind)
         {
             if (shop == null || !shop.CanTradeSupplies) return false;
-            int price = WorldShopItem.PriceFor(kind);
-            if (kind < 0 || kind > 5 || kind == 3 ||
+            int price = kind == 6 ? shop.ChocolatePrice : WorldShopItem.PriceFor(kind);
+            if (kind < 0 || kind > 6 || kind == 3 ||
                 (kind == 2 ? Darts >= PlayerInventory.MaximumDarts : !Inventory.CanReceive)) return false;
             if (!shop.Wallet.TrySpend(price)) return false;
             if (kind == 2) { Inventory.AddDarts(1); Save(); return true; }
             Inventory.Receive(new InventoryEntry { kind = kind == 0 ? InventoryKind.Cage : kind == 1 ? InventoryKind.Bread :
-                kind == 4 ? InventoryKind.Gun : InventoryKind.Trap });
+                kind == 4 ? InventoryKind.Gun : kind == 6 ? InventoryKind.Chocolate : InventoryKind.Trap });
             Save(); return true;
         }
         public bool Sell()

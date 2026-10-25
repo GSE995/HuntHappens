@@ -43,6 +43,9 @@ namespace HuntHappens.Interaction
             GetComponent<HuntHappens.Animals.DeerSedation>()?.ReleaseTrapForCarry();
             Holder = holder;
             LastHolder = holder;
+            var deer = GetComponent<HuntHappens.Animals.DeerSedation>();
+            if (deer != null)
+                foreach (var leader in FindObjectsByType<HuntHappens.Animals.DeerLeader>()) leader.NoticeAttack(deer);
             return true;
         }
 

@@ -114,6 +114,13 @@ namespace HuntHappens.Interaction
 
         public void Drop() => Release(false);
         public void Throw() => Release(true);
+        public void ThrowBody(Rigidbody body)
+        {
+            if (view == null || body == null || body.isKinematic) return;
+            body.AddForce(view.forward * throwImpulse, ForceMode.Impulse);
+            body.WakeUp();
+            Released?.Invoke(true);
+        }
 
         private void Release(bool throwing)
         {

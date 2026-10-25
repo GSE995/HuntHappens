@@ -30,6 +30,13 @@ namespace HuntHappens.Animals
         private DeerPerception perception;
         private NavMeshPath path;
         private Vector3 home;
+        private Transform herdHome;
+        private bool boundToHerd;
+        public void SetHerdHome(Transform value, float radius, bool limitEscape = false)
+        { herdHome = value; home = value.position; wanderRadius = radius * .5f; roamRadius = radius; boundToHerd = limitEscape; }
+        // Leave room for inertia when a running agent turns or brakes at the edge.
+        private float HerdLimit => Mathf.Max(1, roamRadius - agent.radius - runSpeed * runSpeed / (2 * Mathf.Max(1, agent.acceleration)));
+        private float DistanceFromHerd(Vector3 point) => Vector3.ProjectOnPlane(point - home, Vector3.up).magnitude;
         private Vector3 lastThreat;
         private Vector3 fleeDirection;
         private Vector3 movementTarget;
@@ -52,7 +59,7 @@ namespace HuntHappens.Animals
         public void ResumeAfterSedation()
         {
             if (!agent.enabled || !agent.isOnNavMesh) return;
-            home = transform.position;
+            home = herdHome != null ? herdHome.position : transform.position;
             perception.Observe(0);
             lastThreat = perception.Player != null ? perception.Player.position : transform.position - transform.forward;
             Enter(perception.Distance <= perception.FrightRadius ? DeerState.Flee : DeerState.Idle);
@@ -92,6 +99,19 @@ namespace HuntHappens.Animals
             unseenTime = perception.HasSight ? 0 : unseenTime + Time.deltaTime;
             if (perception.Noticed) lastThreat = perception.Player.position;
 
+            // A deer released or woken outside the zone walks back; never teleport carried animals.
+            if (boundToHerd && DistanceFromHerd(transform.position) > HerdLimit + .1f)
+            {
+                if (Time.time >= nextRepath || !agent.hasPath)
+                {
+                    if (TryPath(home, out movementTarget))
+                    { agent.isStopped = false; agent.updateRotation = true; agent.speed = runSpeed; agent.SetPath(path); }
+                    else agent.ResetPath();
+                    nextRepath = Time.time + repathInterval;
+                }
+                return;
+            }
+
             if (currentState != DeerState.Flee && perception.Frightened) Enter(DeerState.Flee);
             else if ((currentState == DeerState.Idle || currentState == DeerState.Wander) && perception.Noticed)
                 Enter(DeerState.Alert);
@@ -101,7 +121,8 @@ namespace HuntHappens.Animals
                 case DeerState.Idle:
                     if (stateTime >= idleUntil)
                     {
-                        if (ChooseWander()) Enter(DeerState.Wander);
+                        if (herdHome != null && Vector3.Distance(transform.position, home) > roamRadius && TryPath(home, out movementTarget)) { agent.SetPath(path); Enter(DeerState.Wander); }
+                        else if (ChooseWander()) Enter(DeerState.Wander);
                         else idleUntil = stateTime + 1f;
                     }
                     break;
@@ -177,6 +198,12 @@ namespace HuntHappens.Animals
                 float angle = i == 0 ? 0 : (i % 2 == 0 ? 1 : -1) * ((i + 1) / 2) * 22f;
                 Vector3 direction = Quaternion.Euler(0, angle, 0) * away;
                 Vector3 candidate = transform.position + direction * (i < 9 ? fleeStep : fleeStep * 0.55f);
+                if (boundToHerd)
+                {
+                    Vector3 offset = Vector3.ProjectOnPlane(candidate - home, Vector3.up);
+                    offset = Vector3.ClampMagnitude(offset, HerdLimit);
+                    candidate = new Vector3(home.x + offset.x, candidate.y, home.z + offset.z);
+                }
                 if (!TryPath(candidate, out Vector3 point) || Vector3.Distance(point, transform.position) < 2f) continue;
                 float score = Vector3.Distance(point, lastThreat) + Vector3.Dot(direction, away) * 3f;
                 if (score <= bestScore) continue;
@@ -189,6 +216,11 @@ namespace HuntHappens.Animals
                 progressTime = Time.time;
                 progressPosition = transform.position;
             }
+            else if (boundToHerd)
+            {
+                agent.ResetPath();
+                movementTarget = transform.position;
+            }
             // No valid path: stay in Flee and retry later; never warp through obstacles.
         }
 
@@ -197,7 +229,17 @@ namespace HuntHappens.Animals
             var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
             if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2.5f, filter) &&
                 agent.CalculatePath(hit.position, path) && path.status == NavMeshPathStatus.PathComplete)
-            { point = hit.position; return true; }
+            {
+                if (boundToHerd)
+                {
+                    // Sampling and obstacle detours must also respect the boundary, not only the requested destination.
+                    if (DistanceFromHerd(hit.position) > HerdLimit + .05f) { point = default; return false; }
+                    float pathLimit = Mathf.Max(HerdLimit, DistanceFromHerd(transform.position)) + .05f;
+                    foreach (var corner in path.corners)
+                        if (DistanceFromHerd(corner) > pathLimit) { point = default; return false; }
+                }
+                point = hit.position; return true;
+            }
             point = default;
             return false;
         }
