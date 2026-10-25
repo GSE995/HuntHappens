@@ -33,6 +33,7 @@ namespace HuntHappens.Interaction
 
         public PickupItem HeldItem => held;
         public bool IsHolding => held != null;
+        public bool IsHoldingDeer => held != null && held.GetComponent<HuntHappens.Animals.DeerSedation>() != null;
         public event System.Action<bool> Released;
         private float massMultiplier = 1;
         public float CarryResponseMultiplier { get; private set; } = 1;

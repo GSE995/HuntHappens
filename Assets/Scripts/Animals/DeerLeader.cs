@@ -135,8 +135,13 @@ namespace HuntHappens.Animals
                 if (collider.GetComponentInParent<PlayerHealth>() != player || !Visible(player.transform, player.transform.position + Vector3.up)) continue;
                 hit = true;
                 bool lethal = player.Current <= player.Maximum / 2;
-                if (player.TakeDamage(player.Maximum / 2) && !lethal)
-                    player.GetComponent<FirstPersonMotor>().ApplyImpulse(chargeDirection * knockbackSpeed + Vector3.up * upwardSpeed);
+                if (player.TakeDamage(player.Maximum / 2))
+                {
+                    var holder = player.GetComponent<ItemHolder>();
+                    if (holder != null && holder.IsHoldingDeer) holder.Drop();
+                    if (!lethal)
+                        player.GetComponent<FirstPersonMotor>().ApplyImpulse(chargeDirection * knockbackSpeed + Vector3.up * upwardSpeed);
+                }
                 Enter(LeaderState.Impact); break;
             }
         }
