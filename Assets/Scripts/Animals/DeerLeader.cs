@@ -26,6 +26,8 @@ namespace HuntHappens.Animals
         [Min(1)] public float baitApproachTimeout = 15;
         [SerializeField] private LeaderState state;
         public LeaderState State => state;
+        public float StateElapsed => elapsed;
+        public float LastImpactTime { get; private set; } = float.NegativeInfinity;
         public bool LowerHead => state == LeaderState.Warning || state == LeaderState.Charge || state == LeaderState.Eating;
         public string Status => state == LeaderState.Warning ? "Вожак: берегись! Сейчас рывок!" : state == LeaderState.Charge ? "Вожак атакует — в сторону!" :
             state == LeaderState.Eating ? "Вожак ест шоколад — стадо без охраны" : state == LeaderState.MovingToBait ? "Вожак идёт к шоколаду" :
@@ -141,6 +143,7 @@ namespace HuntHappens.Animals
         private void Enter(LeaderState value)
         {
             state = value; elapsed = 0;
+            if (value == LeaderState.Impact) LastImpactTime = Time.time;
             if (!agent.enabled || !agent.isOnNavMesh) return;
             agent.ResetPath(); agent.isStopped = true; agent.updateRotation = value != LeaderState.Warning && value != LeaderState.Charge;
         }

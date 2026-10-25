@@ -13,6 +13,19 @@ namespace HuntHappens.Animals
         [SerializeField, Min(0)] private float walkSwing = 28f;
         [SerializeField, Min(0)] private float runSwing = 48f;
         [SerializeField, Min(0)] private float blendSpeed = 6f;
+        [Header("Gallop")]
+        [SerializeField, Min(.5f)] private float gallopStride = 4.8f;
+        [SerializeField, Min(.5f)] private float maximumGaitFrequency = 3.4f;
+        [SerializeField, Min(0)] private float gallopLift = .10f;
+        [SerializeField, Min(0)] private float gallopPitch = 3f;
+        [Header("Leader attack poses")]
+        [SerializeField, Range(0, 60)] private float attackHeadAngle = 32f;
+        [SerializeField, Min(0)] private float preparationCrouch = .12f;
+        [SerializeField, Min(0)] private float preparationLeanBack = .12f;
+        [SerializeField, Range(0, 20)] private float chargeLean = 8f;
+        [SerializeField, Min(.1f)] private float impactPoseDuration = .45f;
+        [SerializeField, Range(0, 30)] private float impactRecoilAngle = 12f;
+        [SerializeField, Min(0)] private float impactRecoilDistance = .18f;
         private NavMeshAgent agent;
         private Vector3 restPosition;
         private Quaternion headRest;
@@ -21,6 +34,10 @@ namespace HuntHappens.Animals
         private float phase;
         private float idlePhase;
         private DeerSedation sedation;
+        private DeerLeader leader;
+        private Vector3 previousRootPosition;
+        private float headAngle, bodyAngle, crouch, leanBack, preparation;
+        public float AnimationSpeed => speed;
         private Quaternion restRotation;
         private Vector3[][] hoofPoints;
         private readonly RaycastHit[] groundHits = new RaycastHit[32];
@@ -33,6 +50,8 @@ namespace HuntHappens.Animals
         {
             agent = GetComponent<NavMeshAgent>();
             sedation = GetComponent<DeerSedation>();
+            leader = GetComponent<DeerLeader>();
+            previousRootPosition = transform.position;
             if (visual != null) restRotation = visual.localRotation;
             if (visual != null) restPosition = visual.localPosition;
             if (headPivot != null) headRest = headPivot.localRotation;
@@ -44,32 +63,61 @@ namespace HuntHappens.Animals
 
         private void LateUpdate()
         {
+            Vector3 displacement = Vector3.ProjectOnPlane(transform.position - previousRootPosition, Vector3.up);
+            previousRootPosition = transform.position;
             if (visual == null) return;
             if (sedation != null && sedation.State != DeerSedation.SedationState.Awake)
             {
+                speed = headAngle = bodyAngle = crouch = leanBack = preparation = 0;
                 AnimateSedation();
                 return;
             }
-            visual.localRotation = restRotation;
-            speed = Mathf.Lerp(speed, agent.enabled && agent.isOnNavMesh ? agent.velocity.magnitude : 0, 1f - Mathf.Exp(-blendSpeed * Time.deltaTime));
+            // Agent.Move does not reliably populate agent.velocity. Measure the root, never the animated mesh.
+            // Ignore warps, enclosure placement and the first frame after a disabled component.
+            if (Time.deltaTime <= 0) return;
+            float measuredSpeed = displacement.magnitude / Time.deltaTime;
+            if (displacement.magnitude > Mathf.Max(2, 40 * Time.deltaTime) || !agent.enabled || !agent.isOnNavMesh) measuredSpeed = 0;
+            speed = Mathf.Lerp(speed, measuredSpeed, 1f - Mathf.Exp(-blendSpeed * Time.deltaTime));
             float moving = Mathf.Clamp01(speed / 0.7f);
             float running = Mathf.InverseLerp(2f, 6f, speed);
-            phase += speed * Time.deltaTime * Mathf.Lerp(5f, 4f, running);
+            float cycles = Mathf.Min(maximumGaitFrequency, speed / Mathf.Lerp(1.8f, gallopStride, running));
+            phase = Mathf.Repeat(phase + cycles * Time.deltaTime * Mathf.PI * 2, Mathf.PI * 2);
             float idle = Time.time * 1.7f + idlePhase;
-            float bob = Mathf.Sin(idle) * 0.018f * (1f - moving) + Mathf.Abs(Mathf.Sin(phase)) * Mathf.Lerp(0.025f, 0.11f, running) * moving;
-            visual.localPosition = restPosition + Vector3.up * bob;
+            bool warning = leader != null && leader.State == DeerLeader.LeaderState.Warning;
+            bool charging = leader != null && leader.State == DeerLeader.LeaderState.Charge;
+            bool eating = leader != null && leader.State == DeerLeader.LeaderState.Eating;
+            float windup = warning ? Mathf.SmoothStep(0, 1, leader.StateElapsed / Mathf.Max(.1f, leader.warningDuration * .75f)) : 0;
+            float impact = leader != null ? Mathf.Sin(Mathf.PI * Mathf.Clamp01((Time.time - leader.LastImpactTime) / impactPoseDuration)) : 0;
+            float blend = 1 - Mathf.Exp(-12 * Time.deltaTime);
+            preparation = Mathf.Lerp(preparation, windup, blend);
+            headAngle = Mathf.Lerp(headAngle, (charging || eating ? attackHeadAngle : attackHeadAngle * windup) - impact * 16, blend);
+            bodyAngle = Mathf.Lerp(bodyAngle, (charging ? chargeLean : -5 * windup) - impact * impactRecoilAngle, blend);
+            crouch = Mathf.Lerp(crouch, windup * preparationCrouch, blend);
+            leanBack = Mathf.Lerp(leanBack, windup * preparationLeanBack + impact * impactRecoilDistance, blend);
+            float gallop = running * moving * (1 - preparation);
+            visual.localRotation = restRotation * Quaternion.Euler(bodyAngle + Mathf.Sin(phase) * gallopPitch * gallop, 0, 0);
+            visual.localPosition = restPosition + new Vector3(0, -crouch, -leanBack);
             for (int i = 0; i < legs.Length; i++)
             {
                 if (legs[i] == null) continue;
-                float offset = i == 0 || i == 3 ? 0 : Mathf.PI;
-                float swing = Mathf.Sin(phase + offset) * Mathf.Lerp(walkSwing, runSwing, running) * moving;
+                // Existing rig: 0/1 front, 2/3 rear. Stagger left/right contacts within each pair.
+                float walkOffset = i == 0 || i == 3 ? 0 : Mathf.PI;
+                float gallopOffset = (i < 2 ? 0 : Mathf.PI + .35f) + (i % 2) * .45f;
+                float swing = Mathf.Lerp(Mathf.Sin(phase + walkOffset) * walkSwing,
+                    Mathf.Sin(phase + gallopOffset) * runSwing, running) * moving * (1 - preparation);
+                swing += (i < 2 ? -20 : 20) * preparation + (i < 2 ? 12 : -8) * impact;
                 legs[i].localRotation = legRest[i] * Quaternion.Euler(swing, 0, 0);
             }
             GroundHooves();
+            // Ground correction supplies the contact baseline; add the gallop's brief flight afterwards.
+            float lift = Mathf.Pow(Mathf.Max(0, Mathf.Sin(phase)), 2) * gallopLift * gallop;
+            visual.localPosition += Vector3.up * (lift + (Mathf.Sin(idle) + 1) * .009f * (1 - moving));
             if (headPivot != null)
-                headPivot.localRotation = headRest * Quaternion.Euler((GetComponent<DeerLeader>()?.LowerHead == true ? 32f : Mathf.Sin(idle * 0.6f) * 3f * (1 - moving)),
-                    Mathf.Sin(idle * 0.37f) * 14f * (1 - moving), 0);
+                headPivot.localRotation = headRest * Quaternion.Euler(headAngle + Mathf.Sin(idle * .6f) * 3 * (1 - moving) * (1 - preparation),
+                    Mathf.Sin(idle * .37f) * 14 * (1 - moving) * (warning || charging ? 0 : 1), 0);
         }
+
+        private void OnEnable() { previousRootPosition = transform.position; speed = 0; }
 
         // Cache only sole vertices, in bone space, rather than baking the entire skin every frame.
         private void CacheHooves()
@@ -106,7 +154,7 @@ namespace HuntHappens.Animals
 
         private void GroundHooves()
         {
-            if (!agent.enabled || !agent.isOnNavMesh) return;
+            if (!agent.enabled || !agent.isOnNavMesh || hoofPoints == null) return;
             float lowest = float.PositiveInfinity;
             for (int i = 0; i < legs.Length; i++)
             {
