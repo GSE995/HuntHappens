@@ -14,7 +14,8 @@ namespace HuntHappens.Shop
         [SerializeField] private ShopInteractable kiosk;
         [SerializeField] private PrototypeInput input;
         [SerializeField, Min(0.1f)] private float purchaseCooldown = 0.4f;
-        [SerializeField, Min(1)] private int chocolatePrice = 10;
+        public const int DefaultChocolatePrice = 750;
+        [SerializeField, Min(1)] private int chocolatePrice = DefaultChocolatePrice;
         public int ChocolatePrice => chocolatePrice;
         private bool changingProgress;
         private bool worldTrade;

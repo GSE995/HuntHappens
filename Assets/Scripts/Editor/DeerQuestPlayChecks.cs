@@ -103,7 +103,10 @@ namespace HuntHappens.Editor
             Set(shop, "worldTrade", true);
             Check(hunt.Buy(4), "buy tranquilizer with starting money"); inventory.SelectSlot(0);
             Check(hunt.Buy(2) && hunt.Buy(2) && hunt.Buy(2) && manager.Balance == 14, "buy three darts before first capture");
-            Check(hunt.Buy(6) && manager.Balance == 4, "buy chocolate at Inspector price"); inventory.SelectSlot(1);
+            Check(!hunt.Buy(6) && manager.Balance == 14, "starting budget cannot buy chocolate; rejected purchase does not charge");
+            // Supply isolated test funds to exercise distraction without grinding rodents in this mechanics check.
+            manager.RestoreBalance(shop.ChocolatePrice);
+            Check(hunt.Buy(6) && manager.Balance == 0, "buy chocolate at Inspector price"); inventory.SelectSlot(1);
             Set(shop, "worldTrade", false);
             var deer = all.First(x => x.QuestId == "training:0");
             deer.GetComponent<DeerAI>().enabled = false;

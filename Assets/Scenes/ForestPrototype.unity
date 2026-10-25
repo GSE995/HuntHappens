@@ -3384,7 +3384,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94a5ebd7130dc43fa932bc28e4edbe50, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.WorldShopItem
   shop: {fileID: 1176876493}
   kind: 2
@@ -6612,7 +6612,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -10785,7 +10785,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C"
   carryDistance: 0
@@ -13630,7 +13630,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -15147,7 +15147,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94a5ebd7130dc43fa932bc28e4edbe50, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.WorldShopItem
   shop: {fileID: 1176876493}
   kind: 5
@@ -17244,7 +17244,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 22061869018382a429fe599c01101ba7, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.ForestNavigation
   data: {fileID: 23800000, guid: 17e817395c5cccf4b8d93dcc8cd905f6, type: 2}
 --- !u!4 &374448030
@@ -17858,7 +17858,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -18994,7 +18994,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 108789da23c62426890b1b03a1852d6f, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Characters.HeroWander
 --- !u!136 &408147346
 CapsuleCollider:
@@ -19067,7 +19067,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 06192faa2451445f7a4a478a647bfc5d, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Characters.HeroGrounding
 --- !u!114 &408147350
 MonoBehaviour:
@@ -19079,7 +19079,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9a639824685f15e43a170c9495ed2003, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Characters.FarmerDialogue
   dialogueFont: {fileID: 11400000, guid: b4a212222046f1c478e01adf10006e1f, type: 2}
   dialogue: {fileID: 11400000, guid: 4d25063520fd6f84b81b99b5bb1a5626, type: 2}
@@ -21782,7 +21782,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
   m_SendPointerHoverToParent: 1
   m_MoveRepeatDelay: 0.5
@@ -21813,7 +21813,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventSystem
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
@@ -28777,7 +28777,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94a5ebd7130dc43fa932bc28e4edbe50, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.WorldShopItem
   shop: {fileID: 1176876493}
   kind: 4
@@ -29089,7 +29089,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6bf1952461e9bd549be65dad4012cf1c, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.DeerEnclosure
   displayPrefab: {fileID: 5642659562763300804, guid: 660fb856acaa60f4db8225b200fd52ce, type: 3}
   restingPlaces:
@@ -29274,7 +29274,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -30150,7 +30150,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -33654,7 +33654,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -34467,7 +34467,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -34648,7 +34648,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C"
   carryDistance: 0
@@ -36691,7 +36691,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3503ca68514291f4381c00082c4320ea, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.DeliveryZone
   settleDuration: 1.2
   maximumSpeed: 0.6
@@ -43491,7 +43491,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c648c354d98e2514386d0386d0835376, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.PickupTruckDelivery
 --- !u!1 &987082252
 GameObject:
@@ -46404,7 +46404,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01fdcabd5fcbd4c0fb3ced7cd9125819, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.HeroFirstPersonArms
   poses: {fileID: 1788904377}
   leftUpper: {fileID: 1486403034}
@@ -47257,7 +47257,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -48335,7 +48335,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -49211,7 +49211,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 450acd7faa11e624d8528b1c416c7d9b, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.InteractionHUD
   interaction: {fileID: 7632009958039229846}
   promptFont: {fileID: 11400000, guid: 80284aa202d3243418b20ecc2a3435b2, type: 2}
@@ -49241,7 +49241,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 50e6ff8f6bf42d540b5a20824a7b48cb, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.UI.GameHUD
   manager: {fileID: 1887257589}
   font: {fileID: 11400000, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
@@ -50607,7 +50607,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 739d1e295c02a1b4684fbbd1b3e34d79, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.ShopUI
   manager: {fileID: 1176876493}
   font: {fileID: 11400000, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
@@ -50621,7 +50621,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 803eac1037380524eb2a13e18e0a802d, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.UpgradeManager
   definitions:
   - {fileID: 11400000, guid: 43ccfb6fe954fde4f8a68582b63d1799, type: 2}
@@ -50643,7 +50643,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2921381e20055914ab8f605c6c0c01df, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.ShopManager
   wallet: {fileID: 1887257589}
   upgrades: {fileID: 1176876492}
@@ -50651,7 +50651,7 @@ MonoBehaviour:
   kiosk: {fileID: 1451113932}
   input: {fileID: 1664217764}
   purchaseCooldown: 0.4
-  chocolatePrice: 10
+  chocolatePrice: 750
 --- !u!4 &1176876494
 Transform:
   m_ObjectHideFlags: 0
@@ -53288,7 +53288,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -53553,7 +53553,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80b3c9d9d67b5441b956ca708f7ef1ba, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.SmallGame.BreadBasket
 --- !u!1 &1238386023
 GameObject:
@@ -58613,7 +58613,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C"
   carryDistance: 0
@@ -61735,7 +61735,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C"
   carryDistance: 0
@@ -62247,7 +62247,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 06192faa2451445f7a4a478a647bfc5d, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Characters.HeroGrounding
 --- !u!114 &1422213741
 MonoBehaviour:
@@ -62259,7 +62259,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a2800126b95f24ee69f3434c07db8cc8, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.PlayerBodyAnimation
 --- !u!1 &1422268416
 GameObject:
@@ -62318,7 +62318,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0428\u041E\u041A\u041E\u041B\u0410\u0414\n$10"
+  m_text: "\u0428\u041E\u041A\u041E\u041B\u0410\u0414\n$750"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
   m_sharedMaterial: {fileID: -4335012557909071665, guid: 2cf6bc624d05341488afda759a438e1c, type: 2}
@@ -64334,7 +64334,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: af0e876c72090f24c9a7e2edf897aef0, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.ShopInteractable
   interactionPoint: {fileID: 1441954872}
   interactionDistance: 3
@@ -68908,7 +68908,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C"
   carryDistance: 0
@@ -75332,7 +75332,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5db3259f9ebb0df488b4089d53d4e80b, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.PrototypeInput
 --- !u!1 &1668719853
 GameObject:
@@ -75779,7 +75779,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94a5ebd7130dc43fa932bc28e4edbe50, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.WorldShopItem
   shop: {fileID: 1176876493}
   kind: 3
@@ -77613,7 +77613,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C"
   carryDistance: 0
@@ -80077,7 +80077,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e1684715f31d7f42aac49127418721c, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.FirstPersonArmsAnimator
   empty:
     leftPosition: {x: -0.28, y: -0.27, z: 0.57}
@@ -80133,7 +80133,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1453d435c90b8724b982b332f4990d26, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.FirstPersonArms
   view: {fileID: 7632009958039229843}
   input: {fileID: 1664217764}
@@ -81731,7 +81731,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94a5ebd7130dc43fa932bc28e4edbe50, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.WorldShopItem
   shop: {fileID: 1176876493}
   kind: 0
@@ -84491,7 +84491,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 606ef240c27338c47addd63edec1a367, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.DeliveryManager
   rewardPerDeer: 100
   goal: 3
@@ -84507,7 +84507,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9154b7c883d1fa43b14f5ac255325e5, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Delivery.DeerSpawner
   deerPrefab: {fileID: 5642659562763300804, guid: 660fb856acaa60f4db8225b200fd52ce, type: 3}
   player: {fileID: 122241181}
@@ -87578,7 +87578,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94a5ebd7130dc43fa932bc28e4edbe50, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Shop.WorldShopItem
   shop: {fileID: 1176876493}
   kind: 1
@@ -88274,7 +88274,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -89750,7 +89750,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f99c66dc44731b04bb06b5c8eef46849, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Traps.TrapManager
   trapPrefab: {fileID: 2184383684041863048, guid: b3020afc6dbfeae4aa0d8fc74bdf6018, type: 3}
   maximumTraps: 3
@@ -92278,7 +92278,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -93616,7 +93616,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -96954,7 +96954,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 32c94ef8116a11648b57d0c237816c85, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PlayerInteraction
   view: {fileID: 7632009958039229843}
   interactionDistance: 3
@@ -96973,7 +96973,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: deb2160f630d5a14b9b3968f96448f2d, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.ItemHolder
   view: {fileID: 7632009958039229844}
   holdDistance: 2
@@ -96996,7 +96996,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1fb403976d95a9947a5f1a0d8868c0b9, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Weapons.TranquilizerGun
   view: {fileID: 7632009958039229843}
   weaponVisual: {fileID: 1275707031}
@@ -97018,7 +97018,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e84caf58f15f4c548845986160eedb0e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Traps.TrapPlacement
   view: {fileID: 7632009958039229843}
   ground: {fileID: 1825201902}
@@ -97041,7 +97041,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 40ef0456efaf0450fa611f45de43a76e, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.SmallGame.RatHunting
   cagePrefab: {fileID: 7990031392495399263, guid: fac97f4ed60584e20999ea641f4eea8b, type: 3}
   ground: {fileID: 1825201902}
@@ -97056,7 +97056,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 218e1f96e976b4ce29ef93114a7bfb08, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.PlayerHealth
 --- !u!114 &7632009958039229854
 MonoBehaviour:
@@ -97068,7 +97068,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 54815a8fa28e69b49a7b3d9b1f85956a, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PlayerInventory
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
