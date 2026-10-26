@@ -63,7 +63,7 @@ namespace HuntHappens.Editor
             }
             var dialogue = AssetDatabase.LoadAssetAtPath<HuntHappens.Characters.DialogueData>("Assets/Dialogues/FarmerIntroduction.asset");
             var serialized = new SerializedObject(dialogue);
-            serialized.FindProperty("lines").GetArrayElementAtIndex(8).stringValue = "Поможешь вернуть всех домой? Обычных ищи на двух полянах, на дальней — ещё и вожак. Я выделил $100 на транквилизатор и дротики. Олень тяжёлый — на руках не унести! Бери тележку у фермы. Подкати её к спящему или пойманному оленю, отпусти ручку и нажми E на животном. Потом вези к входу в загон и остановись на площадке приёма.";
+            serialized.FindProperty("lines").GetArrayElementAtIndex(8).stringValue = "Поможешь вернуть всех домой? Обычных ищи на двух полянах, на дальней — ещё и вожак. У тебя есть $15. Начни с крыс, заработай на транквилизатор и дротики. Олень тяжёлый — на руках не унести! Бери тележку у фермы. Подкати её к спящему или пойманному оленю, отпусти ручку и нажми E на животном. Потом вези к входу в загон и остановись на площадке приёма.";
             serialized.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(dialogue);
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             if (!EditorSceneManager.SaveScene(SceneManager.GetActiveScene())) throw new InvalidOperationException("Scene save failed.");

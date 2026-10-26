@@ -117,7 +117,7 @@ namespace HuntHappens.Shop
         {
             ShopProgress.Reset();
             changingProgress = true;
-            wallet.RestoreBalance(0);
+            wallet.RestoreBalance(ShopProgress.StartingBalance);
             upgrades.RestoreLevels(null);
             foreach (var cart in FindObjectsByType<HuntHappens.Transport.DeerCart>(FindObjectsSortMode.None)) cart.ReloadOwnership();
             changingProgress = false;

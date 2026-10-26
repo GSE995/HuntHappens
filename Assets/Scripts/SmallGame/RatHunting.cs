@@ -21,6 +21,20 @@ namespace HuntHappens.SmallGame
         public string EscapeNotice { get; private set; }
         public float EscapeNoticeUntil { get; private set; }
         private static double Now => System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
+        private double menuPausedAt;
+        public void SetMenuPaused(bool paused)
+        {
+            if (paused)
+            {
+                if (menuPausedAt == 0) menuPausedAt = Now;
+                return;
+            }
+            if (menuPausedAt == 0) return;
+            double duration = System.Math.Max(0, Now - menuPausedAt);
+            menuPausedAt = 0;
+            foreach (var record in carriedRats) record.wakeAt += duration;
+            if (carriedRats.Count > 0) Save();
+        }
         private PlayerInventory Inventory => GetComponent<PlayerInventory>();
         public int Cages => Inventory.Count(InventoryKind.Cage) + Deployed;
         public int Bread => Inventory.Count(InventoryKind.Bread);
@@ -78,6 +92,7 @@ namespace HuntHappens.SmallGame
         }
         public void RefreshCarriedRats()
         {
+            if (menuPausedAt != 0) return;
             bool changed = false;
             for (int i = carriedRats.Count - 1; i >= 0; i--)
             {

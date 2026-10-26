@@ -20,6 +20,7 @@ namespace HuntHappens.Interaction
         private GameObject crosshair;
         public HuntHappens.UI.FieldHUD Field => field;
         public TMP_FontAsset ThemeFont => promptFont;
+        public HuntHappens.Player.PrototypeInput PlayerInput => interaction != null ? interaction.GetComponent<HuntHappens.Player.PrototypeInput>() : null;
         public void SetStyle(TMP_FontAsset font, Texture2D icons) { promptFont = font; iconAtlas = icons; }
         private TranquilizerGun gun;
         private HuntHappens.SmallGame.RatHunting rats;
@@ -32,6 +33,8 @@ namespace HuntHappens.Interaction
 
         private void Awake()
         {
+            if (GetComponent<HuntHappens.UI.GameMenu>() == null)
+                gameObject.AddComponent<HuntHappens.UI.GameMenu>();
             var canvasObject = new GameObject("Interaction Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(UnityEngine.UI.GraphicRaycaster));
             canvasObject.transform.SetParent(transform, false);
             canvas = canvasObject.GetComponent<Canvas>();

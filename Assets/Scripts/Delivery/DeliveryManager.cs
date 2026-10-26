@@ -9,7 +9,6 @@ namespace HuntHappens.Delivery
         [SerializeField, Min(1)] private int rewardPerDeer = 100;
         [SerializeField, Min(1)] private int goal = 3;
         [SerializeField] private DeerSpawner spawner;
-        [SerializeField, Min(0)] private int startingAdvance = 100;
         private readonly System.Collections.Generic.HashSet<string> roster = new System.Collections.Generic.HashSet<string>();
         private readonly System.Collections.Generic.HashSet<string> returned = new System.Collections.Generic.HashSet<string>();
         private void Start()
@@ -21,12 +20,6 @@ namespace HuntHappens.Delivery
             var data = HuntHappens.Shop.ShopProgress.Load();
             foreach (string id in data.returnedDeerIds ?? new string[0]) if (roster.Contains(id)) returned.Add(id);
             DeliveredCount = returned.Count;
-            if (!data.deerAdvanceGranted)
-            {
-                data.deerAdvanceGranted = true; data.balance += startingAdvance;
-                PlayerPrefs.SetString(HuntHappens.Shop.ShopProgress.Key, JsonUtility.ToJson(data));
-                PlayerPrefs.Save(); RestoreBalance(data.balance);
-            }
         }
         public int Balance { get; private set; }
         public event System.Action BalanceChanged;

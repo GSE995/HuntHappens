@@ -23,6 +23,7 @@ namespace HuntHappens.Player
         public bool GameplayBlocked { get; private set; }
         public bool MenuClosePressed { get; private set; }
         public event System.Action InventoryToggleRequested;
+        public event System.Action PauseToggleRequested;
         private int suppressThroughFrame = -1;
         public void SetGameplayBlocked(bool blocked)
         {
@@ -86,6 +87,11 @@ namespace HuntHappens.Player
         public void ReadFrame()
         {
             MenuClosePressed = false;
+            if (Time.frameCount > suppressThroughFrame && releaseCursor.WasPressedThisFrame())
+            {
+                PauseToggleRequested?.Invoke();
+                if (Time.frameCount <= suppressThroughFrame) { ClearGameplayFrame(); return; }
+            }
             if (Time.frameCount > suppressThroughFrame && inventory.WasPressedThisFrame()) InventoryToggleRequested?.Invoke();
             if (GameplayBlocked)
             {

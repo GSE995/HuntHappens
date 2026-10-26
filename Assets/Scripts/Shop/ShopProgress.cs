@@ -6,6 +6,7 @@ namespace HuntHappens.Shop
     // One snapshot prevents a saved wallet and saved upgrade levels from diverging.
     public static class ShopProgress
     {
+        public const int StartingBalance = 15;
         public const string PlayerKey = "HuntHappens.Shop.Progress.v1";
         public const string TestKey = "HuntHappens.Shop.AutomatedChecks.v1";
         public static bool InventoryChecksRunning { get; set; }
@@ -30,7 +31,7 @@ namespace HuntHappens.Shop
             public int largeRats;
             public CarriedRat[] carriedRats = new CarriedRat[0];
             public int version = 1;
-            public int balance;
+            public int balance = StartingBalance;
             public int acceptedDeer;
             public string[] returnedDeerIds = new string[0];
             public bool deerAdvanceGranted;
@@ -51,7 +52,7 @@ namespace HuntHappens.Shop
             }
             catch (ArgumentException)
             {
-                Debug.LogWarning("Hunt Happens: shop save is invalid; using zero balance and base upgrades.");
+                Debug.LogWarning("Hunt Happens: shop save is invalid; using starting balance and base upgrades.");
                 return new Data();
             }
         }

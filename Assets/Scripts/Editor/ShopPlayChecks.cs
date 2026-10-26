@@ -87,7 +87,8 @@ namespace HuntHappens.Editor
                     deer = UnityEngine.Object.FindObjectsByType<DeerSedation>();
                     foreach (var animal in deer) animal.GetComponent<DeerAI>().enabled = false;
                     playerSaveBefore = PlayerPrefs.GetString(ShopProgress.PlayerKey, "");
-                    Check(shop.Wallet.Balance == 0 && shop.Upgrades.CopyLevels().All(l => l == 0), "Missing save starts at zero");
+                    Check(shop.Wallet.Balance == ShopProgress.StartingBalance && shop.Upgrades.CopyLevels().All(l => l == 0), "Missing save starts at $15");
+                    shop.Wallet.RestoreBalance(0); // Exercise insufficient funds before funding through deliveries.
                     int[][] prices = { new[] { 200, 400, 700 }, new[] { 150, 300, 600 }, new[] { 200, 350, 600 }, new[] { 300, 500, 800 } };
                     for (int i = 0; i < 4; i++)
                         for (int level = 0; level < 3; level++) Check(shop.Upgrades.Definition((UpgradeKind)i).NextPrice(level) == prices[i][level], "Configured price table");
@@ -237,7 +238,7 @@ namespace HuntHappens.Editor
                         Check(balance == shop.Wallet.Balance && !shop.Wallet.TrySpend(-100), "Invalid and max-level purchases never charge");
                         string snapshot = PlayerPrefs.GetString(ShopProgress.Key);
                         shop.ResetProgress();
-                        Check(shop.Wallet.Balance == 0 && placement.Manager.MaximumTraps == 3 && Mathf.Abs(holder.MaximumMass - 80) < 0.01f, "Reset restores base effects");
+                        Check(shop.Wallet.Balance == ShopProgress.StartingBalance && placement.Manager.MaximumTraps == 3 && Mathf.Abs(holder.MaximumMass - 80) < 0.01f, "Reset restores base effects");
                         PlayerPrefs.SetString(ShopProgress.Key, snapshot);
                         PlayerPrefs.Save();
                         shop.ReloadProgress();
@@ -245,7 +246,7 @@ namespace HuntHappens.Editor
                             "Saved balance/levels/effects reload from PlayerPrefs");
                         PlayerPrefs.SetString(ShopProgress.Key, "{broken save");
                         shop.ReloadProgress();
-                        Check(shop.Wallet.Balance == 0 && shop.Upgrades.CopyLevels().All(l => l == 0), "Corrupt data falls back safely");
+                        Check(shop.Wallet.Balance == ShopProgress.StartingBalance && shop.Upgrades.CopyLevels().All(l => l == 0), "Corrupt data falls back safely");
                         Check(PlayerPrefs.GetString(ShopProgress.PlayerKey, "") == playerSaveBefore, "Player progress untouched by batch test");
                         Check(UnityEngine.Object.FindObjectsByType<DeliveryManager>().Length == 1 && Time.timeScale == 1, "Single wallet and live world");
                         Debug.Log("Shop Play checks PASSED: all prices, real delivery funding, existing E open/E and Escape close, UI button purchase, insufficient funds, cooldown against double charge, all 12 levels, actual upgraded physical dart and non-instant sleep, real trap/carry/reward parameters, reset and PlayerPrefs round-trip/corrupt-data fallback, input/camera gating, hunting resume, player's save untouched. Transport into truck is positioned by test; layout needs visual review.");
