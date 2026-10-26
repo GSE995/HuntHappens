@@ -48,7 +48,7 @@ namespace HuntHappens.Player
         public Transform RightHand => rightHand;
         public Transform MiniatureTrap => miniatureTrap;
         public VisualMode Mode => input == null || input.GameplayBlocked ? VisualMode.Hidden :
-            holder != null && holder.IsHolding ? VisualMode.Carry :
+            holder != null && (holder.IsHolding || holder.GetComponent<HuntHappens.Transport.CartDriver>()?.IsDriving == true) ? VisualMode.Carry :
             gun != null && gun.Selected ? VisualMode.Tranquilizer :
             gun != null && gun.TrapSelected ? VisualMode.Trap :
             hunting != null && hunting.Selected ? VisualMode.Cage : VisualMode.Empty;

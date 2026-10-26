@@ -79,8 +79,16 @@ namespace HuntHappens.Editor
         {
             if (inventory.HandSlot >= 0) inventory.SelectSlot(inventory.HandSlot);
             PlayerAt(deer.transform.position - Vector3.forward * 2);
-            Check(holder.TryPickUp(deer.GetComponent<PickupItem>()), "carry " + deer.QuestId);
-            PlayerAt(reception.transform.TransformPoint(reception.Volume.center));
+            var cart = Object.FindAnyObjectByType<HuntHappens.Transport.DeerCart>();
+            cart.Driver?.Release();
+            cart.transform.position = deer.transform.position + Vector3.right * 3;
+            Physics.SyncTransforms();
+            Check(!holder.TryPickUp(deer.GetComponent<PickupItem>()), "deer too heavy " + deer.QuestId);
+            Check(cart.TryLoad(deer, holder), "load cart " + deer.QuestId);
+            cart.transform.position = reception.transform.position + Vector3.up * .03f;
+            Set(cart, "<LastMovedAt>k__BackingField", Time.time - reception.SettleDuration - 1);
+            PlayerAt(cart.HandlePosition);
+            Physics.SyncTransforms();
             int before = manager.DeliveredCount;
             Check(manager.TryDeliver(deer, reception), "farm accepts " + deer.QuestId);
             Check(manager.DeliveredCount == before + 1 && !manager.TryDeliver(deer, reception), "delivery counts once");

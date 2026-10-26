@@ -126,6 +126,9 @@ namespace HuntHappens.Delivery
             {
                 if (!isActiveAndEnabled || player == null || deer == null || !deer.isActiveAndEnabled ||
                     deer.IsDelivered || deer.State != DeerSedation.SedationState.Unconscious) return false;
+                if (deer.Cart != null)
+                    return deer.Cart.Cargo == deer && deer.Cart.LoadedBy == player &&
+                        Inside(deer.Cart.transform.position) && Time.time - deer.Cart.LastMovedAt >= settleDuration;
                 var pickup = deer.GetComponent<PickupItem>();
                 return pickup != null && pickup.LastHolder == player &&
                     (pickup.Holder == null || pickup.Holder == player) &&

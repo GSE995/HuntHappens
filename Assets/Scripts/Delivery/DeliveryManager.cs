@@ -55,6 +55,7 @@ namespace HuntHappens.Delivery
             if (zone.AutomaticReception) deer.GetComponent<HuntHappens.Interaction.PickupItem>().Holder?.Drop();
             if (roster.Count > 0 && (string.IsNullOrEmpty(deer.QuestId) || !roster.Contains(deer.QuestId) || returned.Contains(deer.QuestId))) return false;
             if (!deer.TryMarkDelivered()) return false;
+            deer.Cart?.ReleaseDelivered(deer);
             if (roster.Count > 0)
             {
                 returned.Add(deer.QuestId);

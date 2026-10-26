@@ -32,7 +32,19 @@ namespace HuntHappens.Interaction
         public const int MaximumDarts = 999;
         public int HandSlot => Hand == null ? -1 : Array.IndexOf(slots, Hand);
         public bool HasUnassignedItem => Hand != null && HandSlot < 0;
-        public bool CanReceive => !HasUnassignedItem;
+        public bool UsingCart => GetComponent<HuntHappens.Transport.CartDriver>()?.IsDriving == true;
+        public bool CanReceive => !UsingCart && !HasUnassignedItem;
+        public bool TryStowForCart()
+        {
+            if (UsingCart) return false;
+            if (HasUnassignedItem)
+            {
+                int free = Array.FindIndex(slots, item => item == null);
+                if (free < 0) { Warn(); return false; }
+                return SelectSlot(free);
+            }
+            Stow(); Save(); return true;
+        }
         public string Notice { get; private set; }
         private float noticeUntil;
         public string Hint => Time.unscaledTime < noticeUntil ? Notice : "";
@@ -102,7 +114,7 @@ namespace HuntHappens.Interaction
         private void Warn() { Notice = "Руки заняты"; noticeUntil = Time.unscaledTime + 2; }
         public bool SelectSlot(int index)
         {
-            if (index < 0 || index >= Capacity || input.GameplayBlocked) return false;
+            if (index < 0 || index >= Capacity || input.GameplayBlocked || UsingCart) return false;
             if (slots[index] == null && Hand != null)
             {
                 int previous = HandSlot;
@@ -235,7 +247,7 @@ namespace HuntHappens.Interaction
         }
         private void LateUpdate()
         {
-            if (!input.GameplayBlocked)
+            if (!input.GameplayBlocked && !UsingCart)
             {
                 if (input.ThrowPressed && IsEquipped(InventoryKind.Chocolate)) ThrowChocolate();
                 else if (input.DropPressed) DropHand();

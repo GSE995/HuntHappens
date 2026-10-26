@@ -2612,7 +2612,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8384790863007602295}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 120
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -2701,6 +2701,17 @@ MonoBehaviour:
   walkSwing: 28
   runSwing: 48
   blendSpeed: 6
+  gallopStride: 4.8
+  maximumGaitFrequency: 3.4
+  gallopLift: 0.1
+  gallopPitch: 3
+  attackHeadAngle: 32
+  preparationCrouch: 0.12
+  preparationLeanBack: 0.12
+  chargeLean: 8
+  impactPoseDuration: 0.45
+  impactRecoilAngle: 12
+  impactRecoilDistance: 0.18
 --- !u!114 &5634773154199401598
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2752,7 +2763,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerPhysics
   standingCollider: {fileID: 7690123671561502909}
   sleepingCollider: {fileID: 7976499312555528991}
-  sleepingMass: 45
+  sleepingMass: 120
   recoverySearchRadius: 2
 --- !u!114 &5642659562763300804
 MonoBehaviour:

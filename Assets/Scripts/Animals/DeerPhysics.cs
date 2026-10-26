@@ -9,7 +9,7 @@ namespace HuntHappens.Animals
     {
         [SerializeField] private CapsuleCollider standingCollider;
         [SerializeField] private BoxCollider sleepingCollider;
-        [SerializeField, Min(1)] private float sleepingMass = 45f;
+        [SerializeField, Min(1)] private float sleepingMass = 120f;
         [SerializeField, Min(0.2f)] private float recoverySearchRadius = 2f;
         private Rigidbody body;
         private NavMeshAgent agent;
@@ -56,7 +56,7 @@ namespace HuntHappens.Animals
         public bool TryBeginRecovery()
         {
             // AddForce(Impulse) is applied at the next physics step. Do not wake in the same frame as a throw.
-            if (IsHeld || Time.time - pickup.LastReleasedTime < 1f ||
+            if (GetComponent<DeerSedation>().Cart != null || IsHeld || Time.time - pickup.LastReleasedTime < 1f ||
                 body.linearVelocity.magnitude > 1.2f || body.angularVelocity.magnitude > 1.5f) return false;
             var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
             if (!NavMesh.SamplePosition(transform.position, out NavMeshHit hit, recoverySearchRadius, filter)) return false;

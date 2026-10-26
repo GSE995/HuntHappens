@@ -38,6 +38,16 @@ namespace HuntHappens.Interaction
         public HuntHappens.SmallGame.RatAI RatTarget { get; private set; }
         public HuntHappens.SmallGame.BreadBasket BreadTarget { get; private set; }
         public HuntHappens.Shop.WorldShopItem ProductTarget { get; private set; }
+        public HuntHappens.Transport.DeerCart CartTarget { get; private set; }
+        public HuntHappens.Transport.DeerCart LoadingCart { get; private set; }
+        public bool DeerInReach { get; private set; }
+        public HuntHappens.Transport.CartDriver CartDriver { get; private set; }
+        public string TransportHint => CartDriver != null && CartDriver.IsDriving
+            ? CartDriver.Cart.CargoText + "\nWASD — Везти   E / Q — Отпустить"
+            : CartTarget != null ? CartTarget.Prompt
+            : DeerInReach && ObservedDeer != null && (ObservedDeer.State == DeerSedation.SedationState.Unconscious || ObservedDeer.State == DeerSedation.SedationState.Trapped)
+                ? LoadingCart != null ? "E — Погрузить оленя в тележку" : "Олень слишком тяжёлый — подкатите пустую тележку"
+                : "";
         public PickupItem Target { get; private set; }
         public WorldInventoryItem InventoryTarget { get; private set; }
         public HuntHappens.Traps.AnimalTrap TrapTarget { get; private set; }
@@ -53,6 +63,7 @@ namespace HuntHappens.Interaction
         private void Awake()
         {
             if (GetComponent<PlayerInventory>() == null) gameObject.AddComponent<PlayerInventory>();
+            CartDriver = GetComponent<HuntHappens.Transport.CartDriver>();
             input = GetComponent<PrototypeInput>();
             holder = GetComponent<ItemHolder>();
             if (view == null) view = GetComponentInChildren<Camera>();
@@ -62,6 +73,7 @@ namespace HuntHappens.Interaction
         // The motor reads PrototypeInput in Update; consume the same frame after camera rotation.
         private void LateUpdate()
         {
+            CartTarget = LoadingCart = null; DeerInReach = false;
             ProductTarget = null;
             InventoryTarget = null;
             CageTarget = null; BreadTarget = null;
@@ -78,6 +90,11 @@ namespace HuntHappens.Interaction
                 return;
             }
             if (GameplayBlocked || view == null || Cursor.lockState != CursorLockMode.Locked) return;
+            if (CartDriver != null && CartDriver.IsDriving)
+            {
+                if (input.InteractPressed || input.DropPressed) { LastHandledFrame = Time.frameCount; CartDriver.Release(); }
+                return;
+            }
             if (holder.IsHolding)
             {
                 if (input.ThrowPressed) { LastHandledFrame = Time.frameCount; holder.Throw(); }
@@ -110,6 +127,7 @@ namespace HuntHappens.Interaction
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 if (hit.distance <= interactionDistance)
                 {
+                    CartTarget = hit.collider.GetComponentInParent<HuntHappens.Transport.DeerCart>();
                     FarmerTarget = hit.collider.GetComponentInParent<HuntHappens.Characters.FarmerDialogue>();
                     InventoryTarget = hit.collider.GetComponentInParent<WorldInventoryItem>();
                     CageTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatCage>();
@@ -119,11 +137,24 @@ namespace HuntHappens.Interaction
                 }
                 PickupItem item = hit.rigidbody != null ? hit.rigidbody.GetComponent<PickupItem>() : null;
                 ObservedDeer = hit.collider.GetComponentInParent<DeerSedation>();
-                if (hit.distance <= interactionDistance) TrapTarget = hit.collider.GetComponentInParent<HuntHappens.Traps.AnimalTrap>();
+                if (hit.distance <= interactionDistance)
+                {
+                    TrapTarget = hit.collider.GetComponentInParent<HuntHappens.Traps.AnimalTrap>();
+                    if (ObservedDeer == null && TrapTarget != null) ObservedDeer = TrapTarget.CaughtDeer;
+                    DeerInReach = ObservedDeer != null;
+                    if (DeerInReach) LoadingCart = HuntHappens.Transport.DeerCart.FindFor(ObservedDeer, holder);
+                }
                 if (hit.distance <= interactionDistance && item != null && item.CanPickUp(holder.MaximumMass)) Target = item;
                 break;
             }
-            if (input.InteractPressed && FarmerTarget != null)
+            if (CartTarget != null)
+            {
+                if (input.InteractPressed) { LastHandledFrame = Time.frameCount; CartDriver?.TryTake(CartTarget); }
+                else if (input.DropPressed) { LastHandledFrame = Time.frameCount; CartTarget.TryUnload(holder); }
+            }
+            else if (input.InteractPressed && LoadingCart != null)
+            { LastHandledFrame = Time.frameCount; LoadingCart.TryLoad(ObservedDeer, holder); }
+            else if (input.InteractPressed && FarmerTarget != null)
             {
                 var hud = GetComponentInChildren<InteractionHUD>();
                 if (hud == null) hud = Object.FindAnyObjectByType<InteractionHUD>();
@@ -151,6 +182,8 @@ namespace HuntHappens.Interaction
 
         private void OnDisable()
         {
+            CartDriver?.Release();
+            CartTarget = LoadingCart = null; DeerInReach = false;
             FarmerTarget = null;
             ProductTarget = null;
             CageTarget = null; BreadTarget = null;

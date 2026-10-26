@@ -70097,6 +70097,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 646433341}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &1511850575
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2096078402291813714, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_Name
+      value: DeerCart
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -12
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7547441523939279316, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1a1216ef24ee34f7b81a5398d63b7df8, type: 3}
 --- !u!1 &1513806659
 GameObject:
   m_ObjectHideFlags: 0
@@ -100203,6 +100260,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2488339307112536309, guid: b596a01f59c6fd649a8a088df73b4bf5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7632009958039229854}
+    - targetCorrespondingSourceObject: {fileID: 2488339307112536309, guid: b596a01f59c6fd649a8a088df73b4bf5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7632009958039229857}
   m_SourcePrefab: {fileID: 100100000, guid: b596a01f59c6fd649a8a088df73b4bf5, type: 3}
 --- !u!20 &7632009958039229843 stripped
 Camera:
@@ -100254,7 +100314,7 @@ MonoBehaviour:
   holdDistance: 2
   carryDistanceMultiplier: 0.7
   carryVerticalOffset: -0.25
-  maximumMass: 80
+  maximumMass: 20
   throwImpulse: 10
   followSmoothness: 6
   maximumAcceleration: 70
@@ -100345,6 +100405,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54815a8fa28e69b49a7b3d9b1f85956a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PlayerInventory
+--- !u!114 &7632009958039229857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7632009958039229845}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b9059048488e4122a3c8ecfaa70e646, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Transport.CartDriver
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -100364,3 +100436,4 @@ SceneRoots:
   - {fileID: 1744055694}
   - {fileID: 1260575514}
   - {fileID: 1172206923}
+  - {fileID: 1511850575}

@@ -19,6 +19,7 @@ namespace HuntHappens.Player
             Current = Mathf.Max(0, Current - damage); LastHitAt = Time.time;
             if (Current == 0)
             {
+                GetComponent<HuntHappens.Transport.CartDriver>()?.Release();
                 var wallet = FindAnyObjectByType<HuntHappens.Delivery.DeliveryManager>();
                 medicalCharge = wallet != null ? Mathf.Min(50, wallet.Balance) : 0;
                 if (medicalCharge > 0) wallet.TrySpend(medicalCharge);

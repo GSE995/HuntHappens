@@ -39,7 +39,7 @@ namespace HuntHappens.Editor
             if (holder == null || player.GetComponent<PlayerInteraction>() == null)
                 throw new InvalidOperationException("Set up item interaction before the tranquilizer.");
             Undo.RecordObject(holder, "Increase carry capacity");
-            holder.EnsureMaximumMass(80);
+            holder.EnsureMaximumMass(20);
             PrefabUtility.RecordPrefabInstancePropertyModifications(holder);
             var gun = player.GetComponent<TranquilizerGun>();
             if (gun == null) gun = Undo.AddComponent<TranquilizerGun>(player.gameObject);

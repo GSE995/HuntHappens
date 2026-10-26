@@ -61,7 +61,7 @@ namespace HuntHappens.Editor
             var dialogue = AssetDatabase.LoadAssetAtPath<HuntHappens.Characters.DialogueData>("Assets/Dialogues/FarmerIntroduction.asset");
             var serialized = new SerializedObject(dialogue);
             serialized.FindProperty("lines").GetArrayElementAtIndex(7).stringValue = "Вожак обожает шоколад! Купи в лавке и брось в стороне от стада. Пока ест — забирай остальных. Но попадёшь в него дротиком — разозлится. Самому вожаку нужно несколько попаданий.";
-            serialized.FindProperty("lines").GetArrayElementAtIndex(8).stringValue = "Поможешь вернуть всех домой? Обычных ищи на двух полянах, на дальней — ещё и вожак. Я выделил $100 на транквилизатор и дротики в лавке. Спящих неси к входу в загон или вези на пикапе.";
+            serialized.FindProperty("lines").GetArrayElementAtIndex(8).stringValue = "Поможешь вернуть всех домой? Обычных ищи на двух полянах, на дальней — ещё и вожак. Я выделил $100 на транквилизатор и дротики в лавке. Олень слишком тяжёлый для одного. Подкати тележку к спящему, погрузи его и довези к входу в загон.";
             serialized.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(dialogue);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();

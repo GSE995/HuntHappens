@@ -189,6 +189,16 @@ namespace HuntHappens.Player
                     KeepWristAtBottom(ref right);
                 }
             }
+            var cart = arms.Input != null ? arms.Input.GetComponent<HuntHappens.Transport.CartDriver>()?.Cart : null;
+            if (cart != null && mode != FirstPersonArms.VisualMode.Hidden)
+            {
+                // World-space grip points stay on the handle while the player looks around.
+                left = transform.InverseTransformPoint(cart.transform.TransformPoint(new Vector3(-.48f,1.16f,-2.46f)));
+                right = transform.InverseTransformPoint(cart.transform.TransformPoint(new Vector3(.48f,1.16f,-2.46f)));
+                leftRotation = Quaternion.Inverse(transform.rotation) * cart.transform.rotation * Quaternion.Euler(-15,25,-15);
+                rightRotation = Quaternion.Inverse(transform.rotation) * cart.transform.rotation * Quaternion.Euler(-15,-25,15);
+                nearest = obstructionDistance;
+            }
             arms.Draw(left, leftRotation, right, rightRotation, mode != FirstPersonArms.VisualMode.Hidden && nearest > 0.25f, throwing ? 0 : miniatureBlend);
         }
         private void KeepWristAtBottom(ref Vector3 position)

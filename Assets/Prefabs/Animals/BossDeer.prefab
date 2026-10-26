@@ -389,7 +389,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9541d86e2fd84c1d9990edf0852d74ab, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshPro
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -633,7 +633,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8384790863007602295}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 240
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -662,7 +662,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1bf1715f888cb7c48a4e7e9c877fa9fc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerPerception
   player: {fileID: 0}
   detectionRadius: 12
@@ -684,7 +684,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1310cd706c060664599357fabebf6c57, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerAI
   currentState: 0
   walkSpeed: 1.6
@@ -710,7 +710,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9039d79822f07e140be81a0b46bd782a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerAnimation
   visual: {fileID: 53900654535501202}
   headPivot: {fileID: 1451511681477577617}
@@ -743,7 +743,7 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 58ff89d500e55db4997cd9248e57c2fa, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Interaction.PickupItem
   pickupPrompt: "E \u2014 \u041F\u043E\u0434\u043D\u044F\u0442\u044C \u043E\u043B\u0435\u043D\u044F"
   carryDistance: 2.8
@@ -780,11 +780,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d634a2484809e64286db59d244d0d93, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerPhysics
   standingCollider: {fileID: 7690123671561502909}
   sleepingCollider: {fileID: 7976499312555528991}
-  sleepingMass: 45
+  sleepingMass: 240
   recoverySearchRadius: 2
 --- !u!114 &5642659562763300804
 MonoBehaviour:
@@ -796,7 +796,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 41dddc9e349dd3b47899b51c4dcc6642, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerSedation
   currentState: 0
   requiredDose: 3
@@ -814,7 +814,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0648c8e45b1045f49854182dcf11cc0c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerLeader
   reactionRadius: 15
   protectionRadius: 12

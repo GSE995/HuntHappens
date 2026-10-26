@@ -49,10 +49,13 @@ namespace HuntHappens.Animals
             Trap = null;
             previous?.Release(this);
         }
+        public HuntHappens.Transport.DeerCart Cart { get; internal set; }
+        public void RestartSleepTimer() { if (currentState == SedationState.Unconscious) elapsed = 0; }
         public string QuestId { get; set; }
         public bool IsDelivered { get; private set; }
         public void PlaceInEnclosure(Vector3 position, Quaternion rotation)
         {
+            Cart?.ReleaseDelivered(this);
             GetComponent<HuntHappens.Interaction.PickupItem>().Holder?.Drop();
             IsDelivered = true;
             deliveryReservation = null;
@@ -70,6 +73,7 @@ namespace HuntHappens.Animals
             transform.SetPositionAndRotation(position, rotation);
             if (sleepIndicator != null) sleepIndicator.gameObject.SetActive(false);
         }
+        private void OnDestroy() { if (Cart != null) Cart.ReleaseDelivered(this); }
         public bool DeliveryReserved => deliveryReservation != null && deliveryReservation.isActiveAndEnabled;
         public void ReserveForDelivery(MonoBehaviour owner) { if (deliveryReservation == null || deliveryReservation == owner) deliveryReservation = owner; }
         public void ReleaseDeliveryReservation(MonoBehaviour owner) { if (deliveryReservation == owner) deliveryReservation = null; }
