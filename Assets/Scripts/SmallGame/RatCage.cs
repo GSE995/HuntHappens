@@ -11,9 +11,13 @@ namespace HuntHappens.SmallGame
         public HuntHappens.Interaction.InventoryEntry StoredCargo { get; private set; }
         private bool recovered;
         public string Prompt => StoredCargo != null ? StoredCargo.Title + "\nE — забрать крысу и клетку" : Captive != null ? (Captive.isAggressive ? "Крупная крыса — $25" : Captive.isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — забрать крысу и клетку" : Baited ? "Ждём крысу. Отойдите на 3 м | E — забрать клетку" : "E — положить хлеб | без хлеба: забрать клетку";
-        public void RestoreCargo(int kind, RatCage template)
+        public void RestoreCargo(int kind, RatCage template, bool baited = false)
         {
-            if (kind < 1 || kind > 3) return;
+            if (kind < 1 || kind > 3)
+            {
+                Baited = baited; bait.SetActive(Baited);
+                return;
+            }
             StoredCargo = new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = kind };
             Baited = false; bait.SetActive(false);
             var visual = gameObject.AddComponent<CageCargoVisual>();
@@ -39,7 +43,8 @@ namespace HuntHappens.SmallGame
             if (!Baited && Captive == null && player.Bread > 0)
             { player.UseBread(); Baited = true; bait.SetActive(true); return true; }
             if (!player.GetComponent<HuntHappens.Interaction.PlayerInventory>().Receive(new HuntHappens.Interaction.InventoryEntry {
-                kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = Captive != null ? Captive.Kind + 1 : 0 })) return false;
+                kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = Captive != null ? Captive.Kind + 1 : 0,
+                cageBaited = Baited && Captive == null })) return false;
             recovered = true;
             bool caught = Captive != null;
             if (caught) Captive.ReleaseForRespawn();

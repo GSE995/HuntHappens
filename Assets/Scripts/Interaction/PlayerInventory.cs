@@ -13,10 +13,11 @@ namespace HuntHappens.Interaction
         public InventoryKind kind;
         public int quantity = 1;
         // Presentation of harvested cage cargo; the catch itself remains in RatHunting.
-        public int cageRat; // 0 empty, 1 black, 2 grey, 3 large.
+        public int cageRat; // 0 no rat, 1 black, 2 grey, 3 large.
+        public bool cageBaited;
         [NonSerialized] public PickupItem physical;
         public string Title => kind == InventoryKind.Gun ? "Транквилизатор" : kind == InventoryKind.Trap ? "Ловушка" :
-            kind == InventoryKind.Cage ? (cageRat == 1 ? "Клетка с чёрной крысой" : cageRat == 2 ? "Клетка с серой крысой" : cageRat == 3 ? "Клетка с крупной крысой" : "Клетка для крыс") : kind == InventoryKind.Bread ? "Хлеб" :
+            kind == InventoryKind.Cage ? (cageRat == 1 ? "Клетка с чёрной крысой" : cageRat == 2 ? "Клетка с серой крысой" : cageRat == 3 ? "Клетка с крупной крысой" : cageBaited ? "Клетка с приманкой" : "Клетка для крыс") : kind == InventoryKind.Bread ? "Хлеб" :
             kind == InventoryKind.Chocolate ? "Шоколад" : kind == InventoryKind.Darts ? "Дротики" : physical != null ? physical.name : "Предмет";
         public int Icon => kind == InventoryKind.Gun ? 0 : kind == InventoryKind.Trap ? 2 : kind == InventoryKind.Cage ? 3 :
             kind == InventoryKind.Bread ? 4 : kind == InventoryKind.Darts ? 5 : 1;

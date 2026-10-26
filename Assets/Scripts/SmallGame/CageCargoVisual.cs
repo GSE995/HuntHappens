@@ -10,6 +10,8 @@ namespace HuntHappens.SmallGame
     public sealed class CageCargoVisual : MonoBehaviour
     {
         private Transform door;
+        private GameObject bait;
+        private RatCage placedCage;
         private Vector3 openDoorPosition;
         private InventoryEntry entry;
         private GameObject rat;
@@ -20,6 +22,8 @@ namespace HuntHappens.SmallGame
         {
             door = GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == template.door.name);
             if (door != null) openDoorPosition = door.localPosition;
+            bait = GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == template.bait.name)?.gameObject;
+            placedCage = GetComponent<RatCage>();
         }
 
         public void Bind(InventoryEntry value)
@@ -33,6 +37,7 @@ namespace HuntHappens.SmallGame
         public void Refresh()
         {
             int kind = entry?.kind == InventoryKind.Cage ? Mathf.Clamp(entry.cageRat, 0, 3) : 0;
+            if (bait != null) bait.SetActive(placedCage != null ? placedCage.Baited : kind == 0 && entry?.kind == InventoryKind.Cage && entry.cageBaited);
             if (kind == shownKind) return;
             shownKind = kind;
             if (door != null) door.localPosition = kind > 0 ? new Vector3(0, .25f, .44f) : openDoorPosition;

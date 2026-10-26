@@ -38,6 +38,7 @@ namespace HuntHappens.Interaction
             if (entry.kind == InventoryKind.Cage) source = owner.GetComponent<HuntHappens.SmallGame.RatHunting>()?.cagePrefab?.gameObject;
             if (entry.kind == InventoryKind.Trap) source = owner.GetComponent<HuntHappens.Traps.TrapPlacement>()?.Manager?.Prefab?.gameObject;
             Transform cageDoor = null;
+            Transform cageBait = null;
             var cageTemplate = entry.kind == InventoryKind.Cage ? source?.GetComponent<HuntHappens.SmallGame.RatCage>() : null;
             if (cageTemplate != null)
             {
@@ -45,6 +46,11 @@ namespace HuntHappens.Interaction
                 cageDoor.SetParent(root.transform, false);
                 cageDoor.SetLocalPositionAndRotation(cageTemplate.door.localPosition, cageTemplate.door.localRotation);
                 cageDoor.localScale = cageTemplate.door.localScale;
+                cageBait = new GameObject(cageTemplate.bait.name).transform;
+                cageBait.SetParent(root.transform, false);
+                cageBait.SetLocalPositionAndRotation(cageTemplate.bait.transform.localPosition, cageTemplate.bait.transform.localRotation);
+                cageBait.localScale = cageTemplate.bait.transform.localScale;
+                cageBait.gameObject.SetActive(false);
             }
             // Copy only the render meshes: a dropped tool must not fire, catch animals or run prefab scripts.
             if (source != null)
@@ -53,7 +59,8 @@ namespace HuntHappens.Interaction
                     bool visible = true;
                     for (var node = filter.transform; node != source.transform; node = node.parent)
                         if (!node.gameObject.activeSelf) { visible = false; break; }
-                    if (!visible) continue;
+                    bool baitMesh = cageTemplate != null && filter.transform.IsChildOf(cageTemplate.bait.transform);
+                    if (!visible && !baitMesh) continue;
                     var renderer = filter.GetComponent<MeshRenderer>(); if (renderer == null) continue;
                     var mesh = new GameObject(filter.name, typeof(MeshFilter), typeof(MeshRenderer));
                     mesh.transform.SetParent(root.transform, false);
@@ -62,6 +69,7 @@ namespace HuntHappens.Interaction
                     mesh.transform.localScale = filter.transform.lossyScale;
                     if (cageDoor != null && filter.transform.IsChildOf(cageTemplate.door))
                         mesh.transform.SetParent(cageDoor, true);
+                    if (baitMesh) mesh.transform.SetParent(cageBait, true);
                     mesh.GetComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
                     mesh.GetComponent<MeshRenderer>().sharedMaterials = renderer.sharedMaterials;
                 }

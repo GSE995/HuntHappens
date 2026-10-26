@@ -32,10 +32,11 @@ namespace HuntHappens.Editor
             {
                 ShopProgress.InventoryChecksRunning = true;
                 menu.Continue();
+                CheckBait(hunt, inventory, arms);
                 for (int kind = 0; kind < 3; kind++)
                 {
                     ShopProgress.Reset(); inventory.Reload(); hunt.Reload(); hunt.shop.ReloadProgress();
-                    var rat = UnityEngine.Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).First(r => r.Kind == kind);
+                    var rat = UnityEngine.Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).First(r => r.Kind == kind && !r.Caught);
                     cage = UnityEngine.Object.Instantiate(hunt.cagePrefab, rat.transform.position, Quaternion.identity);
                     cage.Owner = hunt;
                     Check(inventory.Receive(new InventoryEntry { kind = InventoryKind.Bread }), "receive bait");
@@ -79,7 +80,7 @@ namespace HuntHappens.Editor
                 Check(cage.Interact(hunt) && inventory.Hand.cageRat == 0, "empty cage stays empty");
                 Draw(arms); VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, false);
                 Check(PlayerPrefs.GetString(ShopProgress.PlayerKey) == playerSave, "player save untouched during checks");
-                return "Cage cargo checks PASSED: all 3 species; closed door and render-only rat; exact catch/reward; slot switch; save/reload; repeated LMB placement/retrieval and Q/pickup preserve cargo without duplicate catch; sale clears display; empty cage unchanged; player save preserved";
+                return "Cage cargo checks PASSED: bait paid once, preserved in hand/slots/save/Q/LMB, active after placement and consumed on capture; all 3 species; closed door and render-only rat; exact catch/reward; repeated LMB/E and Q/E without duplicate catch; sale clears display; empty cage unchanged; player save preserved";
             }
             finally
             {
@@ -98,7 +99,53 @@ namespace HuntHappens.Editor
         private static void Draw(FirstPersonArms arms) => arms.Draw(new Vector3(-.25f, -.3f, .7f), Quaternion.identity,
             new Vector3(.25f, -.3f, .7f), Quaternion.identity, true, 1);
 
-        private static void PlaceAndRetrieve(RatHunting hunt, PlayerInventory inventory, int kind, bool sell = false)
+        private static void CheckBait(RatHunting hunt, PlayerInventory inventory, FirstPersonArms arms)
+        {
+            ShopProgress.Reset(); inventory.Reload(); hunt.Reload(); hunt.shop.ReloadProgress();
+            var cage = UnityEngine.Object.Instantiate(hunt.cagePrefab); cage.Owner = hunt;
+            try
+            {
+                Check(inventory.Receive(new InventoryEntry { kind = InventoryKind.Bread, quantity = 3 }) && inventory.SelectSlot(0), "stock three bread");
+                Check(cage.Interact(hunt) && cage.Baited && hunt.Bread == 2, "load exactly one bread");
+                Check(inventory.Receive(new InventoryEntry { kind = InventoryKind.Trap }), "occupy hands before retrieval");
+                Check(!cage.Interact(hunt) && cage.Baited && hunt.Bread == 2, "failed pickup preserves bait");
+                Check(inventory.SelectSlot(2), "stow blocking item");
+                Check(cage.Interact(hunt) && inventory.Hand.cageBaited && inventory.Hand.cageRat == 0 && hunt.Bread == 2, "retrieve baited cage without losing bread");
+                Check(!cage.Interact(hunt), "repeated pickup cannot duplicate baited cage");
+                Draw(arms); VerifyBait(arms.MiniatureCage, hunt.cagePrefab);
+                Check(ShopProgress.Load().hand.cageBaited, "save bait in unassigned hand");
+                Check(inventory.SelectSlot(1), "store baited cage");
+                inventory.Reload(); hunt.Reload();
+                Check(inventory.Slot(1).cageBaited && inventory.SelectSlot(1) && hunt.Bread == 2, "restore baited slot without consuming bread");
+                inventory.ClearCageContents();
+                Check(inventory.Hand.cageBaited, "selling catch does not clear unused bait");
+                for (int cycle = 0; cycle < 2; cycle++)
+                {
+                    var entry = inventory.Hand;
+                    Check(inventory.DropHand(), "drop baited cage");
+                    var dropped = UnityEngine.Object.FindObjectsByType<WorldInventoryItem>(FindObjectsSortMode.None).Single(i => i.Entry == entry);
+                    VerifyBait(dropped.transform, hunt.cagePrefab);
+                    Check(dropped.Take(inventory) && inventory.Hand.cageBaited && hunt.Bread == 2, "Q/pickup preserves bait");
+                    PlaceAndRetrieve(hunt, inventory, 0);
+                }
+                var rat = UnityEngine.Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).First(r => !r.Caught);
+                PlaceAndRetrieve(hunt, inventory, 0, capture: rat);
+                Check(!inventory.Hand.cageBaited && inventory.Hand.cageRat == rat.Kind + 1 && hunt.Rats == 1 && hunt.Bread == 2, "capture consumes bait without a second bread charge");
+                Draw(arms); VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, true);
+            }
+            finally { if (cage != null) UnityEngine.Object.Destroy(cage.gameObject); }
+        }
+
+        private static void VerifyBait(Transform root, RatCage template)
+        {
+            root.GetComponent<CageCargoVisual>()?.Refresh();
+            var bait = root.GetComponentsInChildren<Transform>(true).First(t => t.name == template.bait.name);
+            var door = root.GetComponentsInChildren<Transform>(true).First(t => t.name == template.door.name);
+            Check(bait.gameObject.activeSelf && bait.GetComponentsInChildren<Renderer>().Length > 0, "bread visible inside cage");
+            Check(Vector3.Distance(door.localPosition, template.door.localPosition) < .001f, "baited cage remains open");
+        }
+
+        private static void PlaceAndRetrieve(RatHunting hunt, PlayerInventory inventory, int kind, bool sell = false, RatAI capture = null)
         {
             var camera = inventory.GetComponentInChildren<Camera>();
             var controller = inventory.GetComponent<CharacterController>();
@@ -121,6 +168,20 @@ namespace HuntHappens.Editor
                 Check(found, "find placement ground");
                 int count = hunt.Rats, deployed = hunt.Deployed;
                 placed = hunt.TryPlace();
+                if (kind == 0)
+                {
+                    Check(placed != null && placed.Baited && placed.StoredCargo == null && inventory.Hand == null && hunt.Deployed == deployed + 1, "LMB places active prebaited cage");
+                    VerifyBait(placed.transform, hunt.cagePrefab);
+                    int bread = hunt.Bread;
+                    if (capture != null)
+                    {
+                        Check(capture.GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(placed.transform.position) && placed.TryCapture(capture), "prebaited cage captures rat");
+                        Check(!placed.Baited && !placed.bait.activeSelf, "capture consumes and hides bait");
+                    }
+                    Check(placed.Interact(hunt) && inventory.Hand.cageBaited == (capture == null) && hunt.Bread == bread && hunt.Deployed == deployed, "retrieve preserves remaining bait and never charges again");
+                    Check(hunt.Rats == count + (capture != null ? 1 : 0), "bait handling does not duplicate catch");
+                    return;
+                }
                 Check(placed != null && placed.StoredCargo?.cageRat == kind && inventory.Hand == null && hunt.Deployed == deployed + 1, "LMB places same closed cargo");
                 VerifyVisual(placed.transform, hunt.cagePrefab, true);
                 Check(placed.Prompt.Contains("забрать") && !placed.Prompt.Contains("положить хлеб") && !placed.Baited, "occupied cage cannot be baited");

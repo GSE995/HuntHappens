@@ -87,7 +87,10 @@ namespace HuntHappens.Shop
         {
             if (entry == null || entry.kind == HuntHappens.Interaction.InventoryKind.Physical)
                 return new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.None, quantity = 0 };
-            return new HuntHappens.Interaction.InventoryEntry { kind = entry.kind, quantity = entry.quantity, cageRat = entry.kind == HuntHappens.Interaction.InventoryKind.Cage ? Mathf.Clamp(entry.cageRat, 0, 3) : 0 };
+            return new HuntHappens.Interaction.InventoryEntry {
+                kind = entry.kind, quantity = entry.quantity,
+                cageRat = entry.kind == HuntHappens.Interaction.InventoryKind.Cage ? Mathf.Clamp(entry.cageRat, 0, 3) : 0,
+                cageBaited = entry.kind == HuntHappens.Interaction.InventoryKind.Cage && entry.cageRat == 0 && entry.cageBaited };
         }
     }
 }
