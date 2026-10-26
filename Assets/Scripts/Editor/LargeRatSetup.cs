@@ -27,24 +27,42 @@ namespace HuntHappens.Editor
             PrefabUtility.SaveAsPrefabAsset(root, path); PrefabUtility.UnloadPrefabContents(root);
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
             var player = Object.FindAnyObjectByType<RatHunting>(); if (!player.GetComponent<PlayerHealth>()) player.gameObject.AddComponent<PlayerHealth>();
-            if (!Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).Any(r => r.isAggressive))
+            EnsureGuardAtEverySpot();
+            foreach (var item in Object.FindObjectsByType<HuntHappens.Shop.WorldShopItem>(FindObjectsSortMode.None))
+                if (item.Kind == 3) item.GetComponentInChildren<TMPro.TextMeshPro>().text = "ПРИЁМ КРЫС\n$10 / $15 / $25";
+            EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
+            Debug.Log("Large rats installed: one brown guard per litter spot, 1.4x size, player health, $25 reception.");
+        }
+
+        public static void EnsureGuardAtEverySpot()
+        {
+            if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Edit mode required");
+            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != "Assets/Scenes/ForestPrototype.unity")
+                throw new System.InvalidOperationException("Open ForestPrototype first");
+            var spots = Object.FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None).OrderBy(s => s.transform.position.x).ToArray();
+            if (spots.Length == 0) throw new System.InvalidOperationException("No litter spots found");
+            var guards = Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).Where(r => r.isAggressive).ToArray();
+            var occupied = guards.Select(r => spots.OrderBy(s => (s.transform.position - r.transform.position).sqrMagnitude).First()).ToHashSet();
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/SmallGame/Rat-Large.prefab");
+            var player = Object.FindAnyObjectByType<RatHunting>();
+            var parent = GameObject.Find("Small Game").transform;
+            foreach (var spot in spots)
             {
-                var spot = Object.FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None).OrderByDescending(s => s.transform.position.z).First();
+                if (occupied.Contains(spot)) continue;
                 bool found = false;
                 for (int i = 0; i < 24; i++)
                 {
                     var position = spot.transform.position + Quaternion.Euler(0, i * 47, 0) * Vector3.forward * 1.6f;
                     if (!NavMesh.SamplePosition(position, out var nav, 0.3f, NavMesh.AllAreas)) continue;
                     if (!player.ground.Raycast(new Ray(nav.position + Vector3.up, Vector3.down), out var ground, 2)) continue;
-                    var instance = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path));
-                    instance.name = "Large Guard Rat"; instance.transform.SetParent(GameObject.Find("Small Game").transform); instance.transform.position = ground.point; found = true; break;
+                    var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                    instance.name = "Large Guard Rat"; instance.transform.SetParent(parent); instance.transform.position = ground.point;
+                    instance.GetComponent<RatAI>().territoryRadius = 7f;
+                    found = true; break;
                 }
-                if (!found) throw new System.Exception("No large rat spawn");
+                if (!found) throw new System.Exception("No large rat spawn near " + spot.name + " at " + spot.transform.position);
             }
-            foreach (var item in Object.FindObjectsByType<HuntHappens.Shop.WorldShopItem>(FindObjectsSortMode.None))
-                if (item.Kind == 3) item.GetComponentInChildren<TMPro.TextMeshPro>().text = "ПРИЁМ КРЫС\n$10 / $15 / $25";
-            EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
-            Debug.Log("Large rat installed: one brown guard, 1.4x size, player health, $25 reception.");
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         }
     }
 }

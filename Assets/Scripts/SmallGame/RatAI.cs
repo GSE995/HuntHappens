@@ -19,7 +19,7 @@ namespace HuntHappens.SmallGame
         public Vector3 Home => home;
         private float escapeUntil;
         public string PickupPrompt => (isAggressive ? "Крупная крыса — $25" : isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — подобрать спящую крысу";
-        private float biteAt = -1, nextBite;
+        private float nextBite;
         private HuntHappens.Player.PlayerHealth health;
         public int SalePrice => isAggressive ? 25 : isGrey ? 15 : 10;
         private NavMeshAgent agent;
@@ -64,7 +64,6 @@ namespace HuntHappens.SmallGame
             IsSedated = true;
             fallAsleepAt = Time.time + Mathf.Max(0.5f, Mathf.Clamp(durationMultiplier, 0.25f, 1f));
             wakeAt = fallAsleepAt + 25f;
-            biteAt = -1;
             restUntil = 0;
             agent.ResetPath();
             agent.isStopped = true;
@@ -84,7 +83,7 @@ namespace HuntHappens.SmallGame
         public void Capture(RatCage cage)
         {
             IsSedated = false; sleepPose = 0; visual.localRotation = normalVisualRotation;
-            Caught = true; biteAt = -1; agent.enabled = false;
+            Caught = true; agent.enabled = false;
             // Fold the larger animal into the existing cage without clipping through its bars.
             if (isAggressive) visual.localScale = normalVisualScale / 1.4f;
             transform.SetPositionAndRotation(cage.transform.position + new Vector3(0, 0.04f, 0), cage.transform.rotation);
@@ -101,7 +100,6 @@ namespace HuntHappens.SmallGame
             Caught = true;
             IsSedated = false;
             sleepPose = 0;
-            biteAt = -1;
             respawnAt = 0;
             visual.localRotation = normalVisualRotation;
             agent.enabled = false;
@@ -142,7 +140,8 @@ namespace HuntHappens.SmallGame
             if (player != null && player.ground != null && player.ground.Raycast(new Ray(transform.position + Vector3.up, Vector3.down), out var floor, 2f))
                 visual.position = new Vector3(transform.position.x, floor.point.y, transform.position.z);
             float distance = Vector3.Distance(transform.position, player.transform.position);
-            if (Time.time < nextDecision) return;
+            // Guards check foot contact every frame instead of waiting for the wander tick.
+            if (!isAggressive && Time.time < nextDecision) return;
             nextDecision = Time.time + 0.4f;
             if (Time.time < escapeUntil)
             {
@@ -160,7 +159,7 @@ namespace HuntHappens.SmallGame
                 if (cage.Baited && d < best) { best = d; closest = cage; }
             }
             if (closest != null)
-            { biteAt = -1; restUntil = 0; if (!closest.TryCapture(this)) Move(closest.transform.position, 1.2f); return; }
+            { restUntil = 0; if (!closest.TryCapture(this)) Move(closest.transform.position, 1.2f); return; }
             if (isAggressive && HuntPlayer(distance)) return;
             if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance < 0.3f))
             {
@@ -175,22 +174,24 @@ namespace HuntHappens.SmallGame
             bool inTerritory = Vector3.Distance(player.transform.position, home) < 16f;
             if (!inTerritory || distance > 8f || health == null || player.GetComponent<HuntHappens.Player.PrototypeInput>().GameplayBlocked)
             {
-                biteAt = -1;
                 if (Vector3.Distance(transform.position, home) > 2.5f) { Move(home, 1.2f); return true; }
                 return false;
             }
             restUntil = 0;
-            Vector3 delta = player.transform.position - transform.position; delta.y = 0;
+            var controller = player.GetComponent<CharacterController>();
+            Vector3 feet = controller != null
+                ? player.transform.TransformPoint(controller.center - Vector3.up * (controller.height * 0.5f))
+                : player.transform.position;
+            Vector3 delta = feet - transform.position; delta.y = 0;
             if (delta.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(delta);
-            if (distance > 1.1f) { biteAt = -1; Move(player.transform.position, 6f); return true; }
+            if (delta.sqrMagnitude > 1.1f * 1.1f || Mathf.Abs(feet.y - transform.position.y) > 0.6f)
+            { Move(feet, 6f, 0.95f); return true; }
             agent.ResetPath();
-            // Visible pause before the bite allows the player to step away.
+            // First contact bites immediately; repeated bites still respect the cooldown.
             if (Time.time < nextBite) return true;
-            if (biteAt < 0) { biteAt = Time.time + 0.4f; return true; }
-            if (Time.time < biteAt) return true;
-            biteAt = -1; nextBite = Time.time + 1.5f;
+            nextBite = Time.time + 1.5f;
             Vector3 from = transform.position + Vector3.up * 0.25f;
-            Vector3 to = player.transform.position + Vector3.up * 0.25f;
+            Vector3 to = feet + Vector3.up * 0.25f;
             foreach (var hit in Physics.RaycastAll(from, to - from, Vector3.Distance(from, to), ~0, QueryTriggerInteraction.Ignore))
                 if (!hit.transform.IsChildOf(transform) && !hit.transform.IsChildOf(player.transform)) return true;
             health.TakeDamage(20);
@@ -217,16 +218,17 @@ namespace HuntHappens.SmallGame
                 if (!NavMesh.SamplePosition(center + new Vector3(offset.x, 0, offset.y), out var hit, 0.4f, agent.areaMask)) continue;
                 if (!agent.CalculatePath(hit.position, path) || path.status != NavMeshPathStatus.PathComplete) continue;
                 agent.speed = 0.8f;
+                agent.stoppingDistance = 0;
                 agent.SetPath(path);
                 return;
             }
         }
-        private void Move(Vector3 point, float speed)
+        private void Move(Vector3 point, float speed, float stoppingDistance = 0)
         {
             if (territoryRadius > 0) point = home + Vector3.ClampMagnitude(point - home, territoryRadius);
             if (NavMesh.SamplePosition(point, out var hit, 2, NavMesh.AllAreas) &&
                 (territoryRadius <= 0 || Vector3.Distance(hit.position, home) <= territoryRadius + 0.5f))
-            { agent.speed = speed; agent.SetDestination(hit.position); }
+            { agent.speed = speed; agent.stoppingDistance = stoppingDistance; agent.SetDestination(hit.position); }
         }
     }
 }

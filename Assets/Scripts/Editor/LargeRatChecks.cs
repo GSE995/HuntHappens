@@ -29,23 +29,26 @@ namespace HuntHappens.Editor
         IEnumerator SafeRun()
         {
             var run=Run();while(true){object next;try{if(!run.MoveNext())break;next=run.Current;}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);yield break;}yield return next;}
-            Debug.Log("Large rat checks PASSED: population, bite/windup/cooldown, wall blocking, leash, capture, no captive damage, $25 sale/save, respawn and player recovery.");EditorApplication.Exit(0);
+            Debug.Log("Large rat checks PASSED: population, immediate bite/cooldown, wall blocking, leash, capture, no captive damage, $25 sale/save, respawn and player recovery.");EditorApplication.Exit(0);
         }
         void Check(bool ok,string label){if(!ok)throw new Exception("Large rat check: "+label);}
         IEnumerator Run()
         {
             yield return new WaitForSeconds(1);
-            var rats=FindObjectsByType<RatAI>(FindObjectsSortMode.None);Check(rats.Length==9 && rats.Count(r=>r.isAggressive)==1,"one new large rat");
+            var rats=FindObjectsByType<RatAI>(FindObjectsSortMode.None);
+            var spots=FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None);
+            Check(rats.Length==8+spots.Length && rats.Count(r=>r.isAggressive)==spots.Length,"one large rat per litter spot");
+            foreach(var spot in spots)
+                Check(rats.Count(r=>r.isAggressive && spots.OrderBy(s=>(s.transform.position-r.Home).sqrMagnitude).First()==spot)==1,"each litter spot has its own guard");
             Check(rats.Count(r=>r.isGrey)==2 && rats.Count(r=>!r.isGrey&&!r.isAggressive)==6,"original population intact");
-            var rat=rats.Single(r=>r.isAggressive);var agent=rat.GetComponent<NavMeshAgent>();
+            var rat=rats.First(r=>r.isAggressive);var agent=rat.GetComponent<NavMeshAgent>();
             var hunt=FindAnyObjectByType<RatHunting>();var health=hunt.GetComponent<PlayerHealth>();var input=hunt.GetComponent<PrototypeInput>();
             hunt.GetComponent<FirstPersonMotor>().enabled=false;hunt.GetComponent<CharacterController>().enabled=false;
             input.SetGameplayBlocked(false);
             foreach(var other in rats.Where(r=>r!=rat)){other.enabled=false;other.GetComponent<NavMeshAgent>().enabled=false;}
             var home=rat.transform.position;var playerSpawn=hunt.transform.position;
             agent.ResetPath();hunt.transform.position=home+Vector3.right*0.8f;Physics.SyncTransforms();
-            yield return new WaitForSeconds(0.25f);Check(health.Current==100,"bite telegraph");
-            yield return new WaitForSeconds(1.1f);Check(health.Current==80,"first bite deals 20");
+            yield return null;yield return null;Check(health.Current==80,"first foot contact immediately deals 20");
             yield return new WaitForSeconds(0.5f);Check(health.Current==80,"bite cooldown");
             var wall=GameObject.CreatePrimitive(PrimitiveType.Cube);wall.transform.position=home+new Vector3(0.4f,0.35f,0);wall.transform.localScale=new Vector3(0.1f,0.7f,1);Physics.SyncTransforms();
             yield return new WaitForSeconds(2.5f);Check(health.Current==80,"no biting through walls");Destroy(wall);yield return null;
