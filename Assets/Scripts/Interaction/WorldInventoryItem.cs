@@ -18,7 +18,8 @@ namespace HuntHappens.Interaction
         }
         public InventoryEntry Entry { get; private set; }
         public PlayerInventory Owner { get; private set; }
-        public string Prompt => Entry != null ? "E — поднять: " + Entry.Title : "";
+        public string Prompt => Entry != null ? "E — поднять: " + Entry.Title +
+            (HuntHappens.SmallGame.RatBait.IsBait(Entry.kind) ? "\n" + HuntHappens.SmallGame.RatBait.Description(Entry.kind) : "") : "";
         public void ConsumeOne()
         {
             if (Entry == null) return;
@@ -75,9 +76,11 @@ namespace HuntHappens.Interaction
                 }
             if (root.transform.childCount == 0)
             {
-                var visual = GameObject.CreatePrimitive(entry.kind == InventoryKind.Bread || entry.kind == InventoryKind.Chocolate ? PrimitiveType.Cube : PrimitiveType.Capsule);
+                var visual = GameObject.CreatePrimitive(entry.kind == InventoryKind.Latte ? PrimitiveType.Cylinder : entry.kind == InventoryKind.Bread || entry.kind == InventoryKind.Chocolate || entry.kind == InventoryKind.CheeseSandwich ? PrimitiveType.Cube : PrimitiveType.Capsule);
                 visual.transform.SetParent(root.transform, false); visual.transform.localScale = new Vector3(0.25f, 0.12f, 0.18f);
                 if (entry.kind == InventoryKind.Chocolate) visual.GetComponent<Renderer>().material.color = new Color(.23f, .09f, .035f);
+                if (entry.kind == InventoryKind.CheeseSandwich) visual.GetComponent<Renderer>().material.color = new Color(1f, .78f, .25f);
+                if (entry.kind == InventoryKind.Latte) { visual.transform.localScale = new Vector3(.14f, .1f, .14f); visual.GetComponent<Renderer>().material.color = new Color(.85f, .7f, .52f); }
                 Object.Destroy(visual.GetComponent<Collider>());
             }
             if (entry.kind == InventoryKind.Cage)

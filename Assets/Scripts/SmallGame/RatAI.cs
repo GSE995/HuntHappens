@@ -156,7 +156,7 @@ namespace HuntHappens.SmallGame
             foreach (var cage in FindObjectsByType<RatCage>(FindObjectsSortMode.None))
             {
                 float d = Vector3.Distance(transform.position, cage.transform.position);
-                if (cage.Baited && d < best) { best = d; closest = cage; }
+                if (cage.Accepts(this) && d < best) { best = d; closest = cage; }
             }
             if (closest != null)
             { restUntil = 0; if (!closest.TryCapture(this)) Move(closest.transform.position, 1.2f); return; }

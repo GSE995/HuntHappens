@@ -38,6 +38,17 @@ namespace HuntHappens.SmallGame
         private PlayerInventory Inventory => GetComponent<PlayerInventory>();
         public int Cages => Inventory.Count(InventoryKind.Cage) + Deployed;
         public int Bread => Inventory.Count(InventoryKind.Bread);
+        public InventoryKind SelectedBait
+        {
+            get
+            {
+                if (Inventory.Hand != null && RatBait.IsBait(Inventory.Hand.kind)) return Inventory.Hand.kind;
+                for (int i = 0; i < PlayerInventory.Capacity; i++)
+                    if (Inventory.Slot(i) != null && RatBait.IsBait(Inventory.Slot(i).kind)) return Inventory.Slot(i).kind;
+                return InventoryKind.None;
+            }
+        }
+        public bool UseBait(InventoryKind kind) => RatBait.IsBait(kind) && Inventory.Consume(kind);
         public int Rats { get; private set; }
         public int GreyRats { get; private set; }
         public int LargeRats { get; private set; }
@@ -115,12 +126,12 @@ namespace HuntHappens.SmallGame
         {
             if (shop == null || !shop.CanTradeSupplies) return false;
             int price = kind == 6 ? shop.ChocolatePrice : WorldShopItem.PriceFor(kind);
-            if (kind < 0 || kind > 6 || kind == 3 ||
+            if (kind < 0 || kind > 8 || kind == 3 ||
                 (kind == 2 ? Darts >= PlayerInventory.MaximumDarts : !Inventory.CanReceive)) return false;
             if (!shop.Wallet.TrySpend(price)) return false;
             if (kind == 2) { Inventory.AddDarts(1); Save(); return true; }
             Inventory.Receive(new InventoryEntry { kind = kind == 0 ? InventoryKind.Cage : kind == 1 ? InventoryKind.Bread :
-                kind == 4 ? InventoryKind.Gun : kind == 6 ? InventoryKind.Chocolate : InventoryKind.Trap });
+                kind == 4 ? InventoryKind.Gun : kind == 6 ? InventoryKind.Chocolate : kind == 7 ? InventoryKind.CheeseSandwich : kind == 8 ? InventoryKind.Latte : InventoryKind.Trap });
             Save(); return true;
         }
         public bool Sell()
@@ -182,12 +193,12 @@ namespace HuntHappens.SmallGame
         {
             if (!Selected || input.GameplayBlocked || !Evaluate(out var point)) return null;
             var cage = Instantiate(cagePrefab, point, Quaternion.identity); cage.Owner = this;
-            cage.RestoreCargo(Inventory.Hand.cageRat, cagePrefab, Inventory.Hand.cageBaited);
+            cage.RestoreCargo(Inventory.Hand.cageRat, cagePrefab, Inventory.Hand.cageBaited, Inventory.Hand.CageBait);
             Inventory.Consume(InventoryKind.Cage); Deployed++; Placed?.Invoke(); return cage;
         }
         private void LateUpdate()
         {
-            Hint = Available <= 0 ? "Все клетки установлены — заберите их клавишей E" : Evaluate(out _) ? (Inventory.Hand?.cageRat > 0 ? "ЛКМ — поставить закрытую клетку с крысой" : Inventory.Hand?.cageBaited == true ? "ЛКМ — поставить клетку с приманкой" : "ЛКМ — поставить клетку. Затем E — положить хлеб") : "Наведите на свободную землю рядом с собой";
+            Hint = Available <= 0 ? "Все клетки установлены — заберите их клавишей E" : Evaluate(out _) ? (Inventory.Hand?.cageRat > 0 ? "ЛКМ — поставить закрытую клетку с крысой" : Inventory.Hand?.cageBaited == true ? "ЛКМ — поставить клетку: " + RatBait.Name(Inventory.Hand.CageBait) : "ЛКМ — поставить клетку. Затем E — положить приманку") : "Наведите на свободную землю рядом с собой";
             if (Selected && input.ThrowPressed && GetComponent<PlayerInteraction>().LastHandledFrame != Time.frameCount) TryPlace();
         }
     }

@@ -136,6 +136,16 @@ namespace HuntHappens.Interaction
                 interaction.Target != null ? interaction.Target.PickupPrompt :
                 gun != null && gun.TrapSelected && traps != null ? traps.PlacementHint : "";
             if (visible && !inventoryOpen && string.IsNullOrEmpty(prompt.text)) prompt.text = interaction.GetComponent<PlayerInventory>().Hint;
+            if (!string.IsNullOrEmpty(prompt.text))
+            {
+                // Bait descriptions can wrap to several lines; keep the whole prompt on its backdrop.
+                Vector2 textSize = prompt.GetPreferredValues(prompt.text, 1000, Mathf.Infinity);
+                float height = Mathf.Max(60, textSize.y);
+                prompt.rectTransform.sizeDelta = new Vector2(1000, height);
+                prompt.rectTransform.anchoredPosition = new Vector2(0, -45 - height * .5f);
+                promptBackdrop.rectTransform.sizeDelta = new Vector2(Mathf.Clamp(textSize.x + 40, 650, 1040), height + 24);
+                promptBackdrop.rectTransform.anchoredPosition = prompt.rectTransform.anchoredPosition;
+            }
             promptBackdrop.gameObject.SetActive(!string.IsNullOrEmpty(prompt.text));
             if (tools != null) tools.text = interaction.GetComponent<PlayerInventory>().Hint;
             if (health != null) tools.text += "\n" + health.Status;

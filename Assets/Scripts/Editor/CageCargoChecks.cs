@@ -39,7 +39,7 @@ namespace HuntHappens.Editor
                     var rat = UnityEngine.Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).First(r => r.Kind == kind && !r.Caught);
                     cage = UnityEngine.Object.Instantiate(hunt.cagePrefab, rat.transform.position, Quaternion.identity);
                     cage.Owner = hunt;
-                    Check(inventory.Receive(new InventoryEntry { kind = InventoryKind.Bread }), "receive bait");
+                    Check(inventory.Receive(new InventoryEntry { kind = RatBait.ForRat(kind) }), "receive bait");
                     Check(inventory.SelectSlot(0) && cage.Interact(hunt) && cage.TryCapture(rat), "capture species " + kind);
                     Check(cage.Interact(hunt) && inventory.Hand?.cageRat == kind + 1 && hunt.Rats == 1, "collect cage and exactly one rat");
                     Draw(arms);
@@ -128,7 +128,7 @@ namespace HuntHappens.Editor
                     Check(dropped.Take(inventory) && inventory.Hand.cageBaited && hunt.Bread == 2, "Q/pickup preserves bait");
                     PlaceAndRetrieve(hunt, inventory, 0);
                 }
-                var rat = UnityEngine.Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).First(r => !r.Caught);
+                var rat = UnityEngine.Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).First(r => !r.Caught && r.Kind == 0);
                 PlaceAndRetrieve(hunt, inventory, 0, capture: rat);
                 Check(!inventory.Hand.cageBaited && inventory.Hand.cageRat == rat.Kind + 1 && hunt.Rats == 1 && hunt.Bread == 2, "capture consumes bait without a second bread charge");
                 Draw(arms); VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, true);
@@ -145,7 +145,7 @@ namespace HuntHappens.Editor
             Check(Vector3.Distance(door.localPosition, template.door.localPosition) < .001f, "baited cage remains open");
         }
 
-        private static void PlaceAndRetrieve(RatHunting hunt, PlayerInventory inventory, int kind, bool sell = false, RatAI capture = null)
+        internal static void PlaceAndRetrieve(RatHunting hunt, PlayerInventory inventory, int kind, bool sell = false, RatAI capture = null)
         {
             var camera = inventory.GetComponentInChildren<Camera>();
             var controller = inventory.GetComponent<CharacterController>();

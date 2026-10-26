@@ -90,7 +90,8 @@ namespace HuntHappens.Shop
             return new HuntHappens.Interaction.InventoryEntry {
                 kind = entry.kind, quantity = entry.quantity,
                 cageRat = entry.kind == HuntHappens.Interaction.InventoryKind.Cage ? Mathf.Clamp(entry.cageRat, 0, 3) : 0,
-                cageBaited = entry.kind == HuntHappens.Interaction.InventoryKind.Cage && entry.cageRat == 0 && entry.cageBaited };
+                cageBaited = entry.kind == HuntHappens.Interaction.InventoryKind.Cage && entry.cageRat == 0 && entry.cageBaited,
+                cageBait = entry.kind == HuntHappens.Interaction.InventoryKind.Cage ? entry.CageBait : HuntHappens.Interaction.InventoryKind.None };
         }
     }
 }

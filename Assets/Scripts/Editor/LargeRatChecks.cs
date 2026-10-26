@@ -54,6 +54,8 @@ namespace HuntHappens.Editor
             yield return new WaitForSeconds(2.5f);Check(health.Current==80,"no biting through walls");Destroy(wall);yield return null;
             hunt.transform.position=home+Vector3.right*24;
             yield return new WaitForSeconds(3);Check(Vector3.Distance(rat.transform.position,home)<3,"territory leash");
+            var inventory = hunt.GetComponent<HuntHappens.Interaction.PlayerInventory>();
+            Check(inventory.Receive(new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.Latte }), "latte received");
             var cage=Instantiate(hunt.cagePrefab,home,Quaternion.identity);cage.Owner=hunt;Check(cage.Interact(hunt),"bait accepted");
             float until=Time.time+20;while(!rat.Caught&&Time.time<until)yield return null;
             Check(rat.Caught && cage.Captive==rat && cage.Prompt.Contains("$25"),"natural bait capture");

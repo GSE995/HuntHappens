@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace HuntHappens.Interaction
 {
-    public enum InventoryKind { None, Gun, Trap, Cage, Bread, Darts, Physical, Chocolate }
+    public enum InventoryKind { None, Gun, Trap, Cage, Bread, Darts, Physical, Chocolate, CheeseSandwich, Latte }
 
     [Serializable]
     public sealed class InventoryEntry
@@ -15,9 +15,13 @@ namespace HuntHappens.Interaction
         // Presentation of harvested cage cargo; the catch itself remains in RatHunting.
         public int cageRat; // 0 no rat, 1 black, 2 grey, 3 large.
         public bool cageBaited;
+        public InventoryKind cageBait;
+        // Old saves only have cageBaited: their bait was always bread.
+        public InventoryKind CageBait => cageRat == 0 && cageBaited ?
+            (HuntHappens.SmallGame.RatBait.IsBait(cageBait) ? cageBait : InventoryKind.Bread) : InventoryKind.None;
         [NonSerialized] public PickupItem physical;
         public string Title => kind == InventoryKind.Gun ? "Транквилизатор" : kind == InventoryKind.Trap ? "Ловушка" :
-            kind == InventoryKind.Cage ? (cageRat == 1 ? "Клетка с чёрной крысой" : cageRat == 2 ? "Клетка с серой крысой" : cageRat == 3 ? "Клетка с крупной крысой" : cageBaited ? "Клетка с приманкой" : "Клетка для крыс") : kind == InventoryKind.Bread ? "Хлеб" :
+            kind == InventoryKind.Cage ? (cageRat == 1 ? "Клетка с чёрной крысой" : cageRat == 2 ? "Клетка с серой крысой" : cageRat == 3 ? "Клетка с крупной крысой" : cageBaited ? "Клетка: " + HuntHappens.SmallGame.RatBait.Name(CageBait) : "Клетка для крыс") : HuntHappens.SmallGame.RatBait.IsBait(kind) ? HuntHappens.SmallGame.RatBait.Name(kind) :
             kind == InventoryKind.Chocolate ? "Шоколад" : kind == InventoryKind.Darts ? "Дротики" : physical != null ? physical.name : "Предмет";
         public int Icon => kind == InventoryKind.Gun ? 0 : kind == InventoryKind.Trap ? 2 : kind == InventoryKind.Cage ? 3 :
             kind == InventoryKind.Bread ? 4 : kind == InventoryKind.Darts ? 5 : 1;
@@ -93,7 +97,7 @@ namespace HuntHappens.Interaction
             }
             loaded = true; Save();
         }
-        private static bool Valid(InventoryEntry entry) => entry != null && entry.quantity > 0 && entry.kind >= InventoryKind.Gun && (entry.kind < InventoryKind.Physical || entry.kind == InventoryKind.Chocolate) && entry.kind != InventoryKind.Darts;
+        private static bool Valid(InventoryEntry entry) => entry != null && entry.quantity > 0 && entry.kind >= InventoryKind.Gun && (entry.kind < InventoryKind.Physical || entry.kind == InventoryKind.Chocolate || HuntHappens.SmallGame.RatBait.IsBait(entry.kind)) && entry.kind != InventoryKind.Darts;
         public void Save()
         {
             if (!loaded) return;
