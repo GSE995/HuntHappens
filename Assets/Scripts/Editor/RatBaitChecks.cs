@@ -46,8 +46,9 @@ namespace HuntHappens.Editor
                         Check(cage.Interact(hunt) && cage.BaitKind == baitKind && inventory.Count(baitKind) == 1, "load exactly one " + baitKind);
                         Check(cage.Prompt.Contains(RatBait.Name(baitKind)), "installed bait named");
                         bool expected = species == bait;
-                        Check(cage.Accepts(rat) == expected, "AI target filter " + species + "/" + bait);
-                        Check(cage.TryCapture(rat) == expected, "capture matrix " + species + "/" + bait);
+                        Check(!cage.TryCapture(rat) && cage.Baited, "fear blocks immediate capture");
+                        Check(RatFearChecks.WhenCalm(cage, () => cage.Accepts(rat)) == expected, "AI target filter " + species + "/" + bait);
+                        Check(RatFearChecks.WhenCalm(cage, () => cage.TryCapture(rat)) == expected, "capture matrix " + species + "/" + bait);
                         Check(rat.Caught == expected && cage.Baited == !expected && cage.bait.activeSelf == !expected, "capture/bait state");
                         if (expected) { successes++; Check(!cage.TryCapture(rat), "no second capture"); }
                         else Check(!cage.TryCapture(rat) && cage.BaitKind == baitKind, "repeated wrong rat leaves bait");

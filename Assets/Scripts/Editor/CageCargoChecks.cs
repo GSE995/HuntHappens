@@ -40,7 +40,7 @@ namespace HuntHappens.Editor
                     cage = UnityEngine.Object.Instantiate(hunt.cagePrefab, rat.transform.position, Quaternion.identity);
                     cage.Owner = hunt;
                     Check(inventory.Receive(new InventoryEntry { kind = RatBait.ForRat(kind) }), "receive bait");
-                    Check(inventory.SelectSlot(0) && cage.Interact(hunt) && cage.TryCapture(rat), "capture species " + kind);
+                    Check(inventory.SelectSlot(0) && cage.Interact(hunt) && RatFearChecks.WhenCalm(cage, () => cage.TryCapture(rat)), "capture species " + kind);
                     Check(cage.Interact(hunt) && inventory.Hand?.cageRat == kind + 1 && hunt.Rats == 1, "collect cage and exactly one rat");
                     Draw(arms);
                     VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, true);
@@ -175,7 +175,7 @@ namespace HuntHappens.Editor
                     int bread = hunt.Bread;
                     if (capture != null)
                     {
-                        Check(capture.GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(placed.transform.position) && placed.TryCapture(capture), "prebaited cage captures rat");
+                        Check(capture.GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(placed.transform.position) && RatFearChecks.WhenCalm(placed, () => placed.TryCapture(capture)), "prebaited cage captures rat");
                         Check(!placed.Baited && !placed.bait.activeSelf, "capture consumes and hides bait");
                     }
                     Check(placed.Interact(hunt) && inventory.Hand.cageBaited == (capture == null) && hunt.Bread == bread && hunt.Deployed == deployed, "retrieve preserves remaining bait and never charges again");

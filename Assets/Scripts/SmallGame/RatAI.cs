@@ -29,6 +29,7 @@ namespace HuntHappens.SmallGame
         private float respawnAt;
         private RatGatheringSpot[] gatheringSpots;
         private float restUntil;
+        private RatCage baitTarget;
         public bool Caught { get; private set; }
         private void Start() { agent = GetComponent<NavMeshAgent>(); home = transform.position; normalVisualScale = visual.localScale; normalVisualRotation = visual.localRotation; EnsureHitCollider(); player = FindAnyObjectByType<RatHunting>(); gatheringSpots = FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None); if (player != null) health = player.GetComponent<HuntHappens.Player.PlayerHealth>(); }
         private void EnsureHitCollider()
@@ -159,7 +160,12 @@ namespace HuntHappens.SmallGame
                 if (cage.Accepts(this) && d < best) { best = d; closest = cage; }
             }
             if (closest != null)
-            { restUntil = 0; if (!closest.TryCapture(this)) Move(closest.transform.position, 1.2f); return; }
+            { baitTarget = closest; restUntil = 0; if (!closest.TryCapture(this)) Move(closest.transform.position, 1.2f); return; }
+            if (baitTarget != null)
+            {
+                // Stop following the old bait route when the player scares rats away from it.
+                agent.ResetPath(); baitTarget = null;
+            }
             if (isAggressive && HuntPlayer(distance)) return;
             if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance < 0.3f))
             {

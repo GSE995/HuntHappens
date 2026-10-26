@@ -44,7 +44,7 @@ namespace HuntHappens.Editor
             foreach(var rat in new[]{rats.First(r=>!r.isGrey&&!r.isAggressive),rats.First(r=>r.isGrey)})
             {
                 var cage=Instantiate(hunt.cagePrefab,rat.transform.position,Quaternion.identity);cage.Owner=hunt;
-                Check(cage.Interact(hunt)&&cage.TryCapture(rat)&&cage.Interact(hunt),"capture and collect species");
+                Check(cage.Interact(hunt)&&RatFearChecks.WhenCalm(cage,()=>cage.TryCapture(rat))&&cage.Interact(hunt),"capture and collect species");
             }
             hunt.Reload();Check(hunt.Rats==2&&hunt.GreyRats==1&&hunt.SaleTotal==25,"species survive capture and save");
             var products=FindObjectsByType<WorldShopItem>(FindObjectsSortMode.None);Array.Sort(products,(a,b)=>a.Kind.CompareTo(b.Kind));Check(products.Length==4,"four world displays");

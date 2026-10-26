@@ -10,15 +10,30 @@ namespace HuntHappens.SmallGame
         public RatAI Captive { get; private set; }
         public InventoryKind BaitKind { get; private set; }
         public bool Baited => RatBait.IsBait(BaitKind);
-        public bool Accepts(RatAI rat) => !recovered && StoredCargo == null && Captive == null && Baited && rat != null && !rat.Caught && BaitKind == RatBait.ForRat(rat.Kind);
+        public const float ScareRadius = 3f;
+        public const float ScareDelay = 3f;
+        private float scaredUntil;
+        public bool PlayerNearby => Owner != null && Vector3.Distance(Owner.transform.position, transform.position) < ScareRadius;
+        public float FearRemaining
+        {
+            get { RefreshFear(); return Mathf.Max(0, scaredUntil - Time.time); }
+        }
+        private void Update() => RefreshFear();
+        private void RefreshFear()
+        {
+            if (Baited && PlayerNearby) scaredUntil = Time.time + ScareDelay;
+        }
+        public bool Accepts(RatAI rat) => !recovered && StoredCargo == null && Captive == null && Baited && rat != null && !rat.Caught && BaitKind == RatBait.ForRat(rat.Kind) && FearRemaining <= 0;
+        private string WaitingPrompt => PlayerNearby ? "Крысы боятся. Отойдите на 3 м" : FearRemaining > 0 ? "Крысы пока боятся: " + Mathf.CeilToInt(FearRemaining) + " с" : "Ждём крысу";
         public HuntHappens.Interaction.InventoryEntry StoredCargo { get; private set; }
         private bool recovered;
-        public string Prompt => StoredCargo != null ? StoredCargo.Title + "\nE — забрать крысу и клетку" : Captive != null ? (Captive.isAggressive ? "Крупная крыса — $25" : Captive.isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — забрать крысу и клетку" : Baited ? "Приманка: " + RatBait.Name(BaitKind) + "\nЖдём крысу. Отойдите на 3 м | E — забрать клетку" : (Owner != null && RatBait.IsBait(Owner.SelectedBait) ? "E — положить: " + RatBait.Name(Owner.SelectedBait) : "E — забрать клетку") + "\nПриманка: выберите предмет в руках или первую ячейку с приманкой\n" + RatBait.Preferences;
+        public string Prompt => StoredCargo != null ? StoredCargo.Title + "\nE — забрать крысу и клетку" : Captive != null ? (Captive.isAggressive ? "Крупная крыса — $25" : Captive.isGrey ? "Серая крыса — $15" : "Чёрная крыса — $10") + "\nE — забрать крысу и клетку" : Baited ? "Приманка: " + RatBait.Name(BaitKind) + "\n" + WaitingPrompt + " | E — забрать клетку" : (Owner != null && RatBait.IsBait(Owner.SelectedBait) ? "E — положить: " + RatBait.Name(Owner.SelectedBait) : "E — забрать клетку") + "\nПриманка: выберите предмет в руках или первую ячейку с приманкой\n" + RatBait.Preferences;
         public void RestoreCargo(int kind, RatCage template, bool baited = false, InventoryKind baitKind = InventoryKind.None)
         {
             if (kind < 1 || kind > 3)
             {
                 BaitKind = baited ? (RatBait.IsBait(baitKind) ? baitKind : InventoryKind.Bread) : InventoryKind.None; bait.SetActive(Baited);
+                if (Baited) scaredUntil = Time.time + ScareDelay;
                 return;
             }
             StoredCargo = new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = kind };
@@ -47,7 +62,7 @@ namespace HuntHappens.SmallGame
             {
                 var selected = player.SelectedBait;
                 if (!player.UseBait(selected)) return false;
-                BaitKind = selected; bait.SetActive(true); return true;
+                BaitKind = selected; scaredUntil = Time.time + ScareDelay; bait.SetActive(true); return true;
             }
             if (!player.GetComponent<HuntHappens.Interaction.PlayerInventory>().Receive(new HuntHappens.Interaction.InventoryEntry {
                 kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = Captive != null ? Captive.Kind + 1 : 0,
