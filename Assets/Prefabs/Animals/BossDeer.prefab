@@ -818,7 +818,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Animals.DeerLeader
   reactionRadius: 15
   protectionRadius: 12
-  leashRadius: 24
+  leashRadius: 35
   warningDuration: 1.4
   chargeSpeed: 20
   chargeDuration: 1.3
