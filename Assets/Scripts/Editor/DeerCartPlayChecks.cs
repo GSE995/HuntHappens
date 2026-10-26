@@ -90,7 +90,8 @@ namespace HuntHappens.Editor
                 ShopProgress.Reset();inventory.Reload();
                 Sleep(deer);
                 holder.SetCarryUpgrade(2);
-                Check(holder.MaximumMass==40 && deer.GetComponent<Rigidbody>().mass==120 && !holder.TryPickUp(deer.GetComponent<PickupItem>()),"120 kg deer exceeds maximum upgraded hand capacity");
+                Check(deer.GetComponent<Rigidbody>().mass==120 && holder.TryPickUp(deer.GetComponent<PickupItem>()),"120 kg deer can also be carried by hand");
+                holder.Drop();
                 player.transform.position=origin+new Vector3(2,.05f,-2);Physics.SyncTransforms();
                 var loadingWall=GameObject.CreatePrimitive(PrimitiveType.Cube);created.Add(loadingWall);
                 loadingWall.transform.position=origin+new Vector3(1.8f,1,0);loadingWall.transform.localScale=new Vector3(.2f,2,5);Physics.SyncTransforms();
@@ -102,7 +103,8 @@ namespace HuntHappens.Editor
                 Set(deer,"elapsed",1000f);typeof(DeerSedation).GetMethod("Update",Private).Invoke(deer,null);
                 Check(deer.State==DeerSedation.SedationState.Unconscious,"sleep timer cannot wake secured animal on a long trip");
                 var second=Animal("BossDeer",origin+new Vector3(3,.05f,0));Sleep(second);
-                Check(!holder.TryPickUp(second.GetComponent<PickupItem>()) && second.GetComponent<Rigidbody>().mass==240,"leader also too heavy");
+                Check(holder.TryPickUp(second.GetComponent<PickupItem>()) && second.GetComponent<Rigidbody>().mass==240,"leader can also be carried by hand");
+                holder.Drop();
                 Check(!cart.TryLoad(second,holder),"one-animal capacity prevents second load");
                 second.transform.position=origin+Vector3.right*12;Physics.SyncTransforms();
                 player.transform.position=cart.HandlePosition;Physics.SyncTransforms();

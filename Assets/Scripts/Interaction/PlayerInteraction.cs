@@ -46,7 +46,7 @@ namespace HuntHappens.Interaction
             ? CartDriver.Cart.CargoText + "\nWASD — Везти   Shift — Быстрее   E / Q — Отпустить"
             : CartTarget != null ? CartTarget.Prompt
             : DeerInReach && ObservedDeer != null && (ObservedDeer.State == DeerSedation.SedationState.Unconscious || ObservedDeer.State == DeerSedation.SedationState.Trapped)
-                ? LoadingCart != null ? "E — Погрузить оленя в тележку" : "Олень слишком тяжёлый — подкатите пустую тележку"
+                ? LoadingCart != null ? "E — Погрузить оленя в тележку" : Target != null ? Target.PickupPrompt : ""
                 : "";
         public PickupItem Target { get; private set; }
         public WorldInventoryItem InventoryTarget { get; private set; }

@@ -29,8 +29,12 @@ namespace HuntHappens.Interaction
         public bool CanPickUp(float maximumMass)
         {
             Rigidbody body = Body;
+            var deer = GetComponent<HuntHappens.Animals.DeerSedation>();
+            if (deer != null && (!deer.isActiveAndEnabled || deer.IsDelivered || deer.Cart != null || deer.DeliveryReserved ||
+                (deer.State != HuntHappens.Animals.DeerSedation.SedationState.Unconscious &&
+                 deer.State != HuntHappens.Animals.DeerSedation.SedationState.Trapped))) return false;
             if (!isActiveAndEnabled || Holder != null || body.isKinematic ||
-                !body.detectCollisions || body.mass > maximumMass) return false;
+                !body.detectCollisions || (deer == null && body.mass > maximumMass)) return false;
             foreach (Collider collider in GetComponentsInChildren<Collider>())
                 if (collider.enabled && !collider.isTrigger && collider.attachedRigidbody == body)
                     return true;
