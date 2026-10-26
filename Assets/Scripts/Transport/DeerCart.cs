@@ -73,7 +73,7 @@ namespace HuntHappens.Transport
         public bool CanLoad(DeerSedation deer, ItemHolder player)
         {
             if (!isActiveAndEnabled || !IsPurchased || Cargo != null || Driver != null || deer == null || player == null ||
-                !deer.isActiveAndEnabled || deer.IsDelivered || deer.Cart != null || deer.DeliveryReserved ||
+                !deer.isActiveAndEnabled || deer.IsDelivered || deer.WakingFromCarry || deer.Cart != null || deer.DeliveryReserved ||
                 player.GetComponent<HuntHappens.Player.PrototypeInput>()?.GameplayBlocked == true ||
                 (deer.State != DeerSedation.SedationState.Unconscious && deer.State != DeerSedation.SedationState.Trapped)) return false;
             var pickup = deer.GetComponent<PickupItem>();

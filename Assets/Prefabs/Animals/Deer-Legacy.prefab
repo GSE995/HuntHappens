@@ -2487,7 +2487,7 @@ MonoBehaviour:
   currentState: 0
   requiredDose: 1
   sedationDuration: 3
-  sleepDuration: 25
+  sleepDuration: 15
   recoveryDuration: 1.2
   sleepIndicator: {fileID: 8206796823836501710}
 --- !u!1 &8395979839861201244

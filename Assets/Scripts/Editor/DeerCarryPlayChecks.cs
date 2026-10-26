@@ -54,15 +54,45 @@ namespace HuntHappens.Editor
                     Check(holder.IsHoldingDeer && Mathf.Approximately(motor.CurrentMoveSpeed, normalSpeed * .55f), name + ": carrying slows player by 45 percent");
                     sprint.SetValue(input, true);
                     Check(Mathf.Approximately(motor.CurrentMoveSpeed, normalSpeed * .55f), name + ": Shift cannot bypass carry slowdown");
-                    Check(!animal.GetComponent<DeerPhysics>().TryBeginRecovery(), name + ": held deer cannot wake");
+                    Check(!animal.GetComponent<DeerPhysics>().TryBeginRecovery(), name + ": recovery waits for release from hands");
                     sprint.SetValue(input, false);
-                    holder.Drop();
+                    var elapsed = typeof(DeerSedation).GetField("elapsed", flags);
+                    var update = typeof(DeerSedation).GetMethod("Update", flags);
+                    elapsed.SetValue(deer, 0f); update.Invoke(deer, null);
+                    Check(holder.IsHolding && !deer.WakingFromCarry, name + ": fresh sedation keeps deer in hands");
+                    float sleepDuration = (float)typeof(DeerSedation).GetField("sleepDuration", flags).GetValue(deer);
+                    elapsed.SetValue(deer, sleepDuration);
+                    deer.ReserveForDelivery(deer); update.Invoke(deer, null);
+                    Check(holder.IsHolding && !deer.WakingFromCarry, name + ": delivery reservation protects cargo");
+                    deer.ReleaseDeliveryReservation(deer); update.Invoke(deer, null);
+                    Check(!holder.IsHolding && deer.WakingFromCarry && !holder.TryPickUp(item) && !deer.TryMarkDelivered(), name + ": expired sleep releases deer and blocks immediate recapture or delivery");
                     Check(!holder.IsHolding && item.Holder == null && item.Body.useGravity && Mathf.Approximately(motor.CurrentMoveSpeed, normalSpeed), name + ": dropping restores movement and physics");
+                    Check(deer.ApplyDose(10) && !deer.WakingFromCarry && holder.TryPickUp(item), name + ": extra tranquilizer delays waking and permits recapture");
+                    holder.Drop();
                     typeof(DeerSedation).GetField("currentState", flags).SetValue(deer, DeerSedation.SedationState.Awake);
                     var trapObject = new GameObject("Carry check trap"); created.Add(trapObject);
                     var trap = trapObject.AddComponent<HuntHappens.Traps.AnimalTrap>();
                     Check(deer.TryTrap(trap) && holder.TryPickUp(item) && deer.Trap == null && deer.State == DeerSedation.SedationState.Unconscious, name + ": pickup releases trapped deer");
-                    holder.Drop();
+                    elapsed.SetValue(deer, sleepDuration); update.Invoke(deer, null);
+                    Check(!holder.IsHolding && deer.WakingFromCarry, name + ": deer from trap also escapes after long carrying");
+                    bool found = false; Vector3 clear = default;
+                    for (int i = 0; i < 80 && !found; i++)
+                    {
+                        Vector3 candidate = spawn + Quaternion.Euler(0, i * 137.5f, 0) * Vector3.forward * (4 + i * .5f);
+                        if (!NavMesh.SamplePosition(candidate, out var hit, 2, NavMesh.AllAreas)) continue;
+                        if (Physics.OverlapCapsule(hit.position + Vector3.up * .55f, hit.position + Vector3.up * 1.85f, .5f, ~0, QueryTriggerInteraction.Ignore).Length != 0) continue;
+                        clear = hit.position; found = true;
+                    }
+                    Check(found, name + ": safe recovery point exists");
+                    animal.transform.SetPositionAndRotation(clear, Quaternion.identity);
+                    item.Body.linearVelocity = item.Body.angularVelocity = Vector3.zero;
+                    typeof(PickupItem).GetField("<LastReleasedTime>k__BackingField", flags).SetValue(item, float.NegativeInfinity);
+                    Physics.SyncTransforms(); update.Invoke(deer, null);
+                    Check(deer.State == DeerSedation.SedationState.Recovering, name + ": escaped deer begins safe recovery on ground");
+                    elapsed.SetValue(deer, 100f);
+                    typeof(DeerSedation).GetMethod("FixedUpdate", flags).Invoke(deer, null);
+                    Check(deer.State == DeerSedation.SedationState.Awake && animal.GetComponent<NavMeshAgent>().isOnNavMesh && animal.GetComponent<DeerAI>().State == DeerAI.DeerState.Flee,
+                        name + ": recovered deer returns to navigation and flees");
                 }
                 var heavy = new GameObject("Carry check heavy prop"); created.Add(heavy);
                 heavy.AddComponent<BoxCollider>(); heavy.AddComponent<Rigidbody>().mass = 100;

@@ -30,7 +30,7 @@ namespace HuntHappens.Interaction
         {
             Rigidbody body = Body;
             var deer = GetComponent<HuntHappens.Animals.DeerSedation>();
-            if (deer != null && (!deer.isActiveAndEnabled || deer.IsDelivered || deer.Cart != null || deer.DeliveryReserved ||
+            if (deer != null && (!deer.isActiveAndEnabled || deer.IsDelivered || deer.WakingFromCarry || deer.Cart != null || deer.DeliveryReserved ||
                 (deer.State != HuntHappens.Animals.DeerSedation.SedationState.Unconscious &&
                  deer.State != HuntHappens.Animals.DeerSedation.SedationState.Trapped))) return false;
             if (!isActiveAndEnabled || Holder != null || body.isKinematic ||

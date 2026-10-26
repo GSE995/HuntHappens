@@ -56,13 +56,13 @@ namespace HuntHappens.Animals
             if (state != DeerState.Sedated && state != DeerState.Unconscious && state != DeerState.Recovering && state != DeerState.Trapped) return;
             currentState = state;
         }
-        public void ResumeAfterSedation()
+        public void ResumeAfterSedation(bool forceFlee = false)
         {
             if (!agent.enabled || !agent.isOnNavMesh) return;
             home = herdHome != null ? herdHome.position : transform.position;
             perception.Observe(0);
             lastThreat = perception.Player != null ? perception.Player.position : transform.position - transform.forward;
-            Enter(perception.Distance <= perception.FrightRadius ? DeerState.Flee : DeerState.Idle);
+            Enter(forceFlee || perception.Distance <= perception.FrightRadius ? DeerState.Flee : DeerState.Idle);
         }
 
         private void Awake()

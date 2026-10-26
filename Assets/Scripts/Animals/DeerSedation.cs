@@ -11,7 +11,7 @@ namespace HuntHappens.Animals
         [SerializeField] private SedationState currentState;
         [SerializeField, Min(0.1f)] private float requiredDose = 1f;
         [SerializeField, Min(0.5f)] private float sedationDuration = 3f;
-        [SerializeField, Min(1)] private float sleepDuration = 25f;
+        [SerializeField, Min(1)] private float sleepDuration = 15f;
         [SerializeField, Min(0.5f)] private float recoveryDuration = 1.2f;
         [SerializeField] private TMP_Text sleepIndicator;
         private DeerAI ai;
@@ -21,6 +21,7 @@ namespace HuntHappens.Animals
         private float elapsed;
         private float speedBeforeHit;
         private float activeSedationDuration;
+        public bool WakingFromCarry { get; private set; }
         public float CurrentSedationDuration => activeSedationDuration > 0 ? activeSedationDuration : sedationDuration;
         private MonoBehaviour deliveryReservation;
         private RigidbodyConstraints beforeTrapConstraints;
@@ -79,14 +80,14 @@ namespace HuntHappens.Animals
         public void ReleaseDeliveryReservation(MonoBehaviour owner) { if (deliveryReservation == owner) deliveryReservation = null; }
         public bool TryMarkDelivered()
         {
-            if (IsDelivered || !isActiveAndEnabled || currentState != SedationState.Unconscious || physicsBody.IsHeld) return false;
+            if (IsDelivered || WakingFromCarry || !isActiveAndEnabled || currentState != SedationState.Unconscious || physicsBody.IsHeld) return false;
             IsDelivered = true;
             return true;
         }
         public SedationState State => currentState;
         public float RecoveryProgress => Mathf.Clamp01(elapsed / recoveryDuration);
         public float SedationProgress => Mathf.Clamp01(elapsed / CurrentSedationDuration);
-        public string StatusText => currentState == SedationState.Trapped ? "Олень — в ловушке" : currentState == SedationState.Unconscious ? "Олень — спит" :
+        public string StatusText => WakingFromCarry ? "Олень — вырывается и просыпается" : currentState == SedationState.Trapped ? "Олень — в ловушке" : currentState == SedationState.Unconscious ? "Олень — спит" :
             currentState == SedationState.Sedated ? "Олень — засыпает" :
             currentState == SedationState.Recovering ? "Олень — просыпается" : "Олень — бодрствует";
 
@@ -105,7 +106,7 @@ namespace HuntHappens.Animals
         {
             if (IsDelivered || !isActiveAndEnabled || strength <= 0 || currentState == SedationState.Recovering || currentState == SedationState.Trapped) return false;
             if (currentState == SedationState.Unconscious)
-            { elapsed = Mathf.Max(0, elapsed - strength * 2f); return true; }
+            { elapsed = Mathf.Max(0, elapsed - strength * 2f); WakingFromCarry = false; return true; }
             if (currentState == SedationState.Sedated)
             { elapsed = Mathf.Min(CurrentSedationDuration - 0.1f, elapsed + strength * 0.5f); return true; }
             foreach (var leader in FindObjectsByType<DeerLeader>()) leader.NoticeAttack(this);
@@ -138,11 +139,20 @@ namespace HuntHappens.Animals
                     elapsed = 0;
                 }
             }
-            else if (currentState == SedationState.Unconscious && !DeliveryReserved && elapsed >= sleepDuration && physicsBody.TryBeginRecovery())
+            else if (currentState == SedationState.Unconscious && !DeliveryReserved && elapsed >= sleepDuration)
             {
-                currentState = SedationState.Recovering;
-                ai.SetSedationState(DeerAI.DeerState.Recovering);
-                elapsed = 0;
+                if (physicsBody.IsHeld)
+                {
+                    WakingFromCarry = true;
+                    GetComponent<HuntHappens.Interaction.PickupItem>().Holder.Drop();
+                }
+                // Let the released body land and find safe standing room before getting up.
+                if (physicsBody.TryBeginRecovery())
+                {
+                    currentState = SedationState.Recovering;
+                    ai.SetSedationState(DeerAI.DeerState.Recovering);
+                    elapsed = 0;
+                }
             }
         }
 
@@ -156,7 +166,8 @@ namespace HuntHappens.Animals
             {
                 currentState = SedationState.Awake;
                 dose = elapsed = 0;
-                ai.ResumeAfterSedation();
+                ai.ResumeAfterSedation(WakingFromCarry);
+                WakingFromCarry = false;
             }
             else
             {
@@ -169,7 +180,7 @@ namespace HuntHappens.Animals
         private void LateUpdate()
         {
             if (sleepIndicator == null) return;
-            bool asleep = currentState == SedationState.Unconscious;
+            bool asleep = currentState == SedationState.Unconscious && !WakingFromCarry;
             sleepIndicator.gameObject.SetActive(asleep);
             if (!asleep) return;
             sleepIndicator.transform.position = physicsBody.Body.worldCenterOfMass + Vector3.up * (1.3f + Mathf.Sin(Time.time * 2) * 0.06f);
