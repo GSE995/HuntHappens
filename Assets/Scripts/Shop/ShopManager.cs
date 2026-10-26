@@ -48,6 +48,7 @@ namespace HuntHappens.Shop
             var data = ShopProgress.Load();
             wallet.RestoreBalance(data.balance);
             upgrades.RestoreLevels(data.levels);
+            foreach (var cart in FindObjectsByType<HuntHappens.Transport.DeerCart>(FindObjectsSortMode.None)) cart.ReloadOwnership();
             changingProgress = false;
         }
         private void OnBalanceChanged() { if (!changingProgress) SaveProgress(); }
@@ -118,6 +119,7 @@ namespace HuntHappens.Shop
             changingProgress = true;
             wallet.RestoreBalance(0);
             upgrades.RestoreLevels(null);
+            foreach (var cart in FindObjectsByType<HuntHappens.Transport.DeerCart>(FindObjectsSortMode.None)) cart.ReloadOwnership();
             changingProgress = false;
             input.GetComponent<HuntHappens.SmallGame.RatHunting>()?.Reload();
             input.GetComponent<PlayerInventory>()?.Reload();

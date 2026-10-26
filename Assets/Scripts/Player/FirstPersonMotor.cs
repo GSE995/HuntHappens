@@ -14,7 +14,9 @@ namespace HuntHappens.Player
         private PrototypeInput input;
         private FirstPersonLook look;
         private HuntHappens.Interaction.ItemHolder holder;
-        public float CurrentMoveSpeed => cartDriver != null && cartDriver.IsDriving ? cartDriver.MoveSpeed : holder != null && holder.IsHoldingDeer
+        public float CurrentMoveSpeed => cartDriver != null && cartDriver.IsDriving
+            ? cartDriver.MoveSpeed * (input != null && input.SprintHeld ? sprintMultiplier : 1f)
+            : holder != null && holder.IsHoldingDeer
             ? moveSpeed * deerCarrySpeedMultiplier
             : moveSpeed * (input != null && input.SprintHeld ? sprintMultiplier : 1f);
         private HuntHappens.Transport.CartDriver cartDriver;

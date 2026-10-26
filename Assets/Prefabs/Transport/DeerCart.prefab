@@ -1599,8 +1599,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Transport.DeerCart
   capacityKg: 300
-  emptySpeed: 3.8
-  loadedSpeed: 2.5
+  emptySpeed: 5.5
+  loadedSpeed: 4
   loadingDistance: 4.2
   handleDistance: 2.8
   floorHeight: 0.72

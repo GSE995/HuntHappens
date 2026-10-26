@@ -61,6 +61,29 @@ namespace HuntHappens.Editor
                 var deer=Animal("Deer",origin+new Vector3(3,.05f,0));
                 Physics.SyncTransforms(); Cursor.lockState=CursorLockMode.Locked;
                 Check(!cart.TryLoad(deer,holder),"awake animal cannot be loaded");
+                var purchaseWallet=Create("Cart purchase wallet").AddComponent<DeliveryManager>();
+                purchaseWallet.RestoreBalance(199);
+                Check(!cart.IsPurchased && cart.Prompt.Contains("$200") && !driver.TryTake(cart),"cart requires purchase for $200");
+                Check(!cart.TryPurchase(holder,purchaseWallet) && purchaseWallet.Balance==199 && !cart.IsPurchased,"insufficient funds do not charge or unlock cart");
+                Sleep(deer);
+                Check(!cart.TryLoad(deer,holder),"unpaid cart rejects sleeping cargo");
+                purchaseWallet.RestoreBalance(250);
+                input.SetGameplayBlocked(true);
+                Check(!cart.TryPurchase(holder,purchaseWallet) && purchaseWallet.Balance==250,"blocked gameplay cannot purchase");
+                input.SetGameplayBlocked(false);
+                Check(cart.TryPurchase(holder,purchaseWallet) && purchaseWallet.Balance==50 && cart.IsPurchased,"purchase charges exactly $200");
+                Check(!cart.TryPurchase(holder,purchaseWallet) && purchaseWallet.Balance==50,"repeat purchase does not charge");
+                ShopProgress.Save(50,new int[4]);
+                cart.ReloadOwnership();
+                Check(cart.IsPurchased && ShopProgress.Load().balance==50,"ownership survives wallet save and reload");
+                Check(driver.TryTake(cart),"take empty cart handles");
+                Set(input,"<SprintHeld>k__BackingField",false);
+                Check(Mathf.Approximately(motor.CurrentMoveSpeed,5.5f),"empty cart moves at 5.5 m/s");
+                Set(input,"<SprintHeld>k__BackingField",true);
+                Check(Mathf.Approximately(motor.CurrentMoveSpeed,8.8f),"Shift accelerates empty cart to 8.8 m/s");
+                Set(input,"<SprintHeld>k__BackingField",false);
+                Check(Mathf.Approximately(motor.CurrentMoveSpeed,5.5f),"releasing Shift restores empty cart speed");
+                driver.Release();
                 for(int i=0;i<PlayerInventory.Capacity;i++) { inventory.Receive(new InventoryEntry{kind=InventoryKind.Trap});inventory.SelectSlot(i); }
                 inventory.Receive(new InventoryEntry{kind=InventoryKind.Bread});
                 Check(!driver.TryTake(cart) && inventory.IsEquipped(InventoryKind.Bread),"full hands reject handles without losing inventory");
@@ -85,8 +108,12 @@ namespace HuntHappens.Editor
                 player.transform.position=cart.HandlePosition;Physics.SyncTransforms();
                 Check(driver.TryTake(cart),"take handles with empty hands");
                 Check(!inventory.Receive(new InventoryEntry{kind=InventoryKind.Gun}) && !inventory.SelectSlot(0),"hands occupied while pushing");
+                Set(input,"<SprintHeld>k__BackingField",false);
+                Check(Mathf.Approximately(motor.CurrentMoveSpeed,4f),"loaded cart moves at 4 m/s");
                 Set(input,"<SprintHeld>k__BackingField",true);
-                Check(Mathf.Approximately(motor.CurrentMoveSpeed,2.5f),"loaded speed ignores sprint");
+                Check(Mathf.Approximately(motor.CurrentMoveSpeed,6.4f),"Shift accelerates loaded cart to 6.4 m/s");
+                Set(input,"<SprintHeld>k__BackingField",false);
+                Check(Mathf.Approximately(motor.CurrentMoveSpeed,4f),"releasing Shift restores loaded cart speed");
                 Vector3 start=cart.transform.position;Vector3 local=deer.transform.localPosition;
                 for(int i=0;i<12;i++)driver.Move(new Vector3(0,-.01f,.1f));
                 Check(cart.transform.position.z-start.z>.9f,"cart and player move together");
@@ -136,9 +163,11 @@ namespace HuntHappens.Editor
             }
             finally
             {
+                System.IO.Directory.CreateDirectory("Logs");System.IO.File.WriteAllText("Logs/DeerCartPlayChecks.txt",report);
                 for(int i=created.Count-1;i>=0;i--)if(created[i]!=null)Object.DestroyImmediate(created[i]);
                 if(testExists)PlayerPrefs.SetString(ShopProgress.TestKey,testSave);else PlayerPrefs.DeleteKey(ShopProgress.TestKey);
                 ShopProgress.InventoryChecksRunning=isolated;Cursor.lockState=cursor;Cursor.visible=cursorVisible;
+                foreach(var cart in Object.FindObjectsByType<DeerCart>(FindObjectsSortMode.None)) cart.ReloadOwnership();
             }
         }
     }

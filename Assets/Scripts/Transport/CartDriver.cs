@@ -16,7 +16,7 @@ namespace HuntHappens.Transport
 
         public bool TryTake(DeerCart cart)
         {
-            if (IsDriving || cart == null || !cart.isActiveAndEnabled || cart.Driver != null ||
+            if (IsDriving || cart == null || !cart.isActiveAndEnabled || !cart.IsPurchased || cart.Driver != null ||
                 input.GameplayBlocked) return false;
             if (Vector3.Distance(transform.position, cart.HandlePosition) > 1.7f)
             { cart.ShowNotice("Подойдите к ручке тележки"); return false; }

@@ -8,9 +8,12 @@ namespace HuntHappens.Transport
     [DisallowMultipleComponent, RequireComponent(typeof(Rigidbody), typeof(BoxCollider))]
     public sealed class DeerCart : MonoBehaviour
     {
+        public const int Price = 200;
+        public bool IsPurchased { get; private set; }
+        public void ReloadOwnership() => IsPurchased = HuntHappens.Shop.ShopProgress.Load().cartPurchased;
         [SerializeField, Min(1)] private float capacityKg = 300;
-        [SerializeField, Min(.5f)] private float emptySpeed = 3.8f;
-        [SerializeField, Min(.5f)] private float loadedSpeed = 2.5f;
+        [SerializeField, Min(.5f)] private float emptySpeed = 5.5f;
+        [SerializeField, Min(.5f)] private float loadedSpeed = 4f;
         [SerializeField, Min(1)] private float loadingDistance = 4.2f;
         [SerializeField] private float handleDistance = 2.8f;
         [SerializeField] private float floorHeight = .72f;
@@ -33,14 +36,34 @@ namespace HuntHappens.Transport
         public string Notice { get; private set; }
         private float noticeUntil;
         public void ShowNotice(string text) { Notice = text; noticeUntil = Time.unscaledTime + 2; }
-        public string Prompt => Time.unscaledTime < noticeUntil ? Notice : CargoText + "\nE — Везти" + (Cargo != null ? "   Q — Выгрузить" : "");
+        public string Prompt => Time.unscaledTime < noticeUntil ? Notice : !IsPurchased
+            ? "Тележка — $" + Price + "\nE — Купить за $" + Price
+            : CargoText + "\nE — Везти" + (Cargo != null ? "   Q — Выгрузить" : "");
         public void ConfigureWheels(Transform[] value) => wheels = value;
         public void SetDriver(CartDriver value) { Driver = value; Speed = 0; }
 
         private void Awake()
         {
+            ReloadOwnership();
             footprint = GetComponent<BoxCollider>(); body = GetComponent<Rigidbody>();
             body.isKinematic = true; body.useGravity = false;
+        }
+
+        public bool TryPurchase(ItemHolder player, HuntHappens.Delivery.DeliveryManager wallet)
+        {
+            ReloadOwnership();
+            if (!isActiveAndEnabled || IsPurchased || player == null || wallet == null ||
+                player.GetComponent<HuntHappens.Player.PrototypeInput>()?.GameplayBlocked == true ||
+                Vector3.Distance(player.transform.position, transform.position) > 5) return false;
+            if (!wallet.TrySpend(Price)) { ShowNotice("Недостаточно денег — нужно $" + Price); return false; }
+            var data = HuntHappens.Shop.ShopProgress.Load();
+            data.cartPurchased = true;
+            data.balance = wallet.Balance;
+            PlayerPrefs.SetString(HuntHappens.Shop.ShopProgress.Key, JsonUtility.ToJson(data));
+            PlayerPrefs.Save();
+            foreach (var cart in FindObjectsByType<DeerCart>(FindObjectsSortMode.None)) cart.ReloadOwnership();
+            ShowNotice("Тележка куплена за $" + Price);
+            return true;
         }
 
         public bool Owns(Collider collider) => collider.transform.IsChildOf(transform);
@@ -49,7 +72,7 @@ namespace HuntHappens.Transport
 
         public bool CanLoad(DeerSedation deer, ItemHolder player)
         {
-            if (!isActiveAndEnabled || Cargo != null || Driver != null || deer == null || player == null ||
+            if (!isActiveAndEnabled || !IsPurchased || Cargo != null || Driver != null || deer == null || player == null ||
                 !deer.isActiveAndEnabled || deer.IsDelivered || deer.Cart != null || deer.DeliveryReserved ||
                 player.GetComponent<HuntHappens.Player.PrototypeInput>()?.GameplayBlocked == true ||
                 (deer.State != DeerSedation.SedationState.Unconscious && deer.State != DeerSedation.SedationState.Trapped)) return false;

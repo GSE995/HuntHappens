@@ -34,6 +34,7 @@ namespace HuntHappens.Shop
             public int acceptedDeer;
             public string[] returnedDeerIds = new string[0];
             public bool deerAdvanceGranted;
+            public bool cartPurchased;
             public int[] levels = new int[4];
         }
         public static Data Load()

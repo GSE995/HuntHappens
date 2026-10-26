@@ -43,7 +43,7 @@ namespace HuntHappens.Interaction
         public bool DeerInReach { get; private set; }
         public HuntHappens.Transport.CartDriver CartDriver { get; private set; }
         public string TransportHint => CartDriver != null && CartDriver.IsDriving
-            ? CartDriver.Cart.CargoText + "\nWASD — Везти   E / Q — Отпустить"
+            ? CartDriver.Cart.CargoText + "\nWASD — Везти   Shift — Быстрее   E / Q — Отпустить"
             : CartTarget != null ? CartTarget.Prompt
             : DeerInReach && ObservedDeer != null && (ObservedDeer.State == DeerSedation.SedationState.Unconscious || ObservedDeer.State == DeerSedation.SedationState.Trapped)
                 ? LoadingCart != null ? "E — Погрузить оленя в тележку" : "Олень слишком тяжёлый — подкатите пустую тележку"
@@ -149,7 +149,12 @@ namespace HuntHappens.Interaction
             }
             if (CartTarget != null)
             {
-                if (input.InteractPressed) { LastHandledFrame = Time.frameCount; CartDriver?.TryTake(CartTarget); }
+                if (input.InteractPressed)
+                {
+                    LastHandledFrame = Time.frameCount;
+                    if (!CartTarget.IsPurchased) CartTarget.TryPurchase(holder, shop != null ? shop.Wallet : null);
+                    else CartDriver?.TryTake(CartTarget);
+                }
                 else if (input.DropPressed) { LastHandledFrame = Time.frameCount; CartTarget.TryUnload(holder); }
             }
             else if (input.InteractPressed && LoadingCart != null)
