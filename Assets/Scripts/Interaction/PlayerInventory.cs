@@ -253,6 +253,8 @@ namespace HuntHappens.Interaction
             if (Hand != null) Hand.cageRat = 0;
             foreach (var item in FindObjectsByType<WorldInventoryItem>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (item.Owner == this && item.Entry != null) item.Entry.cageRat = 0;
+            foreach (var cage in FindObjectsByType<HuntHappens.SmallGame.RatCage>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (cage.Owner != null && cage.Owner.gameObject == gameObject) cage.ClearStoredCargo();
             Save();
         }
         private void LateUpdate()

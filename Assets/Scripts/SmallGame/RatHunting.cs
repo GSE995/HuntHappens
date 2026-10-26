@@ -182,11 +182,12 @@ namespace HuntHappens.SmallGame
         {
             if (!Selected || input.GameplayBlocked || !Evaluate(out var point)) return null;
             var cage = Instantiate(cagePrefab, point, Quaternion.identity); cage.Owner = this;
+            cage.RestoreCargo(Inventory.Hand.cageRat, cagePrefab);
             Inventory.Consume(InventoryKind.Cage); Deployed++; Placed?.Invoke(); return cage;
         }
         private void LateUpdate()
         {
-            Hint = Available <= 0 ? "Все клетки установлены — заберите их клавишей E" : Evaluate(out _) ? "ЛКМ — поставить клетку. Затем E — положить хлеб" : "Наведите на свободную землю рядом с собой";
+            Hint = Available <= 0 ? "Все клетки установлены — заберите их клавишей E" : Evaluate(out _) ? (Inventory.Hand?.cageRat > 0 ? "ЛКМ — поставить закрытую клетку с крысой" : "ЛКМ — поставить клетку. Затем E — положить хлеб") : "Наведите на свободную землю рядом с собой";
             if (Selected && input.ThrowPressed && GetComponent<PlayerInteraction>().LastHandledFrame != Time.frameCount) TryPlace();
         }
     }

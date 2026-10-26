@@ -47,14 +47,29 @@ namespace HuntHappens.Editor
                     inventory.Reload(); hunt.Reload();
                     Check(inventory.Slot(1)?.cageRat == kind + 1 && hunt.Rats == 1, "saved species and catch survive reload");
                     Check(inventory.SelectSlot(1), "equip restored cage");
+                    for (int cycle = 0; cycle < 2; cycle++) PlaceAndRetrieve(hunt, inventory, kind + 1);
                     var entry = inventory.Hand;
                     Check(inventory.DropHand(), "drop cage");
                     dropped = UnityEngine.Object.FindObjectsByType<WorldInventoryItem>(FindObjectsSortMode.None).Single(i => i.Entry == entry);
                     VerifyVisual(dropped.transform, hunt.cagePrefab, true);
                     Check(dropped.Take(inventory) && inventory.Hand.cageRat == kind + 1 && hunt.Rats == 1, "pick up dropped cage without duplicating catch");
+                    Check(inventory.DropHand(), "drop filled cage again");
+                    dropped = UnityEngine.Object.FindObjectsByType<WorldInventoryItem>(FindObjectsSortMode.None).Single(i => i.Entry == entry);
+                    VerifyVisual(dropped.transform, hunt.cagePrefab, true);
+                    Check(dropped.Take(inventory) && inventory.Hand.cageRat == kind + 1 && hunt.Rats == 1, "repeated Q and pickup preserve cage cargo");
                     trade.SetValue(hunt.shop, true);
                     int before = hunt.shop.Wallet.Balance;
-                    Check(hunt.Sell() && hunt.shop.Wallet.Balance == before + (kind == 0 ? 10 : kind == 1 ? 15 : 25), "correct sale reward");
+                    if (kind == 2) PlaceAndRetrieve(hunt, inventory, kind + 1, true);
+                    else if (kind == 1)
+                    {
+                        Check(inventory.DropHand(), "drop before sale");
+                        dropped = UnityEngine.Object.FindObjectsByType<WorldInventoryItem>(FindObjectsSortMode.None).Single(i => i.Entry == entry);
+                        Check(hunt.Sell(), "sell catch while Q cage lies on ground");
+                        VerifyVisual(dropped.transform, hunt.cagePrefab, false);
+                        Check(dropped.Take(inventory), "recover empty dropped cage after sale");
+                    }
+                    else Check(hunt.Sell(), "sell held catch");
+                    Check(hunt.shop.Wallet.Balance == before + (kind == 0 ? 10 : kind == 1 ? 15 : 25), "correct sale reward");
                     Check(inventory.Hand.cageRat == 0 && hunt.Rats == 0, "sale empties cage");
                     Draw(arms); VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, false);
                     trade.SetValue(hunt.shop, false);
@@ -64,7 +79,7 @@ namespace HuntHappens.Editor
                 Check(cage.Interact(hunt) && inventory.Hand.cageRat == 0, "empty cage stays empty");
                 Draw(arms); VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, false);
                 Check(PlayerPrefs.GetString(ShopProgress.PlayerKey) == playerSave, "player save untouched during checks");
-                return "Cage cargo checks PASSED: all 3 species; closed door and render-only rat; exact catch/reward; slot switch; save/reload; drop/pickup; sale clears display; empty cage unchanged; player save preserved";
+                return "Cage cargo checks PASSED: all 3 species; closed door and render-only rat; exact catch/reward; slot switch; save/reload; repeated LMB placement/retrieval and Q/pickup preserve cargo without duplicate catch; sale clears display; empty cage unchanged; player save preserved";
             }
             finally
             {
@@ -82,6 +97,52 @@ namespace HuntHappens.Editor
 
         private static void Draw(FirstPersonArms arms) => arms.Draw(new Vector3(-.25f, -.3f, .7f), Quaternion.identity,
             new Vector3(.25f, -.3f, .7f), Quaternion.identity, true, 1);
+
+        private static void PlaceAndRetrieve(RatHunting hunt, PlayerInventory inventory, int kind, bool sell = false)
+        {
+            var camera = inventory.GetComponentInChildren<Camera>();
+            var controller = inventory.GetComponent<CharacterController>();
+            var position = inventory.transform.position;
+            var rotation = camera.transform.rotation;
+            bool controllerEnabled = controller.enabled;
+            RatCage placed = null;
+            try
+            {
+                controller.enabled = false;
+                bool found = false;
+                for (int x = -24; x <= 24 && !found; x += 4)
+                    for (int z = -24; z <= 24 && !found; z += 4)
+                    {
+                        var target = new Vector3(x, 0, z);
+                        inventory.transform.position = target + new Vector3(0, .1f, -2.8f);
+                        camera.transform.LookAt(target); Physics.SyncTransforms();
+                        found = hunt.Evaluate(out _);
+                    }
+                Check(found, "find placement ground");
+                int count = hunt.Rats, deployed = hunt.Deployed;
+                placed = hunt.TryPlace();
+                Check(placed != null && placed.StoredCargo?.cageRat == kind && inventory.Hand == null && hunt.Deployed == deployed + 1, "LMB places same closed cargo");
+                VerifyVisual(placed.transform, hunt.cagePrefab, true);
+                Check(placed.Prompt.Contains("забрать") && !placed.Prompt.Contains("положить хлеб") && !placed.Baited, "occupied cage cannot be baited");
+                if (sell)
+                {
+                    Check(hunt.Sell() && placed.StoredCargo == null && hunt.Rats == 0, "sale empties placed cargo");
+                    VerifyVisual(placed.transform, hunt.cagePrefab, false);
+                    Check(placed.Interact(hunt) && inventory.Hand?.cageRat == 0 && hunt.Rats == 0 && hunt.Deployed == deployed, "recover empty placed cage after sale");
+                    return;
+                }
+                Check(inventory.Receive(new InventoryEntry { kind = InventoryKind.Bread }) && inventory.SelectSlot(0), "carry spare bread");
+                Check(placed.Interact(hunt) && inventory.Hand?.cageRat == kind && hunt.Rats == count && hunt.Deployed == deployed && hunt.Bread == 1, "retrieve occupied cage without consuming bread or duplicating rat");
+                Check(!placed.Interact(hunt) && hunt.Rats == count, "repeat E cannot duplicate cage or rat");
+                Check(inventory.Consume(InventoryKind.Bread), "clear test bread");
+            }
+            finally
+            {
+                if (placed != null) UnityEngine.Object.Destroy(placed.gameObject);
+                inventory.transform.position = position; camera.transform.rotation = rotation;
+                controller.enabled = controllerEnabled; Physics.SyncTransforms();
+            }
+        }
 
         private static void VerifyVisual(Transform root, RatCage template, bool filled)
         {
