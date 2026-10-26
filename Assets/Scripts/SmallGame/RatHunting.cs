@@ -132,6 +132,7 @@ namespace HuntHappens.SmallGame
             foreach (var record in carriedRats) if (record.animal != null) record.animal.ReleaseForRespawn();
             carriedRats.Clear();
             int reward = SaleTotal; Rats = 0; GreyRats = 0; LargeRats = 0; Save();
+            Inventory.ClearCageContents();
             shop.Wallet.RestoreBalance((int)System.Math.Min(int.MaxValue, (long)shop.Wallet.Balance + reward));
             return true;
         }

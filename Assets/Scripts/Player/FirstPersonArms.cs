@@ -31,6 +31,7 @@ namespace HuntHappens.Player
         private bool[] originalWeaponVisibility;
         private HuntHappens.SmallGame.RatHunting hunting;
         private Transform miniatureCage;
+        private HuntHappens.SmallGame.CageCargoVisual cageCargo;
         private Transform leftCageGrip, rightCageGrip;
         private Vector3 leftCageContact, rightCageContact;
         private Quaternion leftCageRotation, rightCageRotation;
@@ -83,6 +84,8 @@ namespace HuntHappens.Player
                 miniatureCage.SetParent(transform, false);
                 miniatureCage.gameObject.SetActive(false);
                 CopyCageMeshes(hunting.cagePrefab.transform, miniatureCage);
+                cageCargo = miniatureCage.gameObject.AddComponent<HuntHappens.SmallGame.CageCargoVisual>();
+                cageCargo.Configure(hunting.cagePrefab);
                 renderers = GetComponentsInChildren<Renderer>(true);
             }
             if (cageGripsReady || leftHand == null || rightHand == null) return;
@@ -150,6 +153,7 @@ namespace HuntHappens.Player
             EnsureCageVisual();
             if (miniatureCage != null)
             {
+                cageCargo?.Bind(hunting.GetComponent<PlayerInventory>()?.Hand);
                 bool holdingCage = Mode == VisualMode.Cage && hunting.Available > 0 && miniatureBlend > 0.01f;
                 miniatureCage.gameObject.SetActive(visible && holdingCage);
                 miniatureCage.localPosition = (leftPosition + rightPosition) * 0.5f + new Vector3(0, -0.025f, 0);
