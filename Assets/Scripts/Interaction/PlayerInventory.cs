@@ -167,6 +167,44 @@ namespace HuntHappens.Interaction
             WorldInventoryItem.Spawn(this, Hand, camera.transform.position + camera.transform.forward * 0.75f, camera.transform.rotation);
             RemoveHand(); return true;
         }
+        public void DropAll(Vector3 position)
+        {
+            // An equipped slot is already in slots; only add a hand item with no slot.
+            var entries = new System.Collections.Generic.List<InventoryEntry>();
+            foreach (var entry in slots) if (entry != null) entries.Add(entry);
+            if (HasUnassignedItem) entries.Add(Hand);
+            if (Darts > 0) entries.Add(new InventoryEntry { kind = InventoryKind.Darts, quantity = Darts });
+
+            changing = true;
+            try { holder.Drop(); }
+            finally { changing = false; }
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+                float angle = i * Mathf.PI * 2f / entries.Count;
+                var dropPosition = position + Vector3.up + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * 0.6f;
+                if (entry.kind == InventoryKind.Physical)
+                {
+                    // Restore the actual object, including its cargo/state, rather than a copy.
+                    if (entry.physical == null) continue;
+                    var item = entry.physical;
+                    item.transform.position = dropPosition;
+                    item.gameObject.SetActive(true);
+                    if (!item.Body.isKinematic)
+                    {
+                        item.Body.linearVelocity = Vector3.zero;
+                        item.Body.angularVelocity = Vector3.zero;
+                        item.Body.WakeUp();
+                    }
+                }
+                else WorldInventoryItem.Spawn(this, entry, dropPosition, Quaternion.identity);
+            }
+            slots = new InventoryEntry[Capacity]; Hand = null; Darts = 0;
+            if (handVisual != null) Destroy(handVisual);
+            handVisual = null; visualEntry = null;
+            Save();
+        }
         public int Count(InventoryKind kind)
         {
             if (kind == InventoryKind.Darts) return Darts;
