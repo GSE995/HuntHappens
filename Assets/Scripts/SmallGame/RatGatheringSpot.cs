@@ -6,5 +6,12 @@ namespace HuntHappens.SmallGame
     public sealed class RatGatheringSpot : MonoBehaviour
     {
         [Min(0.5f)] public float radius = 2f;
+        public bool crowsAllowed;
+        [Min(0.5f)] public float crowBaitRadius = 8f;
+        public bool AllowsCrowBait(Vector3 position)
+        {
+            Vector3 delta = position - transform.position; delta.y = 0;
+            return isActiveAndEnabled && crowsAllowed && delta.sqrMagnitude <= crowBaitRadius * crowBaitRadius;
+        }
     }
 }

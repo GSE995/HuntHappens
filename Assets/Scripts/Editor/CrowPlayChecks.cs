@@ -57,7 +57,32 @@ namespace HuntHappens.Editor
             cage = Track(Instantiate(AssetDatabase.LoadAssetAtPath<RatCage>("Assets/Art/SmallGame/RatCage.prefab"), origin + Vector3.forward*2, Quaternion.identity));
             crow = Track(Instantiate(AssetDatabase.LoadAssetAtPath<CrowAI>("Assets/Art/SmallGame/Crow.prefab"), origin + Vector3.up*4, Quaternion.identity));
             crow.attemptInterval = .1f;
+            var feedingSpot = Track(new GameObject("Test crow feeding spot").AddComponent<RatGatheringSpot>());
+            feedingSpot.transform.position = origin; feedingSpot.crowsAllowed = true;
+            crow.feedingSpot = feedingSpot;
             yield return null;
+            cage.RestoreCargo(0, cage, true, InventoryKind.Bread);
+            cage.transform.position = origin + Vector3.right*8;
+            Check(crow.CanTarget(cage), "8m boundary included");
+            cage.transform.position = origin + Vector3.right*8.01f;
+            Check(!crow.CanTarget(cage), "outside trash radius rejected despite detection range");
+            yield return new WaitForSeconds(.3f);
+            Check(crow.State == CrowAI.CrowState.Perched && cage.Baited, "outside bait untouched");
+            cage.transform.position = origin + Vector3.forward*2;
+            feedingSpot.crowsAllowed = false;
+            yield return new WaitForSeconds(.3f);
+            Check(!crow.CanTarget(cage) && crow.State == CrowAI.CrowState.Perched && cage.Baited, "safe trash rejects theft");
+            crow.feedingSpot = null;
+            Check(!crow.CanTarget(cage), "unassigned bird cannot steal");
+            crow.feedingSpot = feedingSpot; feedingSpot.crowsAllowed = true;
+            yield return new WaitForSeconds(.2f);
+            Check(crow.Target == cage, "inside territory starts approach");
+            cage.transform.position = origin + Vector3.right*8.01f;
+            yield return null;
+            Check(crow.Target == null && crow.State == CrowAI.CrowState.Returning && cage.Baited, "moving bait outside cancels flight");
+            yield return new WaitForSeconds(4);
+            Check(crow.State == CrowAI.CrowState.Perched && cage.Baited, "returns without outside theft");
+            cage.transform.position = origin + Vector3.forward*2;
             foreach (InventoryKind kind in Enum.GetValues(typeof(InventoryKind)))
             {
                 cage.RestoreCargo(0, cage, true, kind);
@@ -78,6 +103,7 @@ namespace HuntHappens.Editor
             }
             var rival = Track(Instantiate(AssetDatabase.LoadAssetAtPath<CrowAI>("Assets/Art/SmallGame/Crow.prefab"), origin + new Vector3(.3f,4,0), Quaternion.identity));
             rival.attemptInterval = .1f;
+            rival.feedingSpot = feedingSpot;
             yield return null;
             typeof(CrowAI).GetField("nextAttempt", Private).SetValue(crow, Time.time);
             cage.RestoreCargo(0, cage, true, InventoryKind.Bread);

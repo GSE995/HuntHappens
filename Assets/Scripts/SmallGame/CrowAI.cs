@@ -13,6 +13,9 @@ namespace HuntHappens.SmallGame
         public bool IsSedated => State == CrowState.Sleeping;
         public float RemainingSleep => IsSedated ? Mathf.Max(0, wakeAt - Time.time) : 0;
         public Transform perch;
+        public RatGatheringSpot feedingSpot;
+        public bool CanTarget(RatCage cage) => cage != null && cage.CanStealBait &&
+            feedingSpot != null && feedingSpot.AllowsCrowBait(cage.transform.position);
         public Transform leftWing, rightWing;
         public CrowState State { get; private set; }
         public RatCage Target => target;
@@ -86,12 +89,12 @@ namespace HuntHappens.SmallGame
                 foreach (var cage in FindObjectsByType<RatCage>(FindObjectsSortMode.None))
                 {
                     float distance = (cage.CrowApproachPoint - transform.position).sqrMagnitude;
-                    if (cage.CanStealBait && distance < best) { closest = cage; best = distance; }
+                    if (CanTarget(cage) && distance < best) { closest = cage; best = distance; }
                 }
                 if (closest != null) { target = closest; BeginFlight(CrowState.Approaching); }
                 return;
             }
-            if (State == CrowState.Approaching && (target == null || !target.CanStealBait)) ReturnHome();
+            if (State == CrowState.Approaching && !CanTarget(target)) ReturnHome();
             Vector3 destination = State == CrowState.Approaching ? target.CrowApproachPoint : home;
             Vector3 waypoint = flightLeg == 0 ? new Vector3(departure.x, cruiseHeight, departure.z) :
                 flightLeg == 1 ? new Vector3(destination.x, cruiseHeight, destination.z) : destination;
@@ -108,7 +111,7 @@ namespace HuntHappens.SmallGame
             if (State == CrowState.Approaching)
             {
                 // Recheck at arrival, never reserve food for the duration of a flight.
-                target.TryStealBait();
+                if (CanTarget(target)) target.TryStealBait();
                 ReturnHome();
             }
             else

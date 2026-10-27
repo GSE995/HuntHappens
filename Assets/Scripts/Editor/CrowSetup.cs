@@ -16,7 +16,7 @@ namespace HuntHappens.Editor
             var trees = Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
                 .Where(t => t.name.StartsWith("Forest tree ")).OrderBy(t => t.name).ToArray();
             if (trees.Length == 0) throw new System.InvalidOperationException("No forest trees");
-            if (GameObject.Find("Crows") != null) return "Crows already installed";
+            if (GameObject.Find("Crows") != null) return ArrangeAtTrash();
             const string folder = "Assets/Art/SmallGame";
             var black = Material(folder + "/Crow Feathers.mat", new Color(.035f, .045f, .065f));
             var beak = Material(folder + "/Crow Beak.mat", new Color(.12f, .13f, .15f));
@@ -60,7 +60,59 @@ namespace HuntHappens.Editor
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene)) throw new System.Exception("Scene save failed");
             AssetDatabase.SaveAssets();
-            return "Installed 8 crows, prefab and tree perches; saved ForestPrototype";
+            return ArrangeAtTrash();
+        }
+        public static string ArrangeAtTrash()
+        {
+            if (Application.isPlaying) throw new System.InvalidOperationException("Exit Play Mode first");
+            var root = GameObject.Find("Crows");
+            var enclosure = Object.FindAnyObjectByType<HuntHappens.Delivery.DeerEnclosure>();
+            var pasture = enclosure != null ? enclosure.transform.Find("Pen pasture") : null;
+            if (root == null || pasture == null) throw new System.InvalidOperationException("Crows and enclosure pasture required");
+            var bounds = pasture.GetComponent<Renderer>().bounds;
+            var spots = Object.FindObjectsByType<RatGatheringSpot>().OrderBy(s => s.transform.position.x).ToArray();
+            if (spots.Length != 3) throw new System.InvalidOperationException("Expected three trash spots");
+            var safe = spots.OrderBy(s => bounds.SqrDistance(new Vector3(s.transform.position.x,bounds.center.y,s.transform.position.z))).First();
+            var occupied = spots.Where(s => s != safe).ToArray();
+            var birds = root.GetComponentsInChildren<CrowAI>().OrderBy(c => c.name).ToArray();
+            if (birds.Length != 8) throw new System.InvalidOperationException("Expected eight crows");
+            var trees = Object.FindObjectsByType<Transform>().Where(t => t.name.StartsWith("Forest tree ") && t.Find("Crown") != null).ToList();
+            var chosen = new Transform[8];
+            for (int i=0; i<8; i++)
+            {
+                var spot = occupied[i/4];
+                var tree = trees.OrderBy(t => Vector3.SqrMagnitude(t.position-spot.transform.position)).First();
+                if (Vector3.Distance(tree.position,spot.transform.position)>12) throw new System.InvalidOperationException("No nearby tree within 12m");
+                chosen[i]=tree; trees.Remove(tree);
+            }
+            foreach(var spot in spots)
+            {
+                Undo.RecordObject(spot,"Crow territory"); spot.crowsAllowed=spot!=safe; spot.crowBaitRadius=8;
+                EditorUtility.SetDirty(spot);
+            }
+            for(int i=0;i<birds.Length;i++)
+            {
+                var bird=birds[i]; var spot=occupied[i/4]; var tree=chosen[i];
+                var crown=tree.Find("Crown").GetComponent<Renderer>().bounds;
+                Vector3 direction=spot.transform.position-tree.position; direction.y=0; direction.Normalize();
+                float extent=Mathf.Max(crown.extents.x,crown.extents.z);
+                var branch=root.transform.Find("Crow Branch "+(i+1)); var perch=bird.perch;
+                Undo.RecordObjects(new Object[]{bird,bird.transform,branch,perch},"Move crow to trash tree");
+                Vector3 center=new Vector3(tree.position.x,crown.center.y-.5f,tree.position.z);
+                branch.position=center+direction*extent*.6f;
+                branch.rotation=Quaternion.FromToRotation(Vector3.up,direction);
+                branch.localScale=new Vector3(.13f,extent*.7f,.13f);
+                perch.position=center+direction*extent*1.2f+Vector3.up*.1f;
+                perch.rotation=Quaternion.LookRotation(direction);
+                bird.transform.SetPositionAndRotation(perch.position,perch.rotation); bird.feedingSpot=spot;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(bird);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(bird.transform);
+                EditorUtility.SetDirty(bird);
+            }
+            var scene=root.scene; EditorSceneManager.MarkSceneDirty(scene);
+            if(!EditorSceneManager.SaveScene(scene)) throw new System.Exception("Scene save failed");
+            AssetDatabase.SaveAssets();
+            return "4 crows per occupied trash spot; 8m bait radius; safe trash at "+safe.transform.position;
         }
         private static Material Material(string path, Color color)
         {
