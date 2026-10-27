@@ -127,6 +127,14 @@ namespace HuntHappens.SmallGame
             nextBite = escapeUntil + 1.5f;
             return true;
         }
+        public void CancelBaitTarget(RatCage cage)
+        {
+            if (baitTarget != cage) return;
+            baitTarget = null;
+            if (agent != null && agent.enabled && agent.isOnNavMesh) agent.ResetPath();
+            restUntil = 0;
+            nextDecision = 0;
+        }
         private void Update()
         {
             if (Caught)

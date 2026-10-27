@@ -11,7 +11,20 @@ namespace HuntHappens.SmallGame
         public InventoryKind BaitKind { get; private set; }
         public bool Baited => RatBait.IsBait(BaitKind);
         public const float ScareRadius = 3f;
-        public const float ScareDelay = 3f;
+        public const float ScareDelay = 10f;
+        public bool CanStealBait => isActiveAndEnabled && !recovered && Captive == null && StoredCargo == null &&
+            (BaitKind == InventoryKind.Bread || BaitKind == InventoryKind.CheeseSandwich);
+        public Vector3 CrowApproachPoint => transform.TransformPoint(new Vector3(0, 0.2f, 0.65f));
+        // Both consumers run synchronously on Unity's main thread. Clearing BaitKind
+        // before returning prevents a second bird or rat from consuming the same bait.
+        public bool TryStealBait()
+        {
+            if (!CanStealBait) return false;
+            BaitKind = InventoryKind.None;
+            bait.SetActive(false);
+            foreach (var rat in FindObjectsByType<RatAI>(FindObjectsSortMode.None)) rat.CancelBaitTarget(this);
+            return true;
+        }
         private float scaredUntil;
         public bool PlayerNearby => Owner != null && Vector3.Distance(Owner.transform.position, transform.position) < ScareRadius;
         public float FearRemaining

@@ -54,7 +54,7 @@ namespace HuntHappens.Editor
                     catch (Exception e) { RatFearChecks.Finish("FAILED: " + e); yield break; }
                     yield return next;
                 }
-                RatFearChecks.Finish("PASSED: all 3 species wait; proximity blocks capture; retreat countdown; reapproach resets; pause freezes; ready after 3 seconds; capture consumes bait; restored cage waits again.");
+                RatFearChecks.Finish("PASSED: all 3 species wait; proximity blocks capture; retreat countdown; reapproach resets; pause freezes; ready after 10 seconds; capture consumes bait; restored cage waits again.");
             }
             finally { Cleanup(); Destroy(gameObject); }
         }
@@ -77,25 +77,25 @@ namespace HuntHappens.Editor
                 cage.RestoreCargo(0, template, true, RatBait.ForRat(species));
                 Check(!cage.Accepts(rat) && !cage.TryCapture(rat) && cage.Baited, "immediate capture blocked " + species);
                 yield return new WaitForSeconds(.2f);
-                Check(cage.FearRemaining > 2.9f, "nearby player holds timer");
+                Check(cage.FearRemaining > 9.9f, "nearby player holds timer");
                 hunt.transform.position = cage.transform.position + Vector3.right * 4;
                 yield return new WaitForSeconds(1);
-                Check(cage.FearRemaining > 1.7f && cage.FearRemaining < 2.2f && !cage.TryCapture(rat), "retreat countdown");
+                Check(cage.FearRemaining > 8.7f && cage.FearRemaining < 9.2f && !cage.TryCapture(rat), "retreat countdown");
                 hunt.transform.position = cage.transform.position + Vector3.right;
-                Check(cage.FearRemaining > 2.9f, "reapproach resets synchronously");
+                Check(cage.FearRemaining > 9.9f, "reapproach resets synchronously");
                 hunt.transform.position = cage.transform.position + Vector3.right * 4;
                 float remaining = cage.FearRemaining;
                 Time.timeScale = 0;
                 yield return new WaitForSecondsRealtime(.3f);
                 Check(Mathf.Abs(cage.FearRemaining - remaining) < .02f && !cage.TryCapture(rat), "pause preserves timer");
                 Time.timeScale = 1;
-                yield return new WaitForSeconds(3.1f);
+                yield return new WaitForSeconds(10.1f);
                 Check(cage.Accepts(rat) && cage.TryCapture(rat) && !cage.Baited && rat.Caught, "calm capture " + species);
                 DestroyImmediate(cage.gameObject); cage = null;
                 DestroyImmediate(rat.gameObject); rat = null;
                 cage = Instantiate(template, new Vector3(1000, 0, 1000), Quaternion.identity); cage.Owner = hunt;
                 cage.RestoreCargo(0, template, true, RatBait.ForRat(species));
-                Check(cage.FearRemaining > 2.9f, "replaced prebaited cage waits again");
+                Check(cage.FearRemaining > 9.9f, "replaced prebaited cage waits again");
                 DestroyImmediate(cage.gameObject); cage = null;
             }
         }

@@ -75,6 +75,8 @@ namespace HuntHappens.Weapons
             if (deer != null) deer.ApplyDose(strength, sedationDurationMultiplier);
             var rat = collider.GetComponentInParent<HuntHappens.SmallGame.RatAI>();
             if (rat != null) rat.ApplyDose(strength, sedationDurationMultiplier);
+            var crow = collider.GetComponentInParent<HuntHappens.SmallGame.CrowAI>();
+            if (crow != null) crow.ApplyDose(strength, sedationDurationMultiplier);
             body.linearVelocity = body.angularVelocity = Vector3.zero;
             body.collisionDetectionMode = CollisionDetectionMode.Discrete;
             body.isKinematic = true;
