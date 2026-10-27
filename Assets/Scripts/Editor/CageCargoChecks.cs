@@ -65,11 +65,11 @@ namespace HuntHappens.Editor
                     {
                         Check(inventory.DropHand(), "drop before sale");
                         dropped = UnityEngine.Object.FindObjectsByType<WorldInventoryItem>(FindObjectsSortMode.None).Single(i => i.Entry == entry);
-                        Check(hunt.Sell(), "sell catch while Q cage lies on ground");
+                        Check(SemenychChecks.SellAtNpc(hunt), "sell catch while Q cage lies on ground");
                         VerifyVisual(dropped.transform, hunt.cagePrefab, false);
                         Check(dropped.Take(inventory), "recover empty dropped cage after sale");
                     }
-                    else Check(hunt.Sell(), "sell held catch");
+                    else Check(SemenychChecks.SellAtNpc(hunt), "sell held catch");
                     Check(hunt.shop.Wallet.Balance == before + (kind == 0 ? 10 : kind == 1 ? 15 : 25), "correct sale reward");
                     Check(inventory.Hand.cageRat == 0 && hunt.Rats == 0, "sale empties cage");
                     Draw(arms); VerifyVisual(arms.MiniatureCage, hunt.cagePrefab, false);
@@ -187,7 +187,7 @@ namespace HuntHappens.Editor
                 Check(placed.Prompt.Contains("забрать") && !placed.Prompt.Contains("положить хлеб") && !placed.Baited, "occupied cage cannot be baited");
                 if (sell)
                 {
-                    Check(hunt.Sell() && placed.StoredCargo == null && hunt.Rats == 0, "sale empties placed cargo");
+                    Check(SemenychChecks.SellAtNpc(hunt) && placed.StoredCargo == null && hunt.Rats == 0, "sale empties placed cargo");
                     VerifyVisual(placed.transform, hunt.cagePrefab, false);
                     Check(placed.Interact(hunt) && inventory.Hand?.cageRat == 0 && hunt.Rats == 0 && hunt.Deployed == deployed, "recover empty placed cage after sale");
                     return;

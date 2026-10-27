@@ -28,8 +28,6 @@ namespace HuntHappens.Editor
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
             var player = Object.FindAnyObjectByType<RatHunting>(); if (!player.GetComponent<PlayerHealth>()) player.gameObject.AddComponent<PlayerHealth>();
             EnsureGuardAtEverySpot();
-            foreach (var item in Object.FindObjectsByType<HuntHappens.Shop.WorldShopItem>(FindObjectsSortMode.None))
-                if (item.Kind == 3) item.GetComponentInChildren<TMPro.TextMeshPro>().text = "ПРИЁМ КРЫС\n$10 / $15 / $25";
             EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
             Debug.Log("Large rats installed: one brown guard per litter spot, 1.4x size, player health, $25 reception.");
         }

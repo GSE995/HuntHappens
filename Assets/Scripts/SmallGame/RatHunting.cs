@@ -134,17 +134,23 @@ namespace HuntHappens.SmallGame
                 kind == 4 ? InventoryKind.Gun : kind == 6 ? InventoryKind.Chocolate : kind == 7 ? InventoryKind.CheeseSandwich : kind == 8 ? InventoryKind.Latte : InventoryKind.Trap });
             Save(); return true;
         }
-        public bool Sell()
+        // Semenych's dialogue and hold action share the same transaction.
+        public bool TrySellQuoted(int ordinary, int grey, int large, int ordinaryPrice, int greyPrice, int largePrice)
         {
             RefreshCarriedRats();
-            if (shop == null || !shop.CanTradeSupplies || Rats == 0) return false;
+            if (shop == null || shop.Wallet == null || Rats == 0 || ordinaryPrice < 1 || greyPrice < 1 || largePrice < 1 ||
+                ordinary != Rats - GreyRats - LargeRats || grey != GreyRats || large != LargeRats) return false;
+            long reward = (long)ordinary * ordinaryPrice + (long)grey * greyPrice + (long)large * largePrice;
+            if (reward > int.MaxValue - shop.Wallet.Balance) return false;
             // A rat already awake cannot be sold while waiting for a safe NavMesh spawn.
             foreach (var record in carriedRats) if (Now >= record.wakeAt) return false;
             foreach (var record in carriedRats) if (record.animal != null) record.animal.ReleaseForRespawn();
             carriedRats.Clear();
-            int reward = SaleTotal; Rats = 0; GreyRats = 0; LargeRats = 0; Save();
-            Inventory.ClearCageContents();
-            shop.Wallet.RestoreBalance((int)System.Math.Min(int.MaxValue, (long)shop.Wallet.Balance + reward));
+            Rats = 0; GreyRats = 0; LargeRats = 0;
+            int balance = shop.Wallet.Balance + (int)reward;
+            // Persist money, catch and inventory together before publishing the balance event.
+            Inventory.ClearCageContents(balance);
+            shop.Wallet.RestoreBalance(balance);
             return true;
         }
         public bool UseBread() => Inventory.Consume(InventoryKind.Bread);

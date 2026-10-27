@@ -16,10 +16,10 @@ namespace HuntHappens.Editor
             var old = GameObject.Find("Shop Goods"); if (old != null) Object.DestroyImmediate(old);
             var root = new GameObject("Shop Goods");
             float[] columns = { -2.4f, -1.2f, 1.2f, 2.4f };
-            string[] labels = { "КЛЕТКИ", "ХЛЕБ", "ДРОТИКИ", "ПРИЁМ КРЫС" };
+            string[] labels = { "КЛЕТКИ", "ХЛЕБ", "ДРОТИКИ" };
             string[] materials = { "Cage Steel", "Bread", "Rat Pink", "Rat Fur" };
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Materials/Tranquilizer/HUD.asset");
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < labels.Length; i++)
             {
                 Vector3 position = default; bool found = false;
                 for (float depth = 2.9f; depth < 8f; depth += 0.7f)
@@ -45,7 +45,7 @@ namespace HuntHappens.Editor
                 Physics.SyncTransforms();
             }
             EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
-            Debug.Log("World shop installed: three products and rat reception; upgrade UI preserved.");
+            Debug.Log("World shop installed: three products; rats are bought by Semenych; upgrade UI preserved.");
         }
     }
 }

@@ -64,13 +64,13 @@ namespace HuntHappens.Editor
             var camera=hunt.GetComponentInChildren<Camera>();camera.transform.position=home+new Vector3(1.3f,0.9f,1.4f);camera.transform.LookAt(home+Vector3.up*0.2f);
             ShopVisualChecks.Capture(camera,null,"Logs/Large-rat-caught.png");
             Check(cage.Interact(hunt),"collect");hunt.Reload();Check(hunt.Rats==1&&hunt.LargeRats==1&&hunt.SaleTotal==25,"large species saved");
-            var reception=FindObjectsByType<WorldShopItem>(FindObjectsSortMode.None).Single(p=>p.Kind==3);
+            var reception=FindAnyObjectByType<HuntHappens.Characters.SemenychDialogue>();
             camera.transform.localPosition=new Vector3(0,2.04f,0.45f);
             hunt.transform.position=reception.transform.position-reception.transform.forward*1.9f-Vector3.up*0.45f;
             camera.transform.LookAt(reception.transform.position);Physics.SyncTransforms();
-            int money=hunt.shop.Wallet.Balance;Check(reception.TryUse(input),"sell through world shop");Check(hunt.shop.Wallet.Balance==money+25,"paid exactly $25");
+            int money=hunt.shop.Wallet.Balance;Check(SemenychChecks.SellAtNpc(hunt),"sell through Semenych");Check(hunt.shop.Wallet.Balance==money+25,"paid exactly $25");
             hunt.Reload();Check(hunt.Rats==0&&hunt.LargeRats==0,"sale cleared saved inventory");
-            yield return new WaitForSeconds(0.5f);Check(!reception.TryUse(input),"no duplicate sale");
+            yield return new WaitForSeconds(0.5f);Check(!SemenychChecks.SellAtNpc(hunt),"no duplicate sale");
             until=Time.time+22;while(rat.Caught&&Time.time<until)yield return null;
             Check(!rat.Caught&&rat.visual.gameObject.activeSelf&&rat.SalePrice==25,"large rat respawn");
             Check(health.TakeDamage(1000)&&health.Current==100&&Vector3.Distance(hunt.transform.position,playerSpawn)<0.1f,"player recovery at start");

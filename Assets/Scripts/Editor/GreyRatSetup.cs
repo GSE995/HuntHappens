@@ -28,8 +28,6 @@ namespace HuntHappens.Editor
     var instance=(GameObject)PrefabUtility.InstantiatePrefab(prefab);instance.name=grey?"Grey Rat":"Black Rat";
     instance.transform.SetParent(old.transform.parent);instance.transform.SetPositionAndRotation(old.transform.position,old.transform.rotation);Object.DestroyImmediate(old.gameObject);
    }
-   foreach(var item in Object.FindObjectsByType<HuntHappens.Shop.WorldShopItem>(FindObjectsSortMode.None))
-    if(item.Kind==3)item.GetComponentInChildren<TMPro.TextMeshPro>().text="ПРИЁМ КРЫС\n$10 / $15";
    EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();Debug.Log("Grey rats installed: 2 grey / 6 black; same rig and AI.");
   }
  }

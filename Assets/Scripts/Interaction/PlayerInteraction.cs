@@ -19,6 +19,8 @@ namespace HuntHappens.Interaction
         public HuntHappens.Shop.ShopInteractable ShopTarget { get; private set; }
         public bool GameplayBlocked => input != null && input.GameplayBlocked;
         public HuntHappens.Characters.FarmerDialogue FarmerTarget { get; private set; }
+        public HuntHappens.Characters.SemenychDialogue SemenychTarget { get; private set; }
+        private HuntHappens.Characters.SemenychDialogue holdTarget;
         public void ConfigureShop(HuntHappens.Shop.ShopManager value) => shop = value;
         public bool TryOpenShop()
         {
@@ -73,6 +75,16 @@ namespace HuntHappens.Interaction
         // The motor reads PrototypeInput in Update; consume the same frame after camera rotation.
         private void LateUpdate()
         {
+            try { UpdateInteraction(); }
+            finally
+            {
+                if (holdTarget != null && holdTarget != SemenychTarget) holdTarget.ResetHold();
+                holdTarget = SemenychTarget;
+            }
+        }
+
+        private void UpdateInteraction()
+        {
             CartTarget = LoadingCart = null; DeerInReach = false;
             ProductTarget = null;
             InventoryTarget = null;
@@ -84,6 +96,7 @@ namespace HuntHappens.Interaction
             TrapTarget = null;
             ShopTarget = null;
             FarmerTarget = null;
+            SemenychTarget = null;
             if (shop != null && shop.IsOpen)
             {
                 if (input.MenuClosePressed) { LastHandledFrame = Time.frameCount; shop.Close(); }
@@ -129,6 +142,7 @@ namespace HuntHappens.Interaction
                 {
                     CartTarget = hit.collider.GetComponentInParent<HuntHappens.Transport.DeerCart>();
                     FarmerTarget = hit.collider.GetComponentInParent<HuntHappens.Characters.FarmerDialogue>();
+                    SemenychTarget = hit.collider.GetComponentInParent<HuntHappens.Characters.SemenychDialogue>();
                     InventoryTarget = hit.collider.GetComponentInParent<WorldInventoryItem>();
                     CageTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.RatCage>();
                     BreadTarget = hit.collider.GetComponentInParent<HuntHappens.SmallGame.BreadBasket>();
@@ -159,6 +173,13 @@ namespace HuntHappens.Interaction
             }
             else if (input.InteractPressed && LoadingCart != null)
             { LastHandledFrame = Time.frameCount; LoadingCart.TryLoad(ObservedDeer, holder); }
+            else if (SemenychTarget != null)
+            {
+                var hud = Object.FindAnyObjectByType<InteractionHUD>();
+                SemenychTarget.HandleInteraction(input, hud != null ? hud.ThemeFont : null,
+                    input.InteractPressed, input.InteractHeld, input.InteractReleased, Time.deltaTime);
+                if (input.InteractPressed || input.InteractHeld || input.InteractReleased) LastHandledFrame = Time.frameCount;
+            }
             else if (input.InteractPressed && FarmerTarget != null)
             {
                 var hud = GetComponentInChildren<InteractionHUD>();
@@ -187,6 +208,9 @@ namespace HuntHappens.Interaction
 
         private void OnDisable()
         {
+            if (holdTarget != null) holdTarget.ResetHold();
+            holdTarget = null;
+            SemenychTarget = null;
             CartDriver?.Release();
             CartTarget = LoadingCart = null; DeerInReach = false;
             FarmerTarget = null;

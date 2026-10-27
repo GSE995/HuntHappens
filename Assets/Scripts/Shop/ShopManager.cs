@@ -82,12 +82,13 @@ namespace HuntHappens.Shop
         }
         public bool BuySupply(int kind)
         {
+            // Legacy product ID is reserved; rats are bought only by Semenych.
+            if (kind == 3) { Message = "Крыс покупает Семёныч"; return false; }
             var supplies = input.GetComponent<HuntHappens.SmallGame.RatHunting>();
             if (!CanTradeSupplies || supplies == null) return false;
             supplies.RefreshCarriedRats();
-            int reward = supplies.SaleTotal;
-            bool success = kind == 3 ? supplies.Sell() : supplies.Buy(kind);
-            Message = success ? (kind == 3 ? "Крысы сданы: +$" + reward : kind == 2 ? "Боезапас пополнен: " + supplies.Darts : "Предмет в руках: выберите пустую ячейку 1–4") :
+            bool success = supplies.Buy(kind);
+            Message = success ? (kind == 2 ? "Боезапас пополнен: " + supplies.Darts : "Предмет в руках: выберите пустую ячейку 1–4") :
                 kind != 2 && !input.GetComponent<PlayerInventory>().CanReceive ? "Сначала уберите предмет в пустую ячейку или нажмите Q" : "Недостаточно денег, нет крыс или достигнут лимит боезапаса";
             if (success) nextPurchase = Time.unscaledTime + purchaseCooldown;
             return success;

@@ -13,6 +13,8 @@ namespace HuntHappens.Player
         public bool SprintHeld { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool InteractPressed { get; private set; }
+        public bool InteractHeld { get; private set; }
+        public bool InteractReleased { get; private set; }
         public bool ThrowPressed { get; private set; }
         public bool DropPressed { get; private set; }
         public int SlotPressed => SelectTranquilizerPressed ? 0 : SelectInteractionPressed ? 1 : SelectTrapPressed ? 2 : SelectCagePressed ? 3 : -1;
@@ -38,6 +40,7 @@ namespace HuntHappens.Player
             Move = Look = Vector2.zero;
             SprintHeld = JumpPressed = InteractPressed = ThrowPressed = false;
             DropPressed = false;
+            InteractHeld = InteractReleased = false;
             SelectTranquilizerPressed = SelectInteractionPressed = SelectTrapPressed = SelectCagePressed = false;
         }
 #if ENABLE_INPUT_SYSTEM
@@ -111,6 +114,8 @@ namespace HuntHappens.Player
             SprintHeld = captured && sprint.IsPressed();
             JumpPressed = captured && jump.WasPressedThisFrame();
             InteractPressed = captured && wasCaptured && interact.WasPressedThisFrame();
+            InteractHeld = captured && interact.IsPressed();
+            InteractReleased = captured && interact.WasReleasedThisFrame();
             // Clicking back into Game captures the cursor without throwing the held item.
             ThrowPressed = captured && wasCaptured && captureCursor.WasPressedThisFrame();
             DropPressed = captured && wasCaptured && Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame;
@@ -130,6 +135,7 @@ namespace HuntHappens.Player
             Move = Look = Vector2.zero;
             SprintHeld = JumpPressed = false;
             InteractPressed = ThrowPressed = false;
+            InteractHeld = InteractReleased = false;
             DropPressed = false;
             SelectTranquilizerPressed = SelectInteractionPressed = false;
             SelectTrapPressed = SelectCagePressed = false;

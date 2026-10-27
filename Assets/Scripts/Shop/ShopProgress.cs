@@ -36,6 +36,7 @@ namespace HuntHappens.Shop
             public string[] returnedDeerIds = new string[0];
             public bool deerAdvanceGranted;
             public bool cartPurchased;
+            public bool metSemenych;
             public int[] levels = new int[4];
         }
         public static Data Load()
@@ -73,7 +74,7 @@ namespace HuntHappens.Shop
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data)); PlayerPrefs.Save();
         }
         public static void Reset() { PlayerPrefs.DeleteKey(Key); PlayerPrefs.Save(); }
-        public static void SaveInventory(HuntHappens.Interaction.InventoryEntry[] slots, HuntHappens.Interaction.InventoryEntry hand, int darts)
+        public static void SaveInventory(HuntHappens.Interaction.InventoryEntry[] slots, HuntHappens.Interaction.InventoryEntry hand, int darts, int? ratSaleBalance = null)
         {
             var data = Load(); data.inventoryVersion = 2; data.darts = darts;
             // JsonUtility's inline class serialization cannot represent null entries reliably.
@@ -81,6 +82,12 @@ namespace HuntHappens.Shop
             data.inventory = new HuntHappens.Interaction.InventoryEntry[slots.Length];
             for (int i = 0; i < slots.Length; i++) data.inventory[i] = SavedEntry(slots[i]);
             data.hand = SavedEntry(hand);
+            if (ratSaleBalance.HasValue)
+            {
+                data.balance = ratSaleBalance.Value;
+                data.rats = data.greyRats = data.largeRats = 0;
+                data.carriedRats = new CarriedRat[0];
+            }
             PlayerPrefs.SetString(Key, JsonUtility.ToJson(data)); PlayerPrefs.Save();
         }
         private static HuntHappens.Interaction.InventoryEntry SavedEntry(HuntHappens.Interaction.InventoryEntry entry)

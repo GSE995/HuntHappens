@@ -124,6 +124,7 @@ namespace HuntHappens.Interaction
             prompt.text = !visible || inventoryOpen || interaction.IsHolding ? "" :
                 !string.IsNullOrEmpty(interaction.TransportHint) ? interaction.TransportHint :
                 interaction.FarmerTarget != null ? "E — Поговорить с фермером" :
+                interaction.SemenychTarget != null ? interaction.SemenychTarget.InteractionPrompt(rats) :
                 interaction.InventoryTarget != null ? interaction.InventoryTarget.Prompt :
                 interaction.ProductTarget != null ? interaction.ProductTarget.Prompt :
                 interaction.DeliveryTarget != null ? "E — Сдать животных" :

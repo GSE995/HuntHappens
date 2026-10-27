@@ -90,9 +90,9 @@ namespace HuntHappens.Editor
             shop.GetComponent<ShopUI>().SendMessage("LateUpdate");
             ShopVisualChecks.Capture(camera, shop.GetComponentInChildren<Canvas>(), "Logs/Rat-shop.png");yield return new WaitForSeconds(1);
             ShopVisualChecks.Capture(camera, shop.GetComponentInChildren<Canvas>(), "Logs/Rat-shop.png");
-            int sale=hunt.SaleTotal;
-            Check(hunt.Sell()&&shop.Wallet.Balance==sale,"sale reward");Check(!hunt.Sell()&&shop.Wallet.Balance==sale,"no repeat reward");
-            shop.Wallet.RestoreBalance(10);
+            int sale=hunt.SaleTotal; shop.Close();
+            Check(SemenychChecks.SellAtNpc(hunt)&&shop.Wallet.Balance==sale,"sale reward");Check(!SemenychChecks.SellAtNpc(hunt)&&shop.Wallet.Balance==sale,"no repeat reward");
+            Check(shop.TryOpen(),"reopen shop for purchases"); shop.Wallet.RestoreBalance(10);
             Check(!hunt.Buy(2)&&shop.Wallet.Balance==10,"cannot buy dart without funds");
             Check(hunt.Buy(1)&&shop.Wallet.Balance==8&&hunt.Bread==5,"bread price");
             shop.Wallet.RestoreBalance(40);Check(hunt.Buy(0)&&shop.Wallet.Balance==25&&hunt.Cages==2,"cage price");

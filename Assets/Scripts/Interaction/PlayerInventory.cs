@@ -252,7 +252,7 @@ namespace HuntHappens.Interaction
             if (quantity <= 0 || quantity > MaximumDarts - Darts) return false;
             Darts += quantity; Save(); return true;
         }
-        public void ClearCageContents()
+        public void ClearCageContents(int? ratSaleBalance = null)
         {
             foreach (var entry in slots) if (entry != null) entry.cageRat = 0;
             if (Hand != null) Hand.cageRat = 0;
@@ -260,7 +260,9 @@ namespace HuntHappens.Interaction
                 if (item.Owner == this && item.Entry != null) item.Entry.cageRat = 0;
             foreach (var cage in FindObjectsByType<HuntHappens.SmallGame.RatCage>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (cage.Owner != null && cage.Owner.gameObject == gameObject) cage.ClearStoredCargo();
-            Save();
+            if (ratSaleBalance.HasValue)
+                ShopProgress.SaveInventory(slots, HasUnassignedItem ? Hand : null, Darts, ratSaleBalance);
+            else Save();
         }
         private void LateUpdate()
         {

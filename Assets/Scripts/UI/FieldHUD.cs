@@ -18,6 +18,7 @@ namespace HuntHappens.UI
         TextMeshProUGUI money, total, selectedName;
         readonly TextMeshProUGUI[] counts = new TextMeshProUGUI[4], supplies = new TextMeshProUGUI[4], catchLabels = new TextMeshProUGUI[3];
         readonly UnityEngine.UI.Image[] slotIcons = new UnityEngine.UI.Image[4];
+        readonly UnityEngine.UI.Image[] baitIcons = new UnityEngine.UI.Image[4];
         readonly SketchPanel[] slots = new SketchPanel[4];
         UnityEngine.UI.Image healthFill;
         readonly Sprite[] sprites = new Sprite[9];
@@ -44,6 +45,8 @@ namespace HuntHappens.UI
             {
                 slots[i]=Panel("Quick Slot "+(i+1),root,new Vector2((i-1.5f)*108,85),new Vector2(96,94));Anchor(slots[i].rectTransform,new Vector2(0.5f,0));
                 slotIcons[i]=Image("Icon",slots[i].transform,new Vector2(0,5),new Vector2(82,65),null);
+                baitIcons[i]=Image("Bait Icon",slots[i].transform,new Vector2(-16,-27),new Vector2(36,26),sprites[4]);
+                baitIcons[i].gameObject.SetActive(false);
                 counts[i]=Label("Count",slots[i].transform,new Vector2(28,-28),new Vector2(40,28),26,"");
                 Label("Key",slots[i].transform,new Vector2(0,-65),new Vector2(40,32),29,(i+1).ToString());
             }
@@ -85,12 +88,17 @@ namespace HuntHappens.UI
             if(IsOpen && input.MenuClosePressed)SetOpen(false);
             var bag = hunt.GetComponent<PlayerInventory>();
             int selected = bag.HandSlot;
+            int baitedCages = bag.HasUnassignedItem && HasBait(bag.Hand) ? bag.Hand.quantity : 0;
             for (int i = 0; i < 4; i++)
             {
                 var entry = bag.Slot(i);
                 slotIcons[i].enabled = entry != null;
                 if (entry != null) slotIcons[i].sprite = sprites[entry.Icon];
-                counts[i].text = entry?.kind == InventoryKind.Gun ? hunt.Darts.ToString() : entry != null && entry.quantity > 1 ? entry.quantity.ToString() : "";
+                bool baited = HasBait(entry);
+                baitIcons[i].gameObject.SetActive(baited);
+                if (baited) baitedCages += entry.quantity;
+                counts[i].text = entry?.kind == InventoryKind.Gun ? hunt.Darts.ToString() : baited ? "1" : entry != null && entry.quantity > 1 ? entry.quantity.ToString() : "";
+                counts[i].color = baited ? Orange : Ivory;
                 slots[i].ink = i == selected ? Orange : new Color(0.9f,0.86f,0.69f,0.55f);
                 slots[i].thickness = i == selected ? 3 : 1.5f; slots[i].SetVerticesDirty();
             }
@@ -101,12 +109,16 @@ namespace HuntHappens.UI
             healthFill.color=current<=25?Color.red:Orange;
             money.text="$"+hunt.shop.Wallet.Balance;
             supplies[0].text="Хлеб ×"+hunt.Bread;supplies[1].text="Дротики ×"+hunt.Darts;supplies[2].text="Клетки ×"+hunt.Available;supplies[3].text="Ловушки ×"+availableTraps;
+            if (baitedCages > 0) supplies[2].text += "\nС приманкой ×" + baitedCages;
+            supplies[2].fontSize = baitedCages > 0 ? 24 : 31;
+            supplies[2].rectTransform.sizeDelta = new Vector2(222, 62);
             catchLabels[0].text="Чёрная ×"+(hunt.Rats-hunt.GreyRats-hunt.LargeRats)+"\n<color=#FF812F>$10 / шт.</color>";
             catchLabels[1].text="Серая ×"+hunt.GreyRats+"\n<color=#FF812F>$15 / шт.</color>";
             catchLabels[2].text="Крупная ×"+hunt.LargeRats+"\n<color=#FF812F>$25 / шт.</color>";
             total.text="Стоимость улова: <color=#FF812F>$"+hunt.SaleTotal+"</color>";
         }
         public void Hide(){if(IsOpen)SetOpen(false);}
+        static bool HasBait(InventoryEntry entry) => entry?.kind == InventoryKind.Cage && entry.cageBaited && entry.cageRat == 0;
         void OnDestroy(){if(input!=null){input.InventoryToggleRequested-=Toggle;if(IsOpen)input.SetGameplayBlocked(false);}foreach(var sprite in sprites)if(sprite!=null)Destroy(sprite);}
         static void Stretch(RectTransform r){r.anchorMin=Vector2.zero;r.anchorMax=Vector2.one;r.offsetMin=r.offsetMax=Vector2.zero;}
         static void Anchor(RectTransform r,Vector2 a){r.anchorMin=r.anchorMax=a;}
