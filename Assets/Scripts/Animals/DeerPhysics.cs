@@ -108,8 +108,15 @@ namespace HuntHappens.Animals
 
         private bool HasStandingRoom(Vector3 point)
         {
-            foreach (Collider obstacle in Physics.OverlapCapsule(point + Vector3.up * 0.55f,
-                         point + Vector3.up * 1.85f, 0.5f, ~0, QueryTriggerInteraction.Ignore))
+            // Match the actual standing capsule, including the animal's root scale.
+            Vector3 scale = transform.lossyScale;
+            float radius = standingCollider.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            float halfSegment = Mathf.Max(0, standingCollider.height * Mathf.Abs(scale.y) * .5f - radius);
+            Vector3 center = point + Quaternion.Euler(0, transform.eulerAngles.y, 0) * Vector3.Scale(standingCollider.center, scale);
+            // Leave a small clearance from the floor so ground contact does not block recovery.
+            radius = Mathf.Max(.01f, radius - .01f);
+            foreach (Collider obstacle in Physics.OverlapCapsule(center - Vector3.up * halfSegment,
+                         center + Vector3.up * halfSegment, radius, ~0, QueryTriggerInteraction.Ignore))
                 if (!obstacle.transform.IsChildOf(transform)) return false;
             return true;
         }

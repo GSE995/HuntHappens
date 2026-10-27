@@ -103,8 +103,8 @@ namespace HuntHappens.Editor
             UnityEngine.AI.NavMeshBuilder.CollectSources(environment, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, markups, sources);
             if (sources.Count == 0) throw new System.InvalidOperationException("No colliders collected for navigation.");
             NavMeshBuildSettings settings = NavMesh.GetSettingsByIndex(0);
-            settings.agentRadius = 0.55f;
-            settings.agentHeight = 2.8f;
+            settings.agentRadius = WorldScaleSetup.NavigationRadius;
+            settings.agentHeight = WorldScaleSetup.NavigationHeight;
             settings.agentClimb = 0.25f;
             settings.agentSlope = 35;
             settings.overrideVoxelSize = true;
@@ -115,6 +115,7 @@ namespace HuntHappens.Editor
             if (baked == null) throw new System.InvalidOperationException("Navigation bake failed.");
             baked.name = sceneName + " Deer Navigation";
             string path = "Assets/Navigation/" + sceneName + "-Deer.asset";
+            navigation.SetData(null);
             NavMeshData saved = AssetDatabase.LoadAssetAtPath<NavMeshData>(path);
             if (saved == null) { AssetDatabase.CreateAsset(baked, path); saved = baked; }
             else { EditorUtility.CopySerialized(baked, saved); Object.DestroyImmediate(baked); EditorUtility.SetDirty(saved); }

@@ -24,11 +24,11 @@ namespace HuntHappens.Editor
             var scene=EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
             var player=UnityEngine.Object.FindAnyObjectByType<FirstPersonMotor>();
             if(!player)throw new Exception("FPS player missing");
-            var camera=player.GetComponentInChildren<Camera>();var oldPosition=camera.transform.localPosition;var oldRotation=camera.transform.localRotation;
+            var camera=player.GetComponentInChildren<Camera>();var oldRotation=camera.transform.localRotation;
             Attach(player.gameObject);
-            if(camera.transform.localPosition!=oldPosition || camera.transform.localRotation!=oldRotation)throw new Exception("Camera modified");
+            if(Mathf.Abs(camera.transform.localPosition.y-WorldScaleSetup.EyeHeight)>.001f || camera.transform.localRotation!=oldRotation)throw new Exception("Camera position unexpectedly changed");
             EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();
-            Debug.Log("CAMPER_INTEGRATION_OK: player body added; FPS controller, camera and hands preserved");
+            Debug.Log("CAMPER_INTEGRATION_OK: player body added; realistic controller/eye height applied; FPS hands preserved");
         }
         [MenuItem("Tools/Hunt Happens/Configure Camper Player Body")]
         public static void Menu()
@@ -121,6 +121,7 @@ namespace HuntHappens.Editor
             foreach(var extra in existing)if(extra!=keep)UnityEngine.Object.DestroyImmediate(extra.gameObject);
             Transform visual=keep ? keep.transform : ((GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(Folder+"/CamperPlayerVisual.prefab"),player.transform)).transform;
             var driver=visual.GetComponent<PlayerCharacterVisual>();var renderers=visual.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            WorldScaleSetup.ConfigurePlayer(player);
             driver.Configure(player.GetComponent<CharacterController>(),player.GetComponentInChildren<Camera>(),visual.GetComponentInChildren<Animator>(),renderers.Single());
             EditorUtility.SetDirty(driver);PrefabUtility.RecordPrefabInstancePropertyModifications(driver);
         }

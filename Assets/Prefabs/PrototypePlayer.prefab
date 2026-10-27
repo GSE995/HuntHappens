@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 2023270497633093390}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.62, z: 0}
+  m_LocalPosition: {x: 0, y: 1.68, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -226,6 +226,7 @@ MonoBehaviour:
   cameraPivot: {fileID: 7586983348429235311}
   sensitivity: 0.12
   pitchLimit: 85
+  downwardPitchLimit: 55
 --- !u!114 &7338183586306394527
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,6 +240,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.Player.FirstPersonMotor
   moveSpeed: 5
+  sprintMultiplier: 1.6
+  deerCarrySpeedMultiplier: 0.55
   jumpHeight: 1.2
   gravity: -20
 --- !u!1001 &2430357704939577443
@@ -267,7 +270,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8068831786768235752, guid: 87f76d4f91e66d74bb08dcf8dc823cd1, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.00000022351742
       objectReference: {fileID: 0}
     - target: {fileID: 8068831786768235752, guid: 87f76d4f91e66d74bb08dcf8dc823cd1, type: 3}
       propertyPath: m_LocalPosition.z

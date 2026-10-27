@@ -55,7 +55,7 @@ namespace HuntHappens.Editor
                     Check(visual.BodyAnimator.applyRootMotion==false,"No animation-driven controller drift");
                     Check(UnityEngine.Object.FindObjectsByType<Camera>().Length==1,"Original FPS camera only");
                     Check(motor.GetComponentInChildren<FirstPersonArms>()!=null,"Existing gameplay hands preserved");
-                    Check(Mathf.Abs(view.transform.localPosition.y-1.62f)<.001f,"Original camera height");
+                    Check(Mathf.Abs(view.transform.localPosition.y-WorldScaleSetup.EyeHeight)<.001f,"Realistic eye height");
                     motor.enabled=false;bodyOrigin=visual.transform.localPosition;cameraRotation=view.transform.localRotation;
                     var arms=motor.GetComponentInChildren<FirstPersonArms>();handOrigin=arms.transform.localPosition;
                     foot=visual.GetComponentsInChildren<Transform>().First(t=>t.name=="LeftFoot");footStart=foot.localRotation;

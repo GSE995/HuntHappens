@@ -230,12 +230,14 @@ namespace HuntHappens.Editor
                 markups.Add(new NavMeshBuildMarkup{root=c.transform,ignoreFromBuild=dynamic,overrideArea=!dynamic&&c.name!="Ground",area=1});
             }
             UnityEngine.AI.NavMeshBuilder.CollectSources((Transform)null,~0,NavMeshCollectGeometry.PhysicsColliders,0,markups,sources);
-            var settings=NavMesh.GetSettingsByIndex(0);settings.agentRadius=.65f;settings.agentHeight=2.8f;settings.agentClimb=.25f;settings.overrideVoxelSize=true;settings.voxelSize=.15f;
+            var settings=NavMesh.GetSettingsByIndex(0);settings.agentRadius=WorldScaleSetup.NavigationRadius;settings.agentHeight=WorldScaleSetup.NavigationHeight;settings.agentClimb=.25f;settings.overrideVoxelSize=true;settings.voxelSize=.15f;
             var data=UnityEngine.AI.NavMeshBuilder.BuildNavMeshData(settings,sources,new Bounds(Vector3.zero,new Vector3(100,24,100)),Vector3.zero,Quaternion.identity);
             if(data==null)throw new System.Exception("Bake failed");
+            // Detach registered tiles before replacing their serialized data.
+            var navigation=Object.FindAnyObjectByType<ForestNavigation>();navigation.SetData(null);
             string path="Assets/Navigation/FarmMap.asset";var old=AssetDatabase.LoadAssetAtPath<NavMeshData>(path);
             if(old==null)AssetDatabase.CreateAsset(data,path);else{EditorUtility.CopySerialized(data,old);Object.DestroyImmediate(data);data=old;}
-            Object.FindAnyObjectByType<ForestNavigation>().SetData(data);AssetDatabase.SaveAssets();
+            navigation.SetData(data);AssetDatabase.SaveAssets();
         }
         public static string ValidateRoutes()
         {

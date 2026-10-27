@@ -75,7 +75,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1138891743505962263}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.15
+  m_Radius: 0.075
   m_Speed: 0.8
   m_Acceleration: 8
   avoidancePriority: 50
@@ -84,7 +84,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 0.35
+  m_Height: 0.12
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -98,9 +98,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b8b71ac2a38504e3da6134f5110112fb, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.SmallGame.RatAI
   visual: {fileID: 5551799270596094719}
+  isGrey: 0
+  isAggressive: 0
+  territoryRadius: 0
 --- !u!114 &1736177733966196145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -111,7 +114,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 33ed89c6c8c244a9bbd19e97b9b82176, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HuntHappens.SmallGame.RatAnimation
   legs:
   - {fileID: 3357812999987550001}
@@ -194,6 +197,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5551799270596094719}
+  - component: {fileID: 4148243964265184362}
   m_Layer: 0
   m_Name: Mouse Visual
   m_TagString: Untagged
@@ -210,8 +214,8 @@ Transform:
   m_GameObject: {fileID: 3575025139906990075}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.000000025524363, z: 0}
+  m_LocalScale: {x: 0.42822775, y: 0.42822775, z: 0.42822775}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7707336208413983559}
@@ -219,6 +223,27 @@ Transform:
   - {fileID: 8903790441965743105}
   m_Father: {fileID: 318083976333910653}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4148243964265184362
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3575025139906990075}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.2814231, y: 0.28022468, z: 0.77999985}
+  m_Center: {x: 0, y: 0.1401124, z: 0}
 --- !u!1 &4467733799548080031
 GameObject:
   m_ObjectHideFlags: 0
@@ -574,7 +599,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 55975e6fb38b8476ab87ae53f4904918, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 96abf600c74d940beb442039888b7865, type: 2}
     - target: {fileID: 919132149155446097, guid: 55975e6fb38b8476ab87ae53f4904918, type: 3}
       propertyPath: m_Name

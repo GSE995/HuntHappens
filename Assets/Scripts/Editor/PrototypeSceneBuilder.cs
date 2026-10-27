@@ -115,7 +115,7 @@ namespace HuntHappens.Editor
             var cameraObject = new GameObject("First Person Camera");
             cameraObject.tag = "MainCamera";
             cameraObject.transform.SetParent(player.transform, false);
-            cameraObject.transform.localPosition = new Vector3(0, 1.62f, 0);
+            cameraObject.transform.localPosition = new Vector3(0, WorldScaleSetup.EyeHeight, 0);
             var camera = cameraObject.AddComponent<Camera>();
             camera.fieldOfView = 75;
             camera.nearClipPlane = 0.05f;

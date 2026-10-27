@@ -18,20 +18,20 @@ namespace HuntHappens.Editor
             var prefab = PrefabUtility.LoadPrefabContents(PrefabPath);
             try
             {
-                prefab.transform.localScale = Vector3.one * 1.2f;
+                WorldScaleSetup.ConfigureDeer(prefab, WorldScaleSetup.LeaderHeight);
                 var agent = prefab.GetComponent<NavMeshAgent>();
-                agent.radius = 0.66f;
-                agent.height = 3.36f;
+                agent.radius = prefab.GetComponent<CapsuleCollider>().radius * prefab.transform.lossyScale.x;
+                agent.height = WorldScaleSetup.LeaderHeight;
                 PrefabUtility.SaveAsPrefabAsset(prefab, PrefabPath);
             }
             finally { PrefabUtility.UnloadPrefabContents(prefab); }
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
             var boss = GameObject.Find("Boss Deer");
-            boss.transform.localScale = Vector3.one * 1.2f;
+            WorldScaleSetup.ConfigureDeer(boss, WorldScaleSetup.LeaderHeight);
             PrefabUtility.RecordPrefabInstancePropertyModifications(boss.transform);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
-            Debug.Log("Boss scaled to 120%; visual, skeleton and colliders scale together.");
+            Debug.Log("Boss fitted to 2.20m; visual, skeleton and colliders scale together.");
         }
         public static void IntegrateBatch()
         {

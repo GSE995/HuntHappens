@@ -24,7 +24,7 @@ namespace HuntHappens.Editor
         {
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
             var hero = Object.FindAnyObjectByType<HeroWander>();
-            FitToGround(hero.gameObject, 2.25f);
+            FitToGround(hero.gameObject, WorldScaleSetup.HeroHeight);
             PrefabUtility.SaveAsPrefabAsset(hero.gameObject, Folder + "Hero.prefab");
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
@@ -51,6 +51,7 @@ namespace HuntHappens.Editor
             capsule.center = Vector3.up * height * 0.5f;
             capsule.radius = 0.44f;
             if (hero.GetComponent<HeroGrounding>() == null) hero.AddComponent<HeroGrounding>();
+            WorldScaleSetup.ConfigureHero(hero);
             Debug.Log("Hero resized to " + height + "m with animated sole grounding.");
         }
 
@@ -123,11 +124,11 @@ namespace HuntHappens.Editor
             capsule.height = 1.8f;
             capsule.radius = 0.35f;
             hero.AddComponent<HeroWander>();
-            FitToGround(hero, 2.25f);
+            FitToGround(hero, WorldScaleSetup.HeroHeight);
             PrefabUtility.SaveAsPrefabAsset(hero, Folder + "Hero.prefab");
             AssetDatabase.SaveAssets();
             EditorSceneManager.MarkSceneDirty(hero.scene);
-            Debug.Log("Hero added with looping walk animation and forest wandering. Clip: " + walk.name + ", height: 2.25m");
+            Debug.Log("Hero added with looping walk animation and forest wandering. Clip: " + walk.name + ", height: 1.85m");
         }
     }
 }

@@ -23,7 +23,7 @@ namespace HuntHappens.Editor
             var original = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/SmallGame/Rat.prefab").GetComponent<RatAI>();
             rat.visual.localScale = original.visual.localScale * 1.4f;
             foreach (var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()) skin.sharedMaterial = material;
-            root.GetComponent<NavMeshAgent>().radius = 0.18f;
+            WorldScaleSetup.ConfigureRat(root);
             PrefabUtility.SaveAsPrefabAsset(root, path); PrefabUtility.UnloadPrefabContents(root);
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
             var player = Object.FindAnyObjectByType<RatHunting>(); if (!player.GetComponent<PlayerHealth>()) player.gameObject.AddComponent<PlayerHealth>();

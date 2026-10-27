@@ -90,6 +90,7 @@ namespace HuntHappens.Editor
                 }
                 imported.gameObject.SetActive(false);
                 deer.GetComponent<DeerAnimation>().Configure(visual, head, legs);
+                WorldScaleSetup.ConfigureDeer(deer, deer.GetComponent<DeerLeader>() ? WorldScaleSetup.LeaderHeight : WorldScaleSetup.DeerHeight);
                 PrefabUtility.SaveAsPrefabAsset(deer, path);
             }
             finally { PrefabUtility.UnloadPrefabContents(deer); }

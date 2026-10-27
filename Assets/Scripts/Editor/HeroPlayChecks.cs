@@ -61,7 +61,7 @@ namespace HuntHappens.Editor
                 if (Mathf.Abs(gap) > 0.04f) throw new Exception("Hero sole gap: " + gap);
                 groundedFrames++;
                 if (!animated || Vector3.Distance(start, hero.transform.position) < 2 || groundedFrames < 100) return;
-                if (top - sole < 2.1f || top - sole > 2.4f) throw new Exception("Unexpected Hero height: " + (top - sole));
+                if (top - sole < 1.7f || top - sole > 1.95f) throw new Exception("Unexpected Hero height: " + (top - sole));
                 Debug.Log($"Hero play check PASSED: height={top-sole:F3}m, moved >2m, skeletal walk animated, {groundedFrames} grounded samples, maximum sole gap={largestGap:F4}m.");
                 EditorApplication.update -= Tick;
                 EditorApplication.Exit(0);

@@ -18,8 +18,9 @@ namespace HuntHappens.Editor
             var body = player.GetComponentInChildren<PlayerBodyAnimation>();
             body.transform.localPosition = new Vector3(0, 0, -0.2f);
             var camera = player.GetComponentInChildren<Camera>();
-            camera.transform.localPosition = new Vector3(0, 2.04f, 0.45f);
+            camera.transform.localPosition = new Vector3(0, WorldScaleSetup.EyeHeight, 0.45f);
             PrefabUtility.RecordPrefabInstancePropertyModifications(camera.transform);
+            WorldScaleSetup.ConfigurePlayer(player.gameObject);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
         }
@@ -86,12 +87,12 @@ namespace HuntHappens.Editor
             body.AddComponent<HeroGrounding>();
             var controller = player.GetComponent<CharacterController>();
             Undo.RecordObject(controller, "Fit player capsule");
-            controller.height = 2.25f;
-            controller.center = Vector3.up * 1.125f;
+            controller.height = WorldScaleSetup.PlayerHeight;
+            controller.center = Vector3.up * (WorldScaleSetup.PlayerHeight * .5f);
             PrefabUtility.RecordPrefabInstancePropertyModifications(controller);
             var camera = player.GetComponentInChildren<Camera>();
             Undo.RecordObject(camera.transform, "Set eye height");
-            camera.transform.localPosition = new Vector3(0, 2.04f, 0.45f);
+            camera.transform.localPosition = new Vector3(0, WorldScaleSetup.EyeHeight, 0.45f);
             PrefabUtility.RecordPrefabInstancePropertyModifications(camera.transform);
             EditorSceneManager.MarkSceneDirty(player.gameObject.scene);
             Debug.Log("Player body ready: FPS camera, animated hero body, full shadow, existing interaction arms preserved.");

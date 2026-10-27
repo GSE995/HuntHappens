@@ -90,12 +90,6 @@ namespace HuntHappens.Characters
         private int quotedOrdinary, quotedGrey, quotedLarge;
         private int quotedOrdinaryPrice, quotedGreyPrice, quotedLargePrice;
 
-        private void Awake()
-        {
-            var animator = GetComponentInChildren<Animator>();
-            if (animator != null) animator.speed = 0;
-        }
-
         public bool TryOpen(PrototypeInput player, TMP_FontAsset font)
         {
             if (!isActiveAndEnabled || IsOpen || player == null || player.GameplayBlocked || introduction == null || hints == null) return false;

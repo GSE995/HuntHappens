@@ -59,7 +59,7 @@ namespace HuntHappens.SmallGame
                 if (renderer is SkinnedMeshRenderer skin)
                 {
                     mesh = new Mesh { name = "Caged Rat Snapshot" };
-                    skin.BakeMesh(mesh);
+                    skin.BakeMesh(mesh, true);
                     bakedMeshes.Add(mesh);
                 }
                 else
@@ -95,7 +95,8 @@ namespace HuntHappens.SmallGame
                 }
             }
             if (!initialized) return;
-            float fit = Mathf.Min(.46f / Mathf.Max(.001f, bounds.size.x), .34f / Mathf.Max(.001f, bounds.size.y), .72f / Mathf.Max(.001f, bounds.size.z));
+            float naturalScale = source.visual.lossyScale.x / Mathf.Max(.001f, transform.lossyScale.x);
+            float fit = Mathf.Min(naturalScale, Mathf.Min(.46f / Mathf.Max(.001f, bounds.size.x), .34f / Mathf.Max(.001f, bounds.size.y), .72f / Mathf.Max(.001f, bounds.size.z)));
             rat.transform.localScale = Vector3.one * fit;
             rat.transform.localPosition = new Vector3(0, .055f, -.03f) - new Vector3(bounds.center.x, bounds.min.y, bounds.center.z) * fit;
         }

@@ -24,9 +24,9 @@ namespace HuntHappens.Editor
                 go.transform.SetParent(null);
                 go.transform.position = new Vector3(11, .05f, -34);
                 go.transform.rotation = Quaternion.Euler(0, 180, 0);
-                go.GetComponentInChildren<Animator>().speed = 0;
                 npc = go.AddComponent<SemenychDialogue>();
             }
+            ApplyAppearance(npc);
             var intro = Dialogue("SemenychIntroduction", new[] {
                 "Тихо ты, клетки не тряси. Я Семёныч. Принимаю крыс, плачу деньгами. Зачем они мне? Вот за вопросы я не плачу",
                 "Решишь подзаработать — ставь крысоловку и клади приманку. Только у каждой крысы свои запросы",
@@ -50,6 +50,77 @@ namespace HuntHappens.Editor
             if (!EditorSceneManager.SaveOpenScenes()) throw new System.Exception("Scene save failed");
             return npc.name + " at " + npc.transform.position;
         }
+        public static void ApplyAppearance(SemenychDialogue npc)
+        {
+            if (Application.isPlaying) throw new System.InvalidOperationException("Use Edit Mode");
+            const string folder = "Assets/Art/MouseCatcher/";
+            const string stem = "Meshy_AI_skinny_camper_character_20261022_image-to-3d-texture";
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(folder + "SemenychRig.fbx");
+            if (model == null) throw new System.InvalidOperationException("MouseCatcher model is missing");
+            var material = AssetDatabase.LoadAssetAtPath<Material>(folder + "MouseCatcher.mat");
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                material.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(folder + stem + ".png"));
+                material.SetFloat("_Smoothness", 0.15f);
+                AssetDatabase.CreateAsset(material, folder + "MouseCatcher.mat");
+            }
+            // Feet remain fixed in the idle clip; the farmer's per-vertex grounding is unnecessary.
+            var grounding = npc.GetComponent<HeroGrounding>();
+            if (grounding != null) Object.DestroyImmediate(grounding);
+            for (int i = npc.transform.childCount - 1; i >= 0; i--)
+            {
+                var child = npc.transform.GetChild(i);
+                if (child.GetComponentInChildren<Renderer>() != null) Object.DestroyImmediate(child.gameObject);
+            }
+            var visual = (GameObject)PrefabUtility.InstantiatePrefab(model, npc.transform);
+            visual.name = "MouseCatcher";
+            visual.transform.localPosition = Vector3.zero;
+            visual.transform.localRotation = model.transform.localRotation;
+            visual.transform.localScale = model.transform.localScale;
+            var renderers = visual.GetComponentsInChildren<Renderer>();
+            // Imported skinned-renderer bounds include skeleton padding. Measure actual geometry.
+            var bounds = new Bounds();
+            bool hasBounds = false;
+            foreach (var renderer in renderers)
+            {
+                var skin = renderer as SkinnedMeshRenderer;
+                if (skin != null)
+                {
+                    var baked = new Mesh();
+                    skin.BakeMesh(baked, true);
+                    foreach (var vertex in baked.vertices)
+                    {
+                        var point = skin.transform.TransformPoint(vertex);
+                        if (!hasBounds) { bounds = new Bounds(point, Vector3.zero); hasBounds = true; }
+                        else bounds.Encapsulate(point);
+                    }
+                    Object.DestroyImmediate(baked);
+                }
+                else
+                {
+                    if (!hasBounds) { bounds = renderer.bounds; hasBounds = true; }
+                    else bounds.Encapsulate(renderer.bounds);
+                }
+                var materials = renderer.sharedMaterials;
+                for (int i = 0; i < materials.Length; i++) materials[i] = material;
+                renderer.sharedMaterials = materials;
+            }
+            float height = npc.GetComponent<CapsuleCollider>().height;
+            float scale = height / bounds.size.y;
+            visual.transform.localScale *= scale;
+            float floor = npc.transform.position.y;
+            foreach (var hit in Physics.RaycastAll(npc.transform.position + Vector3.up * 0.5f, Vector3.down, 2f, ~0, QueryTriggerInteraction.Ignore))
+                if (!hit.transform.IsChildOf(npc.transform)) floor = Mathf.Max(floor, hit.point.y);
+            visual.transform.position += new Vector3(
+                (npc.transform.position.x - bounds.center.x) * scale,
+                floor - (npc.transform.position.y + (bounds.min.y - npc.transform.position.y) * scale),
+                (npc.transform.position.z - bounds.center.z) * scale);
+            SemenychIdleSetup.Configure(visual);
+            WorldScaleSetup.ConfigureSemenych(npc);
+            EditorSceneManager.MarkSceneDirty(npc.gameObject.scene);
+        }
+
         private static DialogueData Dialogue(string name, string[] lines)
         {
             string path = "Assets/Dialogues/" + name + ".asset";

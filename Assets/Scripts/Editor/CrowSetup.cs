@@ -37,6 +37,7 @@ namespace HuntHappens.Editor
                 if (side < 0) ai.leftWing = wing; else ai.rightWing = wing;
                 Part(bird.transform, "Foot", new Vector3(side*.07f,.025f,.04f), new Vector3(.04f,.05f,.18f), beak);
             }
+            WorldScaleSetup.ConfigureCrow(bird);
             var prefab = PrefabUtility.SaveAsPrefabAsset(bird, folder + "/Crow.prefab");
             Object.DestroyImmediate(bird);
             var root = new GameObject("Crows"); Undo.RegisterCreatedObjectUndo(root, "Add crows");

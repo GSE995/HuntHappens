@@ -60,6 +60,7 @@ namespace HuntHappens.Editor
                     filter.gameObject.SetActive(false);
                 }
                 var animation=root.AddComponent<RatAnimation>();animation.legs=legs;animation.tail=tail;
+                WorldScaleSetup.ConfigureRat(root);
                 PrefabUtility.SaveAsPrefabAsset(root,path);AssetDatabase.SaveAssets();
                 Debug.Log("Mouse rig installed: four weighted legs and three tail bones.");
             }

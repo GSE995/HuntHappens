@@ -209,7 +209,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5113636, y: 0.5113636, z: 0.5113636}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5891307710346320235}
@@ -287,6 +287,7 @@ MonoBehaviour:
   flightSpeed: 5
   sleepDuration: 25
   perch: {fileID: 0}
+  feedingSpot: {fileID: 0}
   leftWing: {fileID: 2667927782345136083}
   rightWing: {fileID: 8415752825530349273}
 --- !u!1 &2216670843228810637
