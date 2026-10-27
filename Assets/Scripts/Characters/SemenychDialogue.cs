@@ -22,10 +22,24 @@ namespace HuntHappens.Characters
         private bool holdStarted, holdConsumed;
         private string quickNotice;
         private PrototypeInput holdPlayer;
+        private CrowAI quotedCrow;
+        private static CrowAI HeldCrow(PrototypeInput player) => player != null ?
+            player.GetComponent<HuntHappens.Interaction.ItemHolder>()?.HeldItem?.GetComponent<CrowAI>() : null;
+        private bool TrySellCrow(PrototypeInput player, CrowAI crow)
+        {
+            var cargo = player != null ? player.GetComponent<RatHunting>() : null;
+            var wallet = cargo != null && cargo.shop != null ? cargo.shop.Wallet : null;
+            if (crow == null || crow != HeldCrow(player) || wallet == null || wallet.Balance > int.MaxValue - CrowAI.SalePrice) return false;
+            if (!crow.TrySell(player.GetComponent<HuntHappens.Interaction.ItemHolder>())) return false;
+            wallet.RestoreBalance(wallet.Balance + CrowAI.SalePrice);
+            return true;
+        }
 
         public string InteractionPrompt(RatHunting catchInventory)
         {
             string prompt = "E — начать диалог\nУдерживайте E, чтобы продать крыс";
+            if (catchInventory != null && HeldCrow(catchInventory.GetComponent<PrototypeInput>()) != null)
+                prompt = "E — начать диалог\nУдерживайте E, чтобы продать ворону за $10";
             if (holdStarted && !holdConsumed) prompt += $"\nПродажа: {Mathf.FloorToInt(HoldProgress * 100)}%";
             if (Time.unscaledTime < quickNoticeUntil) prompt += "\n" + quickNotice;
             return prompt;
@@ -47,6 +61,7 @@ namespace HuntHappens.Characters
                 if (cargo == null) return;
                 cargo.RefreshCarriedRats();
                 holdPlayer = player; holdStarted = true;
+                quotedCrow = HeldCrow(player);
                 quotedOrdinary = cargo.Rats - cargo.GreyRats - cargo.LargeRats;
                 quotedGrey = cargo.GreyRats; quotedLarge = cargo.LargeRats;
                 quotedOrdinaryPrice = ordinaryPrice; quotedGreyPrice = greyPrice; quotedLargePrice = largePrice;
@@ -60,8 +75,8 @@ namespace HuntHappens.Characters
                 {
                     holdConsumed = true;
                     var cargo = player.GetComponent<RatHunting>();
-                    bool sold = cargo.TrySellQuoted(quotedOrdinary, quotedGrey, quotedLarge, quotedOrdinaryPrice, quotedGreyPrice, quotedLargePrice);
-                    quickNotice = sold ? "Так… лапы, хвост, наглый взгляд. Всё на месте. Держи деньги" :
+                    bool sold = quotedCrow != null ? TrySellCrow(player, quotedCrow) : cargo.TrySellQuoted(quotedOrdinary, quotedGrey, quotedLarge, quotedOrdinaryPrice, quotedGreyPrice, quotedLargePrice);
+                    quickNotice = quotedCrow != null ? (sold ? "Ворону принимаю. Держи $10." : "Ворона уже проснулась или её нет в руках. Продажа отменена.") : sold ? "Так… лапы, хвост, наглый взгляд. Всё на месте. Держи деньги" :
                         cargo.Rats == 0 ? "Карманами не шурши, я на хлеб не ловлюсь. Крыс неси" :
                         "Улов изменился или продажа недоступна. Отпустите E и попробуйте снова.";
                     quickNoticeUntil = Time.unscaledTime + 4f;
@@ -78,7 +93,7 @@ namespace HuntHappens.Characters
         public int OrdinaryPrice => ordinaryPrice;
         public int GreyPrice => greyPrice;
         public int LargePrice => largePrice;
-        public enum Page { Closed, Introduction, Menu, Hints, Confirmation, Message }
+        public enum Page { Closed, Introduction, Menu, Hints, Confirmation, Message, CrowConfirmation }
         public Page CurrentPage { get; private set; }
         public int LineIndex { get; private set; }
         public string CurrentLine => panel != null ? panel.body.text : "";
@@ -127,9 +142,24 @@ namespace HuntHappens.Characters
         {
             if (!IsOpen) return;
             CurrentPage = Page.Menu;
-            panel.body.text = $"Крыс принёс? Обычная — ${ordinaryPrice}, серая — ${greyPrice}, большая — ${largePrice} за штуку.";
-            panel.Choices(new[] { "Продать крыс", "Повторить подсказки", "До встречи" },
-                new UnityEngine.Events.UnityAction[] { OfferSale, ShowHints, Close });
+            panel.body.text = $"Крыс принёс? Обычная — ${ordinaryPrice}, серая — ${greyPrice}, большая — ${largePrice} за штуку. Спящую ворону в руках возьму за ${CrowAI.SalePrice}.";
+            panel.Choices(new[] { "Продать крыс", "Продать ворону", "Повторить подсказки", "До встречи" },
+                new UnityEngine.Events.UnityAction[] { OfferSale, OfferCrowSale, ShowHints, Close });
+        }
+        public void OfferCrowSale()
+        {
+            if (!IsOpen || CurrentPage != Page.Menu) return;
+            quotedCrow = HeldCrow(input);
+            if (quotedCrow == null || !quotedCrow.CanPickUp) { Message("Принеси спящую ворону в руках — заплачу $10."); return; }
+            CurrentPage = Page.CrowConfirmation;
+            panel.body.text = "Продать ворону в руках за $10?";
+            panel.Choices(new[] { "Подтвердить продажу", "Отмена" }, new UnityEngine.Events.UnityAction[] { ConfirmCrowSale, ShowMenu });
+        }
+        public void ConfirmCrowSale()
+        {
+            if (!IsOpen || CurrentPage != Page.CrowConfirmation) return;
+            CurrentPage = Page.Message;
+            Message(TrySellCrow(input, quotedCrow) ? "Ворону принимаю. Держи $10." : "Ворона уже проснулась или её нет в руках. Продажа отменена.");
         }
         public void ShowHints()
         {

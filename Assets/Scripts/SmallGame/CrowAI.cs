@@ -5,7 +5,11 @@ namespace HuntHappens.SmallGame
     [DisallowMultipleComponent, RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
     public sealed class CrowAI : MonoBehaviour
     {
-        public enum CrowState { Perched, Approaching, Returning, Sleeping }
+        public enum CrowState { Perched, Approaching, Returning, Sleeping, Sold }
+        public const int SalePrice = 10;
+        public bool CanPickUp => isActiveAndEnabled && IsSedated && RemainingSleep > 0;
+        private HuntHappens.Interaction.PickupItem pickup;
+        private float respawnAt;
         [Min(1)] public float detectionRadius = 24f;
         [Min(0.1f)] public float attemptInterval = 6f;
         [Min(0.1f)] public float flightSpeed = 5f;
@@ -26,25 +30,27 @@ namespace HuntHappens.SmallGame
         private float nextAttempt, cruiseHeight;
         private int flightLeg;
         private float wakeAt;
-        private bool sleepingOnPerch;
-
         public bool ApplyDose(float strength, float durationMultiplier = 1)
         {
-            if (!isActiveAndEnabled || strength <= 0) return false;
+            return strength > 0 && ApplyHit();
+        }
+
+        // Shared response for darts and future projectile/item hit handlers.
+        public bool ApplyHit()
+        {
+            if (!isActiveAndEnabled || State == CrowState.Sold) return false;
             wakeAt = Mathf.Max(wakeAt, Time.time + sleepDuration);
             if (IsSedated) return true;
-            sleepingOnPerch = State == CrowState.Perched;
+            bool wasPerched = State == CrowState.Perched;
             target = null;
             State = CrowState.Sleeping;
             AnimateWings(false);
-            if (!sleepingOnPerch)
-            {
-                body.isKinematic = false;
-                body.useGravity = true;
-                body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-                body.linearVelocity = Vector3.zero;
-                body.angularVelocity = Vector3.zero;
-            }
+            body.isKinematic = false;
+            body.useGravity = true;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            // The branch runs along the perched bird's forward axis: slide off its side.
+            body.linearVelocity = wasPerched ? homeRotation * Vector3.right * 1.5f : Vector3.zero;
+            body.angularVelocity = Vector3.zero;
             transform.rotation *= Quaternion.Euler(0, 0, 65);
             return true;
         }
@@ -52,6 +58,8 @@ namespace HuntHappens.SmallGame
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
+            pickup = GetComponent<HuntHappens.Interaction.PickupItem>();
+            if (pickup == null) pickup = gameObject.AddComponent<HuntHappens.Interaction.PickupItem>();
             body.isKinematic = true;
             body.useGravity = false;
         }
@@ -64,20 +72,26 @@ namespace HuntHappens.SmallGame
         private void Update()
         {
             if (Time.deltaTime <= 0) return;
+            if (State == CrowState.Sold)
+            {
+                if (Time.time < respawnAt) return;
+                transform.SetPositionAndRotation(home, homeRotation);
+                foreach (var renderer in GetComponentsInChildren<Renderer>()) renderer.enabled = true;
+                GetComponent<SphereCollider>().enabled = true;
+                State = CrowState.Perched;
+                nextAttempt = Time.time + Mathf.Max(.1f, attemptInterval);
+                return;
+            }
             if (State == CrowState.Sleeping)
             {
                 if (Time.time < wakeAt) return;
+                if (pickup.Holder != null) pickup.Holder.Drop();
                 if (!body.isKinematic) body.linearVelocity = body.angularVelocity = Vector3.zero;
                 body.collisionDetectionMode = CollisionDetectionMode.Discrete;
                 body.isKinematic = true;
                 body.useGravity = false;
                 transform.rotation = homeRotation;
-                if (sleepingOnPerch)
-                {
-                    State = CrowState.Perched;
-                    nextAttempt = Time.time + Mathf.Max(.1f, attemptInterval);
-                }
-                else ReturnHome();
+                ReturnHome();
                 return;
             }
             if (State == CrowState.Perched)
@@ -130,6 +144,20 @@ namespace HuntHappens.SmallGame
             flightLeg = 0;
         }
         private void ReturnHome() { target = null; BeginFlight(CrowState.Returning); }
+        public bool TrySell(HuntHappens.Interaction.ItemHolder holder)
+        {
+            if (!CanPickUp || holder == null || pickup.Holder != holder || holder.HeldItem != pickup) return false;
+            State = CrowState.Sold; // Consume before release callbacks; a bird can only be sold once.
+            holder.Drop();
+            body.linearVelocity = body.angularVelocity = Vector3.zero;
+            body.collisionDetectionMode = CollisionDetectionMode.Discrete;
+            body.isKinematic = true;
+            body.useGravity = false;
+            GetComponent<SphereCollider>().enabled = false;
+            foreach (var renderer in GetComponentsInChildren<Renderer>()) renderer.enabled = false;
+            respawnAt = Time.time + 20f;
+            return true;
+        }
         private void AnimateWings(bool flying)
         {
             float angle = flying ? Mathf.Sin(Time.time * 18f) * 40f : 0;

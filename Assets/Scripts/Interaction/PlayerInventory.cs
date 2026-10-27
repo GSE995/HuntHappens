@@ -22,9 +22,11 @@ namespace HuntHappens.Interaction
         [NonSerialized] public PickupItem physical;
         public string Title => kind == InventoryKind.Gun ? "Транквилизатор" : kind == InventoryKind.Trap ? "Ловушка" :
             kind == InventoryKind.Cage ? (cageRat == 1 ? "Клетка с чёрной крысой" : cageRat == 2 ? "Клетка с серой крысой" : cageRat == 3 ? "Клетка с крупной крысой" : cageBaited ? "Клетка: " + HuntHappens.SmallGame.RatBait.Name(CageBait) : "Клетка для крыс") : HuntHappens.SmallGame.RatBait.IsBait(kind) ? HuntHappens.SmallGame.RatBait.Name(kind) :
-            kind == InventoryKind.Chocolate ? "Шоколад" : kind == InventoryKind.Darts ? "Дротики" : physical != null ? physical.name : "Предмет";
-        public int Icon => kind == InventoryKind.Gun ? 0 : kind == InventoryKind.Trap ? 2 : kind == InventoryKind.Cage ? 3 :
-            kind == InventoryKind.Bread ? 4 : kind == InventoryKind.Darts ? 5 : 1;
+            kind == InventoryKind.Chocolate ? "Шоколад" : kind == InventoryKind.Darts ? "Дротики" : physical != null ? (physical.GetComponent<HuntHappens.SmallGame.CrowAI>() != null ? "Спящая ворона" : physical.name) : "Предмет";
+        public int Icon => IconFor(kind);
+        public static int IconFor(InventoryKind kind) => kind == InventoryKind.Gun ? 0 : kind == InventoryKind.Trap ? 2 : kind == InventoryKind.Cage ? 3 :
+            kind == InventoryKind.Bread ? 4 : kind == InventoryKind.Darts ? 5 :
+            kind == InventoryKind.Chocolate ? 9 : kind == InventoryKind.CheeseSandwich ? 10 : kind == InventoryKind.Latte ? 11 : 1;
     }
 
     // The hand references an entry; equipping never transfers ownership out of its slot.
@@ -128,6 +130,8 @@ namespace HuntHappens.Interaction
         public bool SelectSlot(int index)
         {
             if (index < 0 || index >= Capacity || input.GameplayBlocked || UsingCart) return false;
+            if (Hand?.physical != null && Hand.physical.GetComponent<HuntHappens.SmallGame.CrowAI>() != null)
+            { Notice = "Ворону нужно донести в руках или отпустить — Q"; noticeUntil = Time.unscaledTime + 2; return false; }
             if (slots[index] == null && Hand != null)
             {
                 int previous = HandSlot;

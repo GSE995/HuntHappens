@@ -22,7 +22,7 @@ namespace HuntHappens.UI
         readonly UnityEngine.UI.Image[] baitIcons = new UnityEngine.UI.Image[4];
         readonly SketchPanel[] slots = new SketchPanel[4];
         UnityEngine.UI.Image healthFill;
-        readonly Sprite[] sprites = new Sprite[9];
+        readonly Sprite[] sprites = new Sprite[12];
         public bool IsOpen => inventory != null && inventory.activeSelf;
         public void Build(Transform parent, RatHunting hunting, TMP_FontAsset typeface, Texture2D atlas)
         {
@@ -34,6 +34,14 @@ namespace HuntHappens.UI
                 // Authored sheet bounds (top-left origin), preserving the long rifle silhouette.
                 Rect[] regions={new Rect(0,100,515,300),new Rect(515,45,275,370),new Rect(795,85,480,330),new Rect(0,470,442,330),new Rect(445,470,410,330),new Rect(855,460,420,340),new Rect(0,875,425,340),new Rect(425,875,420,340),new Rect(845,865,430,350)};
                 for(int i=0;i<9;i++){var r=regions[i];float scale=atlas.width/1280f;sprites[i]=Sprite.Create(atlas,new Rect(r.x*scale,(1280-r.y-r.height)*scale,r.width*scale,r.height*scale),Vector2.one*0.5f,100);}
+            }
+            string[] itemIcons = { "Chocolate", "Cheese", "Latte" };
+            for (int i = 0; i < itemIcons.Length; i++)
+            {
+                var texture = Resources.Load<Texture2D>("InventoryIcons/" + itemIcons[i]);
+                if (texture != null)
+                    sprites[9 + i] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one * 0.5f, 100);
+                else Debug.LogError("Missing inventory icon: " + itemIcons[i], this);
             }
             var healthPanel = Panel("Health",root,new Vector2(235,72),new Vector2(410,35));Anchor(healthPanel.rectTransform,new Vector2(0,0));
             healthFill=Image("Health Fill",healthPanel.transform,new Vector2(4,0),new Vector2(402,27),null);
@@ -99,7 +107,11 @@ namespace HuntHappens.UI
                 if (entry != null) slotIcons[i].sprite = sprites[entry.Icon];
                 bool baited = HasBait(entry);
                 baitIcons[i].gameObject.SetActive(baited);
-                if (baited) baitedCages += entry.quantity;
+                if (baited)
+                {
+                    baitIcons[i].sprite = sprites[InventoryEntry.IconFor(entry.CageBait)];
+                    baitedCages += entry.quantity;
+                }
                 counts[i].text = entry?.kind == InventoryKind.Gun ? hunt.Darts.ToString() : baited ? "1" : entry != null && entry.quantity > 1 ? entry.quantity.ToString() : "";
                 counts[i].color = baited ? Orange : Ivory;
                 slots[i].ink = i == selected ? Orange : new Color(0.9f,0.86f,0.69f,0.55f);

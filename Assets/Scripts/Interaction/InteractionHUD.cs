@@ -121,7 +121,7 @@ namespace HuntHappens.Interaction
             crosshair.SetActive(visible && !inventoryOpen);
             float flash = health != null ? Mathf.Clamp01(1f - (Time.time - health.LastHitAt) / 0.65f) : 0;
             damageFlash.color = new Color(0.85f, 0.02f, 0.02f, 0.32f * flash * flash);
-            prompt.text = !visible || inventoryOpen || interaction.IsHolding ? "" :
+            prompt.text = !visible || inventoryOpen || (interaction.IsHolding && interaction.SemenychTarget == null) ? "" :
                 !string.IsNullOrEmpty(interaction.TransportHint) ? interaction.TransportHint :
                 interaction.FarmerTarget != null ? "E — Поговорить с фермером" :
                 interaction.SemenychTarget != null ? interaction.SemenychTarget.InteractionPrompt(rats) :

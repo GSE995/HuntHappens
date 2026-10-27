@@ -53,7 +53,7 @@ namespace HuntHappens.Editor
         {
             Time.timeScale = 1;
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube); created.Add(floor);
-            floor.transform.position = origin + Vector3.down*.25f; floor.transform.localScale = new Vector3(40,.5f,40);
+            floor.transform.position = origin + Vector3.down*.25f; floor.transform.localScale = new Vector3(200,.5f,200);
             cage = Track(Instantiate(AssetDatabase.LoadAssetAtPath<RatCage>("Assets/Art/SmallGame/RatCage.prefab"), origin + Vector3.forward*2, Quaternion.identity));
             crow = Track(Instantiate(AssetDatabase.LoadAssetAtPath<CrowAI>("Assets/Art/SmallGame/Crow.prefab"), origin + Vector3.up*4, Quaternion.identity));
             crow.attemptInterval = .1f;
@@ -151,13 +151,18 @@ namespace HuntHappens.Editor
             Object.DestroyImmediate(cage.gameObject);
             cage = Track(Instantiate(AssetDatabase.LoadAssetAtPath<RatCage>("Assets/Art/SmallGame/RatCage.prefab"), origin + Vector3.forward*2, Quaternion.identity));
             Check(crow.State == CrowAI.CrowState.Perched, "ready for perch hit");
+            var branch = GameObject.CreatePrimitive(PrimitiveType.Cube); created.Add(branch);
+            branch.transform.position = crow.transform.position + Vector3.down * .1f;
+            branch.transform.localScale = new Vector3(.13f, .13f, 4);
+            Vector3 perchPosition = crow.transform.position;
             FireAt(crow);
             yield return new WaitForSeconds(.2f);
-            Check(crow.IsSedated && crow.RemainingSleep > 24.5f && crow.GetComponent<Rigidbody>().isKinematic, "physical perched dart");
-            Vector3 perchPosition = crow.transform.position;
+            Check(crow.IsSedated && crow.RemainingSleep > 24.5f && !crow.GetComponent<Rigidbody>().isKinematic && crow.GetComponent<Rigidbody>().useGravity, "physical perched dart enables falling");
             cage.RestoreCargo(0, cage, true, InventoryKind.Bread);
             yield return new WaitForSeconds(.5f);
-            Check(cage.Baited && crow.Target == null && crow.transform.position == perchPosition, "perched sleep ignores bait");
+            Check(cage.Baited && crow.Target == null && crow.transform.position.y < perchPosition.y - .5f, "falls off solid branch without stealing bait");
+            yield return new WaitForSeconds(1);
+            Check(crow.transform.position.y > origin.y - .3f && crow.transform.position.y < origin.y + .5f, "lands on floor");
             float remaining = crow.RemainingSleep;
             Time.timeScale = 0;
             yield return new WaitForSecondsRealtime(.2f);
@@ -171,7 +176,10 @@ namespace HuntHappens.Editor
             yield return new WaitForSeconds(1.2f);
             Check(!crow.IsSedated, "wakes after 25s");
             // Freeze decision long enough to hit a known flying state with an actual dart.
-            Check(crow.State == CrowAI.CrowState.Approaching, "resumes approach after wake");
+            Check(crow.State == CrowAI.CrowState.Returning, "returns from ground after wake");
+            float recoveryDeadline = Time.time + Vector3.Distance(crow.transform.position, perchPosition) / crow.flightSpeed + 10;
+            while (crow.State != CrowAI.CrowState.Approaching && Time.time < recoveryDeadline) yield return null;
+            Check(crow.State == CrowAI.CrowState.Approaching, "resumes approach after returning to perch");
             FireAt(crow);
             yield return new WaitForSeconds(.2f);
             Check(crow.IsSedated && !crow.GetComponent<Rigidbody>().isKinematic && crow.Target == null, "airborne dart cancels flight");
@@ -187,12 +195,14 @@ namespace HuntHappens.Editor
             typeof(CrowAI).GetField("wakeAt", Private).SetValue(crow, Time.time);
             yield return new WaitForSeconds(5);
             Check(!crow.IsSedated, "second recovery");
+            Check(crow.ApplyHit() && crow.IsSedated && !crow.GetComponent<Rigidbody>().isKinematic, "generic item hit enables falling");
         }
         private void FireAt(CrowAI bird)
         {
             var shooter = new GameObject("Test shooter"); created.Add(shooter);
             Vector3 point = bird.GetComponent<SphereCollider>().bounds.center;
-            shooter.transform.position = point + Vector3.right * 1.5f;
+            // Fire close enough that a small bird moving at 5 m/s stays on the shot line.
+            shooter.transform.position = point + Vector3.right * .5f;
             var dart = Track(Instantiate(AssetDatabase.LoadAssetAtPath<TranquilizerDart>("Assets/Prefabs/TranquilizerDart.prefab"), shooter.transform.position, Quaternion.LookRotation(Vector3.left)));
             dart.Launch(shooter.transform, Vector3.left*60, 1, 3);
         }

@@ -111,6 +111,24 @@ namespace HuntHappens.Interaction
             if (holder.IsHolding)
             {
                 if (input.ThrowPressed) { LastHandledFrame = Time.frameCount; holder.Throw(); }
+                else if (holder.HeldItem.GetComponent<HuntHappens.SmallGame.CrowAI>() != null)
+                {
+                    var nearby = Physics.RaycastAll(view.transform.position, view.transform.forward, interactionDistance, interactionLayers, QueryTriggerInteraction.Ignore);
+                    System.Array.Sort(nearby, (a, b) => a.distance.CompareTo(b.distance));
+                    foreach (var hit in nearby)
+                    {
+                        if (hit.collider.transform.IsChildOf(transform) || hit.collider.attachedRigidbody == holder.HeldItem.Body) continue;
+                        SemenychTarget = hit.collider.GetComponentInParent<HuntHappens.Characters.SemenychDialogue>();
+                        break;
+                    }
+                    if (SemenychTarget != null)
+                    {
+                        var hud = Object.FindAnyObjectByType<InteractionHUD>();
+                        SemenychTarget.HandleInteraction(input, hud != null ? hud.ThemeFont : null,
+                            input.InteractPressed, input.InteractHeld, input.InteractReleased, Time.deltaTime);
+                        if (input.InteractPressed || input.InteractHeld || input.InteractReleased) LastHandledFrame = Time.frameCount;
+                    }
+                }
                 return;
             }
             ProductTarget = HuntHappens.Shop.WorldShopItem.FindTarget(view, transform);

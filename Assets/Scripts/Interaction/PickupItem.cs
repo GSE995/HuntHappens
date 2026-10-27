@@ -10,7 +10,7 @@ namespace HuntHappens.Interaction
         [SerializeField, Min(0)] private float carryDistance;
         [SerializeField, Range(0.2f, 2)] private float followMultiplier = 1f;
         [SerializeField, Range(0, 12)] private float throwMultiplier = 1f;
-        public string PickupPrompt => GetComponent<HuntHappens.Animals.DeerSedation>()?.State == HuntHappens.Animals.DeerSedation.SedationState.Trapped ? "E — Забрать оленя" : pickupPrompt;
+        public string PickupPrompt => GetComponent<HuntHappens.SmallGame.CrowAI>() != null ? "E — Поднять спящую ворону · $10 у Семёныча" : GetComponent<HuntHappens.Animals.DeerSedation>()?.State == HuntHappens.Animals.DeerSedation.SedationState.Trapped ? "E — Забрать оленя" : pickupPrompt;
         public float CarryDistance => carryDistance;
         public float FollowMultiplier => followMultiplier;
         public float ThrowMultiplier => throwMultiplier;
@@ -29,6 +29,8 @@ namespace HuntHappens.Interaction
         public bool CanPickUp(float maximumMass)
         {
             Rigidbody body = Body;
+            var crow = GetComponent<HuntHappens.SmallGame.CrowAI>();
+            if (crow != null && !crow.CanPickUp) return false;
             var deer = GetComponent<HuntHappens.Animals.DeerSedation>();
             if (deer != null && (!deer.isActiveAndEnabled || deer.IsDelivered || deer.WakingFromCarry || deer.Cart != null || deer.DeliveryReserved ||
                 (deer.State != HuntHappens.Animals.DeerSedation.SedationState.Unconscious &&
