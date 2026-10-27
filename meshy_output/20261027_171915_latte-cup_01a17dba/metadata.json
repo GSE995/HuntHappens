@@ -1,0 +1,41 @@
+{
+  "schema_version": 2,
+  "project_name": "latte-cup",
+  "folder": "20261027_171915_latte-cup_01a17dba",
+  "root_task_id": "01a17dba-7f0e-73b1-ab40-f884c1a0d78a",
+  "created_at": "2026-10-27T14:19:15.315Z",
+  "updated_at": "2026-10-27T14:19:53.207Z",
+  "tasks": [
+    {
+      "task_id": "01a17dba-7f0e-73b1-ab40-f884c1a0d78a",
+      "task_type": "image-to-3d",
+      "resource": "image-to-3d",
+      "endpoint": "/openapi/v1/image-to-3d",
+      "stage": "textured-lowpoly",
+      "parent_task_id": null,
+      "status": "SUCCEEDED",
+      "files": [],
+      "task_json": "task_01a17dba-7f0e-73b1-ab40-f884c1a0d78a.json",
+      "operation_id": null,
+      "created_at": "2026-10-27T14:19:41.750Z",
+      "updated_at": "2026-10-27T14:19:41.750Z"
+    },
+    {
+      "task_id": "01a17dba-7f0e-73b1-ab40-f884c1a0d78a",
+      "task_type": "image-to-3d",
+      "resource": "image-to-3d",
+      "endpoint": "/openapi/v1/image-to-3d",
+      "stage": "delivered",
+      "parent_task_id": null,
+      "status": "SUCCEEDED",
+      "files": [
+        "latte.glb",
+        "preview.png"
+      ],
+      "task_json": null,
+      "operation_id": null,
+      "created_at": "2026-10-27T14:19:50.312Z",
+      "updated_at": "2026-10-27T14:19:53.207Z"
+    }
+  ]
+}

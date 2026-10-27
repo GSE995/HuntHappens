@@ -37,10 +37,11 @@ namespace HuntHappens.Editor
             yield return new WaitForSeconds(1);
             var rats=FindObjectsByType<RatAI>(FindObjectsSortMode.None);
             var spots=FindObjectsByType<RatGatheringSpot>(FindObjectsSortMode.None);
-            Check(rats.Length==8+spots.Length && rats.Count(r=>r.isAggressive)==spots.Length,"one large rat per litter spot");
+            Check(rats.Length==10*spots.Length && rats.Count(r=>r.isAggressive)==spots.Length,"one large rat per litter spot");
             foreach(var spot in spots)
                 Check(rats.Count(r=>r.isAggressive && spots.OrderBy(s=>(s.transform.position-r.Home).sqrMagnitude).First()==spot)==1,"each litter spot has its own guard");
-            Check(rats.Count(r=>r.isGrey)==2 && rats.Count(r=>!r.isGrey&&!r.isAggressive)==6,"original population intact");
+            Check(rats.Count(r=>r.isGrey)==4*spots.Length && rats.Count(r=>!r.isGrey&&!r.isAggressive)==5*spots.Length,"five ordinary and four grey per litter spot");
+            RatPopulationSetup.Verify(true);
             var rat=rats.First(r=>r.isAggressive);var agent=rat.GetComponent<NavMeshAgent>();
             var hunt=FindAnyObjectByType<RatHunting>();var health=hunt.GetComponent<PlayerHealth>();var input=hunt.GetComponent<PrototypeInput>();
             hunt.GetComponent<FirstPersonMotor>().enabled=false;hunt.GetComponent<CharacterController>().enabled=false;

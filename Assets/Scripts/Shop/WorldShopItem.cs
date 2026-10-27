@@ -13,7 +13,7 @@ namespace HuntHappens.Shop
         private float feedbackUntil;
         public int Kind => kind;
         public ShopManager Shop => shop;
-        public string Title => kind == 7 ? "Бутерброд с сыром" : kind == 8 ? "Латте" : kind == 6 ? "Шоколад для вожака" : kind == 0 ? "Клетка для крыс" : kind == 1 ? "Хлеб для приманки" : kind == 2 ? "Дротик с транквилизатором" : kind == 4 ? "Транквилизатор" : kind == 5 ? "Ловушка" : "Приём крыс";
+        public string Title => kind == 7 ? "Сыр" : kind == 8 ? "Латте" : kind == 6 ? "Шоколад для вожака" : kind == 0 ? "Клетка для крыс" : kind == 1 ? "Хлеб для приманки" : kind == 2 ? "Дротик с транквилизатором" : kind == 4 ? "Транквилизатор" : kind == 5 ? "Ловушка" : "Приём крыс";
         public static int PriceFor(int kind) => kind == 7 ? 3 : kind == 8 ? 5 : kind == 6 ? ShopManager.DefaultChocolatePrice : kind == 0 ? 15 : kind == 1 ? 2 : kind == 2 ? 12 : kind == 4 ? 50 : kind == 5 ? 25 : 10;
         public int Price => kind == 6 && shop != null ? shop.ChocolatePrice : PriceFor(kind);
         public string Prompt => (kind == 3 ? "Крыс покупает только Семёныч" : Title + " — $" + Price + "\nE — купить 1 шт.") +

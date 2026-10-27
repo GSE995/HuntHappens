@@ -117,13 +117,13 @@ namespace HuntHappens.Editor
             Check(!hunt.shop.BuySupply(3) && hunt.Rats == 3 && hunt.shop.Wallet.Balance == balance, "shop cannot buy rats");
             Check(npc.InteractionPrompt(hunt).StartsWith("E — начать диалог\nУдерживайте E, чтобы продать крыс"), "short interaction prompt");
             npc.HandleInteraction(input, null, true, true, false, 0);
-            npc.HandleInteraction(input, null, false, true, false, .4f);
+            npc.HandleInteraction(input, null, false, true, false, npc.QuickSaleHoldSeconds * .4f);
             Check(!npc.IsOpen && hunt.Rats == 3 && npc.HoldProgress > 0, "hold waits");
             npc.HandleInteraction(input, null, false, false, true, 0);
             Check(npc.IsOpen && hunt.Rats == 3, "short release opens dialogue without sale");
             npc.Close();
             npc.HandleInteraction(input, null, true, true, false, 0);
-            npc.HandleInteraction(input, null, false, true, false, .4f);
+            npc.HandleInteraction(input, null, false, true, false, npc.QuickSaleHoldSeconds * .4f);
             npc.ResetHold(); // The ray lost its target.
             npc.HandleInteraction(input, null, false, true, false, 2f);
             Check(hunt.Rats == 3 && npc.HoldProgress == 0, "leaving target cancels, fresh press required");

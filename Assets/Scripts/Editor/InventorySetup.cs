@@ -17,6 +17,7 @@ namespace HuntHappens.Editor
             var shop = Object.FindAnyObjectByType<ShopManager>();
             if (player == null || shop == null) throw new System.InvalidOperationException("Open the gameplay scene.");
             if (player.GetComponent<PlayerInventory>() == null) Undo.AddComponent<PlayerInventory>(player.gameObject);
+            BaitVisualSetup.Configure(player.GetComponent<PlayerInventory>());
             var products = Object.FindObjectsByType<WorldShopItem>(FindObjectsSortMode.None);
             var template = System.Array.Find(products, p => p.Kind == 0);
             if (template == null) throw new System.InvalidOperationException("Shop shelf not found.");

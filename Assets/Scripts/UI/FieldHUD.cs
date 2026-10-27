@@ -16,6 +16,7 @@ namespace HuntHappens.UI
         RatHunting hunt; PrototypeInput input; PlayerHealth health; TranquilizerGun gun; TrapPlacement traps;
         RectTransform root; GameObject inventory;
         TextMeshProUGUI money, total, selectedName;
+        DeerRewardEffect rewardEffect;
         readonly TextMeshProUGUI[] counts = new TextMeshProUGUI[4], supplies = new TextMeshProUGUI[4], catchLabels = new TextMeshProUGUI[3];
         readonly UnityEngine.UI.Image[] slotIcons = new UnityEngine.UI.Image[4];
         readonly UnityEngine.UI.Image[] baitIcons = new UnityEngine.UI.Image[4];
@@ -74,6 +75,8 @@ namespace HuntHappens.UI
             }
             total=Label("Total Value",window.transform,new Vector2(220,-283),new Vector2(620,46),34,"");total.alignment=TextAlignmentOptions.Right;
             inventory.SetActive(false);input.InventoryToggleRequested+=Toggle;
+            rewardEffect = root.gameObject.AddComponent<DeerRewardEffect>();
+            rewardEffect.Build(root, wallet.rectTransform, font, hunt.shop.Wallet, hunt);
         }
         public void Toggle() => SetOpen(!IsOpen);
         public void SetOpen(bool open)

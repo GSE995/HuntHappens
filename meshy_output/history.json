@@ -72,6 +72,42 @@
       "created_at": "2026-10-24T14:48:37.599Z",
       "updated_at": "2026-10-24T14:50:10.316Z",
       "task_count": 2
+    },
+    {
+      "folder": "20261027_165546_bread-loaf_01a17da5",
+      "prompt": "bread-loaf",
+      "task_type": "image-to-3d",
+      "root_task_id": "01a17da5-1815-76ad-9d5e-3eb3d417023c",
+      "created_at": "2026-10-27T13:55:46.250Z",
+      "updated_at": "2026-10-27T14:00:31.110Z",
+      "task_count": 4
+    },
+    {
+      "folder": "20261027_171252_cheese-wedge_01a17db4",
+      "prompt": "cheese-wedge",
+      "task_type": "image-to-3d",
+      "root_task_id": "01a17db4-bc9c-7090-97d8-078c8b52e2c9",
+      "created_at": "2026-10-27T14:12:52.932Z",
+      "updated_at": "2026-10-27T14:13:34.379Z",
+      "task_count": 2
+    },
+    {
+      "folder": "20261027_171915_latte-cup_01a17dba",
+      "prompt": "latte-cup",
+      "task_type": "image-to-3d",
+      "root_task_id": "01a17dba-7f0e-73b1-ab40-f884c1a0d78a",
+      "created_at": "2026-10-27T14:19:15.315Z",
+      "updated_at": "2026-10-27T14:19:53.207Z",
+      "task_count": 2
+    },
+    {
+      "folder": "20261027_183626_chocolate-bar_01a17e00",
+      "prompt": "chocolate-bar",
+      "task_type": "text-to-3d-preview",
+      "root_task_id": "01a17e00-5912-7288-b174-a9082254dfbf",
+      "created_at": "2026-10-27T15:36:26.026Z",
+      "updated_at": "2026-10-27T15:40:32.595Z",
+      "task_count": 3
     }
   ]
 }

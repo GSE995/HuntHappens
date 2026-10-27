@@ -20,6 +20,36 @@ namespace HuntHappens.Player
             leftWristRest = leftWrist.localPosition;
             rightWristRest = rightWrist.localPosition;
         }
+        public Transform RightWrist => rightWrist;
+        private Vector3 baitPalmContact;
+        private bool baitContactReady;
+        public Vector3 RightPalmContact
+        {
+            get
+            {
+                if (!baitContactReady)
+                {
+                    baitContactReady = true;
+                    baitPalmContact = new Vector3(-.06f,.12f,0);
+                    var skin = GetComponentInChildren<SkinnedMeshRenderer>();
+                    int bone = skin != null ? System.Array.IndexOf(skin.bones,rightWrist) : -1;
+                    if (bone >= 0)
+                    {
+                        float best = float.PositiveInfinity;
+                        var vertices = skin.sharedMesh.vertices; var weights = skin.sharedMesh.boneWeights;
+                        for (int i=0;i<vertices.Length;i++)
+                            if (weights[i].boneIndex0==bone && weights[i].weight0>.8f)
+                            {
+                                Vector3 point = skin.sharedMesh.bindposes[bone].MultiplyPoint3x4(vertices[i]);
+                                float distance = (point-new Vector3(-.06f,.12f,0)).sqrMagnitude;
+                                if (distance<best) { best=distance; baitPalmContact=point; }
+                            }
+                    }
+                }
+                return baitPalmContact;
+            }
+        }
+        public static Quaternion BaitWristRotation => Quaternion.AngleAxis(-20, Vector3.right) * Quaternion.LookRotation(Vector3.down, Vector3.forward);
         private void LateUpdate()
         {
             Solve(leftUpper, leftLower, leftWrist, poses.LeftHand, -1, 0);
@@ -61,6 +91,11 @@ namespace HuntHappens.Player
             if (holdingCage)
             {
                 wrist.SetPositionAndRotation(targetPosition, cageRotation);
+                return;
+            }
+            if (poses.Mode == FirstPersonArms.VisualMode.Bait && side > 0)
+            {
+                wrist.SetPositionAndRotation(targetPosition, poses.transform.rotation * BaitWristRotation);
                 return;
             }
             // Preserve the model's wrist orientation, adding the existing pose rotation.

@@ -32,6 +32,12 @@ namespace HuntHappens.Interaction
     [RequireComponent(typeof(ItemHolder), typeof(PrototypeInput))]
     public sealed class PlayerInventory : MonoBehaviour
     {
+        [Header("Bait models (shared by held and dropped items)")]
+        [SerializeField] private GameObject breadVisualPrefab;
+        [SerializeField] private GameObject cheeseVisualPrefab;
+        [SerializeField] private GameObject latteVisualPrefab;
+        public GameObject BaitVisualPrefab(InventoryKind kind) => kind == InventoryKind.Bread ? breadVisualPrefab :
+            kind == InventoryKind.CheeseSandwich ? cheeseVisualPrefab : kind == InventoryKind.Latte ? latteVisualPrefab : null;
         public const int Capacity = 4;
         private InventoryEntry[] slots = new InventoryEntry[Capacity];
         public InventoryEntry Hand { get; private set; }
@@ -220,7 +226,7 @@ namespace HuntHappens.Interaction
                 else WorldInventoryItem.Spawn(this, entry, dropPosition, Quaternion.identity);
             }
             slots = new InventoryEntry[Capacity]; Hand = null; Darts = 0;
-            if (handVisual != null) Destroy(handVisual);
+            if (handVisual != null) { handVisual.SetActive(false); Destroy(handVisual); }
             handVisual = null; visualEntry = null;
             Save();
         }
@@ -274,7 +280,7 @@ namespace HuntHappens.Interaction
             }
             if (visualEntry != Hand)
             {
-                if (handVisual != null) Destroy(handVisual);
+                if (handVisual != null) { handVisual.SetActive(false); Destroy(handVisual); }
                 visualEntry = Hand;
                 // The hands rig lives under the camera, not on the inventory's GameObject.
                 bool existingArmsVisual = GetComponentInChildren<FirstPersonArms>(true) != null &&
@@ -288,9 +294,21 @@ namespace HuntHappens.Interaction
                     var box = handVisual.GetComponent<BoxCollider>(); box.enabled = false;
                     handVisual.transform.SetParent(camera.transform, false);
                     float size = Mathf.Max(box.size.x, Mathf.Max(box.size.y, box.size.z));
-                    handVisual.transform.localScale = Vector3.one * (0.4f / Mathf.Max(0.1f, size));
-                    handVisual.transform.localPosition = new Vector3(0.25f, -0.25f, 0.65f) - box.center * handVisual.transform.localScale.x;
+                    bool baitModel = BaitVisualPrefab(Hand.kind) != null;
+                    handVisual.transform.localScale = baitModel ? Vector3.one : Vector3.one * (0.4f / Mathf.Max(0.1f, size));
+                    handVisual.transform.localPosition = (baitModel ? new Vector3(0.22f, -0.19f, 0.45f) : new Vector3(0.25f, -0.25f, 0.65f)) - box.center * handVisual.transform.localScale.x;
+                    foreach (var node in handVisual.GetComponentsInChildren<Transform>(true)) node.gameObject.layer = 2;
+                    foreach (var renderer in handVisual.GetComponentsInChildren<Renderer>())
+                    {
+                        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                        renderer.receiveShadows = false;
+                    }
                     handVisual.transform.localRotation = Quaternion.identity;
+                    if (baitModel)
+                    {
+                        var arms = GetComponentInChildren<FirstPersonArms>(true);
+                        if (arms != null) handVisual.AddComponent<BaitHandAttachment>().Configure(arms, box.center, box.size, BaitVisualPrefab(Hand.kind).transform.Find("Right Hand Grip"));
+                    }
                 }
             }
             if (handVisual != null) handVisual.SetActive(!input.GameplayBlocked);

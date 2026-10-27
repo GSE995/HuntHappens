@@ -86,7 +86,7 @@ namespace HuntHappens.SmallGame
             IsSedated = false; sleepPose = 0; visual.localRotation = normalVisualRotation;
             Caught = true; agent.enabled = false;
             // Fold the larger animal into the existing cage without clipping through its bars.
-            if (isAggressive) visual.localScale = normalVisualScale / 1.4f;
+            if (isAggressive) visual.localScale = normalVisualScale / 2f;
             transform.SetPositionAndRotation(cage.transform.position + new Vector3(0, 0.04f, 0), cage.transform.rotation);
         }
         public void ReleaseForRespawn() { visual.gameObject.SetActive(false); respawnAt = Time.time + 20; }

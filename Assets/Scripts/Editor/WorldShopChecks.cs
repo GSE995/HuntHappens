@@ -40,7 +40,7 @@ namespace HuntHappens.Editor
             var hunt=FindAnyObjectByType<RatHunting>();var input=hunt.GetComponent<PrototypeInput>();var camera=hunt.GetComponentInChildren<Camera>();var shop=hunt.shop;
             hunt.GetComponent<FirstPersonMotor>().enabled=false;hunt.GetComponent<CharacterController>().enabled=false;
             var rats=FindObjectsByType<RatAI>(FindObjectsSortMode.None);
-            Check(rats.Count(r=>r.isGrey)==2 && rats.Count(r=>!r.isGrey&&!r.isAggressive)==6,"rare grey population");
+            Check(rats.Count(r=>r.isGrey)==12 && rats.Count(r=>!r.isGrey&&!r.isAggressive)==15,"rare grey population");
             foreach(var rat in new[]{rats.First(r=>!r.isGrey&&!r.isAggressive),rats.First(r=>r.isGrey)})
             {
                 var cage=Instantiate(hunt.cagePrefab,rat.transform.position,Quaternion.identity);cage.Owner=hunt;

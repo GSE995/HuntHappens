@@ -46,7 +46,8 @@ namespace HuntHappens.UI
             quest.text = $"Возвращено оленей: {manager.DeliveredCount} / {manager.Goal}" + (manager.QuestComplete ? " — задание выполнено!" : "");
             if (leader != null && !leader.GetComponent<HuntHappens.Animals.DeerSedation>().IsDelivered && leader.GetComponent<HuntHappens.Animals.DeerSedation>().State == HuntHappens.Animals.DeerSedation.SedationState.Awake && Vector3.Distance(transform.position, leader.transform.position) < 30) quest.text += "\n" + leader.Status;
             if (GetComponent<PlayerInventory>()?.IsEquipped(InventoryKind.Chocolate) == true) quest.text += "\nЛКМ — бросить шоколад";
-            notification.text = Time.time - manager.LastRewardTime < 3.5f ? manager.Notification : "";
+            // Field HUD presents the reward; keep the legacy message only as a fallback.
+            notification.text = GetComponent<InteractionHUD>().Field == null && Time.time - manager.LastRewardTime < 3.5f ? manager.Notification : "";
         }
     }
 }

@@ -58,6 +58,7 @@ namespace HuntHappens.SmallGame
         public int Available => Cages - Deployed;
         public bool Selected => Inventory.IsEquipped(InventoryKind.Cage);
         public event System.Action Placed;
+        public event System.Action<int, int> RatsSold;
         public string Hint { get; private set; } = "";
         public string Stock => "Клетки: " + Available + " | Хлеб: " + Bread + " | Крысы: " + (Rats - GreyRats - LargeRats) + " чёрн., " + GreyRats + " сер., " + LargeRats + " крупн." + " | Дротики: " + Darts;
         public void Reload()
@@ -146,11 +147,13 @@ namespace HuntHappens.SmallGame
             foreach (var record in carriedRats) if (Now >= record.wakeAt) return false;
             foreach (var record in carriedRats) if (record.animal != null) record.animal.ReleaseForRespawn();
             carriedRats.Clear();
+            int soldCount = Rats;
             Rats = 0; GreyRats = 0; LargeRats = 0;
             int balance = shop.Wallet.Balance + (int)reward;
             // Persist money, catch and inventory together before publishing the balance event.
             Inventory.ClearCageContents(balance);
             shop.Wallet.RestoreBalance(balance);
+            RatsSold?.Invoke((int)reward, soldCount);
             return true;
         }
         public bool UseBread() => Inventory.Consume(InventoryKind.Bread);

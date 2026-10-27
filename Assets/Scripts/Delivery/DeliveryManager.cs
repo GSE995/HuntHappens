@@ -23,6 +23,7 @@ namespace HuntHappens.Delivery
         }
         public int Balance { get; private set; }
         public event System.Action BalanceChanged;
+        public event System.Action<int> DeerRewarded;
         private int upgradedReward;
         public int RewardPerDeer => upgradedReward > 0 ? upgradedReward : rewardPerDeer;
         public void SetReward(int value) => upgradedReward = Mathf.Max(1, value);
@@ -57,6 +58,7 @@ namespace HuntHappens.Delivery
                 PlayerPrefs.SetString(HuntHappens.Shop.ShopProgress.Key, JsonUtility.ToJson(data));
             }
             // Claim on the animal before paying: even another zone/manager cannot pay for it twice.
+            int previousBalance = Balance;
             Balance = (int)System.Math.Min(int.MaxValue, (long)Balance + RewardPerDeer);
             DeliveredCount++;
             if (notificationFrame != Time.frameCount) Notification = "";
@@ -66,6 +68,7 @@ namespace HuntHappens.Delivery
             if (zone.Enclosure != null) zone.Enclosure.Accept(deer);
             else { deer.gameObject.SetActive(false); Destroy(deer.gameObject); }
             BalanceChanged?.Invoke();
+            if (Balance > previousBalance) DeerRewarded?.Invoke(Balance - previousBalance);
             if (spawner != null && roster.Count == 0) spawner.RequestReplacement();
             return true;
         }

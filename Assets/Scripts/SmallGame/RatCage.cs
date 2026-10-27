@@ -21,7 +21,7 @@ namespace HuntHappens.SmallGame
         {
             if (!CanStealBait) return false;
             BaitKind = InventoryKind.None;
-            bait.SetActive(false);
+            bait.SetActive(false);RefreshBaitVisual();
             foreach (var rat in FindObjectsByType<RatAI>(FindObjectsSortMode.None)) rat.CancelBaitTarget(this);
             return true;
         }
@@ -32,6 +32,7 @@ namespace HuntHappens.SmallGame
             get { RefreshFear(); return Mathf.Max(0, scaredUntil - Time.time); }
         }
         private void Update() => RefreshFear();
+        private void RefreshBaitVisual() => GetComponent<CageBaitVisual>()?.Show(BaitKind);
         private void RefreshFear()
         {
             if (Baited && PlayerNearby) scaredUntil = Time.time + ScareDelay;
@@ -45,12 +46,12 @@ namespace HuntHappens.SmallGame
         {
             if (kind < 1 || kind > 3)
             {
-                BaitKind = baited ? (RatBait.IsBait(baitKind) ? baitKind : InventoryKind.Bread) : InventoryKind.None; bait.SetActive(Baited);
+                BaitKind = baited ? (RatBait.IsBait(baitKind) ? baitKind : InventoryKind.Bread) : InventoryKind.None; bait.SetActive(Baited);RefreshBaitVisual();
                 if (Baited) scaredUntil = Time.time + ScareDelay;
                 return;
             }
             StoredCargo = new HuntHappens.Interaction.InventoryEntry { kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = kind };
-            BaitKind = InventoryKind.None; bait.SetActive(false);
+            BaitKind = InventoryKind.None; bait.SetActive(false);RefreshBaitVisual();
             var visual = gameObject.AddComponent<CageCargoVisual>();
             visual.Configure(template); visual.Bind(StoredCargo);
         }
@@ -75,7 +76,7 @@ namespace HuntHappens.SmallGame
             {
                 var selected = player.SelectedBait;
                 if (!player.UseBait(selected)) return false;
-                BaitKind = selected; scaredUntil = Time.time + ScareDelay; bait.SetActive(true); return true;
+                BaitKind = selected; scaredUntil = Time.time + ScareDelay; bait.SetActive(true);RefreshBaitVisual(); return true;
             }
             if (!player.GetComponent<HuntHappens.Interaction.PlayerInventory>().Receive(new HuntHappens.Interaction.InventoryEntry {
                 kind = HuntHappens.Interaction.InventoryKind.Cage, cageRat = Captive != null ? Captive.Kind + 1 : 0,
@@ -88,7 +89,7 @@ namespace HuntHappens.SmallGame
         public bool TryCapture(RatAI rat)
         {
             if (!Accepts(rat) || Vector3.Distance(rat.transform.position, transform.position) > 0.45f) return false;
-            Captive = rat; BaitKind = InventoryKind.None; bait.SetActive(false);
+            Captive = rat; BaitKind = InventoryKind.None; bait.SetActive(false);RefreshBaitVisual();
             door.localPosition = new Vector3(0, 0.25f, 0.44f);
             rat.Capture(this); return true;
         }

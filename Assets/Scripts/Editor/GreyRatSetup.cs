@@ -20,15 +20,8 @@ namespace HuntHappens.Editor
    foreach(var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>())skin.sharedMaterial=material;
    PrefabUtility.SaveAsPrefabAsset(root,path);PrefabUtility.UnloadPrefabContents(root);
    var scene=EditorSceneManager.OpenScene("Assets/Scenes/ForestPrototype.unity");
-   var rats=Object.FindObjectsByType<RatAI>(FindObjectsSortMode.None).OrderBy(r=>r.transform.position.x).ThenBy(r=>r.transform.position.z).ToArray();
-   for(int i=0;i<rats.Length;i++)
-   {
-    var old=rats[i];bool grey=i%4==0;
-    var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(grey?path:"Assets/Art/SmallGame/Rat.prefab");
-    var instance=(GameObject)PrefabUtility.InstantiatePrefab(prefab);instance.name=grey?"Grey Rat":"Black Rat";
-    instance.transform.SetParent(old.transform.parent);instance.transform.SetPositionAndRotation(old.transform.position,old.transform.rotation);Object.DestroyImmediate(old.gameObject);
-   }
-   EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();Debug.Log("Grey rats installed: 2 grey / 6 black; same rig and AI.");
+   RatPopulationSetup.Apply();
+   EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();Debug.Log("Rat population installed: 4 grey, 5 black and 1 large per litter spot.");
   }
  }
 }

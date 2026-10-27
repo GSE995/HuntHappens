@@ -12,6 +12,7 @@ namespace HuntHappens.SmallGame
         private Transform door;
         private GameObject bait;
         private RatCage placedCage;
+        private CageBaitVisual baitVisual;
         private Vector3 openDoorPosition;
         private InventoryEntry entry;
         private GameObject rat;
@@ -24,6 +25,13 @@ namespace HuntHappens.SmallGame
             if (door != null) openDoorPosition = door.localPosition;
             bait = GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == template.bait.name)?.gameObject;
             placedCage = GetComponent<RatCage>();
+            var templateVisual=template.GetComponent<CageBaitVisual>();
+            if(templateVisual && bait)
+            {
+                baitVisual=GetComponent<CageBaitVisual>();
+                if(!baitVisual)baitVisual=gameObject.AddComponent<CageBaitVisual>();
+                baitVisual.Configure(templateVisual,bait.transform);
+            }
         }
 
         public void Bind(InventoryEntry value)
@@ -38,6 +46,7 @@ namespace HuntHappens.SmallGame
         {
             int kind = entry?.kind == InventoryKind.Cage ? Mathf.Clamp(entry.cageRat, 0, 3) : 0;
             if (bait != null) bait.SetActive(placedCage != null ? placedCage.Baited : kind == 0 && entry?.kind == InventoryKind.Cage && entry.cageBaited);
+            baitVisual?.Show(placedCage!=null ? placedCage.BaitKind : kind==0 && entry?.kind==InventoryKind.Cage && entry.cageBaited ? entry.CageBait : InventoryKind.None);
             if (kind == shownKind) return;
             shownKind = kind;
             if (door != null) door.localPosition = kind > 0 ? new Vector3(0, .25f, .44f) : openDoorPosition;

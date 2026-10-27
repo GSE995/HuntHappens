@@ -15,7 +15,7 @@ namespace HuntHappens.Characters
         [SerializeField, Min(1)] private int ordinaryPrice = 10;
         [SerializeField, Min(1)] private int greyPrice = 15;
         [SerializeField, Min(1)] private int largePrice = 25;
-        [SerializeField, Min(.2f)] private float quickSaleHoldSeconds = 1f;
+        [SerializeField, Min(.2f)] private float quickSaleHoldSeconds = .35f;
         public float QuickSaleHoldSeconds => Mathf.Max(.2f, quickSaleHoldSeconds);
         public float HoldProgress => Mathf.Clamp01(holdElapsed / QuickSaleHoldSeconds);
         private float holdElapsed, quickNoticeUntil;

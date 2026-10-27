@@ -34,7 +34,7 @@ namespace HuntHappens.Editor
                 stock.name = kind == 7 ? "Cheese Sandwich Stock" : "Latte Stock";
                 stock.transform.position = position; stock.Configure(bread.Shop, kind);
                 var label = stock.GetComponentInChildren<TMP_Text>();
-                label.text = (kind == 7 ? "БУТЕРБРОД\nС СЫРОМ" : "ЛАТТЕ") + "\n$" + stock.Price;
+                label.text = (kind == 7 ? "СЫР" : "ЛАТТЕ") + "\n$" + stock.Price;
                 label.fontSize = .9f;
                 Physics.SyncTransforms();
             }

@@ -16,7 +16,7 @@ namespace HuntHappens.Editor
     public static class WorldScaleSetup
     {
         public const float PlayerHeight = 1.8f, EyeHeight = 1.68f, HeroHeight = 1.85f, SemenychHeight = 1.75f;
-        public const float DeerHeight = 1.9f, LeaderHeight = 2.2f, RatHeight = .12f, LargeRatHeight = .168f;
+        public const float DeerHeight = 1.9f, LeaderHeight = 2.2f, RatHeight = .12f, LargeRatHeight = .24f;
         public const float CrowLength = .45f, NavigationRadius = .42f, NavigationHeight = 2.2f;
 
         [MenuItem("Tools/Hunt Happens/Apply Realistic Character Scale")]
@@ -50,7 +50,7 @@ namespace HuntHappens.Editor
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveOpenScenes()) throw new InvalidOperationException("Cannot save navigation");
             AssetDatabase.SaveAssets();
-            Debug.Log("WORLD_SCALE_APPLIED: player 1.80m, Hero 1.85m, Semenych 1.75m; deer 1.90/2.20m including antlers; rats .120/.168m; crow length .45m");
+            Debug.Log("WORLD_SCALE_APPLIED: player 1.80m, Hero 1.85m, Semenych 1.75m; deer 1.90/2.20m including antlers; rats .120/.240m; crow length .45m");
         }
 
         static void EditPrefab(string path, Action<GameObject> configure)
@@ -112,7 +112,7 @@ namespace HuntHappens.Editor
             float height = rat.isAggressive ? LargeRatHeight : RatHeight;
             FitVisual(rat.visual, height, root.transform.position.y);
             var agent = root.GetComponent<NavMeshAgent>();
-            agent.height = height; agent.radius = rat.isAggressive ? .1f : .075f;
+            agent.height = height; agent.radius = rat.isAggressive ? .15f : .075f;
             // Author the hit box now; RatAI's fallback otherwise uses padded animation bounds.
             var box = rat.visual.GetComponent<BoxCollider>();
             if (!box) box = rat.visual.gameObject.AddComponent<BoxCollider>();

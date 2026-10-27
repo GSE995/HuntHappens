@@ -10,7 +10,7 @@ namespace HuntHappens.Player
     [DisallowMultipleComponent]
     public sealed class FirstPersonArms : MonoBehaviour
     {
-        public enum VisualMode { Empty, Tranquilizer, Carry, Trap, Hidden, Cage }
+        public enum VisualMode { Empty, Tranquilizer, Carry, Trap, Hidden, Cage, Bait }
         [SerializeField] private Camera view;
         [SerializeField] private PrototypeInput input;
         [SerializeField] private CharacterController motor;
@@ -48,11 +48,12 @@ namespace HuntHappens.Player
         public Transform LeftHand => leftHand;
         public Transform RightHand => rightHand;
         public Transform MiniatureTrap => miniatureTrap;
+        public bool HoldingBait => input != null && HuntHappens.SmallGame.RatBait.IsBait(input.GetComponent<PlayerInventory>()?.Hand?.kind ?? InventoryKind.None);
         public VisualMode Mode => input == null || input.GameplayBlocked ? VisualMode.Hidden :
             holder != null && (holder.IsHolding || holder.GetComponent<HuntHappens.Transport.CartDriver>()?.IsDriving == true) ? VisualMode.Carry :
             gun != null && gun.Selected ? VisualMode.Tranquilizer :
             gun != null && gun.TrapSelected ? VisualMode.Trap :
-            hunting != null && hunting.Selected ? VisualMode.Cage : VisualMode.Empty;
+            hunting != null && hunting.Selected ? VisualMode.Cage : HoldingBait ? VisualMode.Bait : VisualMode.Empty;
         public void Configure(Camera camera, PrototypeInput controls, CharacterController controller, ItemHolder carry,
             TranquilizerGun weapon, TrapPlacement traps, Transform left, Transform right, Transform leftArm, Transform rightArm, Transform smallTrap)
         {

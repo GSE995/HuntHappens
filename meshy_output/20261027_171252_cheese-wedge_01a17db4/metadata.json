@@ -1,0 +1,41 @@
+{
+  "schema_version": 2,
+  "project_name": "cheese-wedge",
+  "folder": "20261027_171252_cheese-wedge_01a17db4",
+  "root_task_id": "01a17db4-bc9c-7090-97d8-078c8b52e2c9",
+  "created_at": "2026-10-27T14:12:52.932Z",
+  "updated_at": "2026-10-27T14:13:34.379Z",
+  "tasks": [
+    {
+      "task_id": "01a17db4-bc9c-7090-97d8-078c8b52e2c9",
+      "task_type": "image-to-3d",
+      "resource": "image-to-3d",
+      "endpoint": "/openapi/v1/image-to-3d",
+      "stage": "textured-lowpoly",
+      "parent_task_id": null,
+      "status": "SUCCEEDED",
+      "files": [],
+      "task_json": "task_01a17db4-bc9c-7090-97d8-078c8b52e2c9.json",
+      "operation_id": null,
+      "created_at": "2026-10-27T14:13:17.618Z",
+      "updated_at": "2026-10-27T14:13:17.618Z"
+    },
+    {
+      "task_id": "01a17db4-bc9c-7090-97d8-078c8b52e2c9",
+      "task_type": "image-to-3d",
+      "resource": "image-to-3d",
+      "endpoint": "/openapi/v1/image-to-3d",
+      "stage": "delivered",
+      "parent_task_id": null,
+      "status": "SUCCEEDED",
+      "files": [
+        "cheese.glb",
+        "preview.png"
+      ],
+      "task_json": null,
+      "operation_id": null,
+      "created_at": "2026-10-27T14:13:31.586Z",
+      "updated_at": "2026-10-27T14:13:34.379Z"
+    }
+  ]
+}

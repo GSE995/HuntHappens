@@ -21,7 +21,7 @@ namespace HuntHappens.Editor
             var root = PrefabUtility.LoadPrefabContents(path);
             var rat = root.GetComponent<RatAI>(); rat.isAggressive = true; rat.isGrey = false;
             var original = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Art/SmallGame/Rat.prefab").GetComponent<RatAI>();
-            rat.visual.localScale = original.visual.localScale * 1.4f;
+            rat.visual.localScale = original.visual.localScale * 2f;
             foreach (var skin in root.GetComponentsInChildren<SkinnedMeshRenderer>()) skin.sharedMaterial = material;
             WorldScaleSetup.ConfigureRat(root);
             PrefabUtility.SaveAsPrefabAsset(root, path); PrefabUtility.UnloadPrefabContents(root);
@@ -29,7 +29,7 @@ namespace HuntHappens.Editor
             var player = Object.FindAnyObjectByType<RatHunting>(); if (!player.GetComponent<PlayerHealth>()) player.gameObject.AddComponent<PlayerHealth>();
             EnsureGuardAtEverySpot();
             EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
-            Debug.Log("Large rats installed: one brown guard per litter spot, 1.4x size, player health, $25 reception.");
+            Debug.Log("Large rats installed: one brown guard per litter spot, 2x size, player health, $25 reception.");
         }
 
         public static void EnsureGuardAtEverySpot()

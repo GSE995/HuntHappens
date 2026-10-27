@@ -34,7 +34,7 @@ namespace HuntHappens.Interaction
         {
             var root = new GameObject(entry.Title);
             root.transform.SetPositionAndRotation(position, rotation);
-            GameObject source = null;
+            GameObject source = owner.BaitVisualPrefab(entry.kind);
             if (entry.kind == InventoryKind.Gun) source = owner.GetComponent<HuntHappens.Weapons.TranquilizerGun>()?.WeaponVisual?.gameObject;
             if (entry.kind == InventoryKind.Cage) source = owner.GetComponent<HuntHappens.SmallGame.RatHunting>()?.cagePrefab?.gameObject;
             if (entry.kind == InventoryKind.Trap) source = owner.GetComponent<HuntHappens.Traps.TrapPlacement>()?.Manager?.Prefab?.gameObject;
