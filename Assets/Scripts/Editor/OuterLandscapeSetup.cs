@@ -48,7 +48,7 @@ namespace HuntHappens.Editor
                 int a = r * sides + i, b = r * sides + (i + 1) % sides;
                 int c = a + sides, d = b + sides;
                 var center = (vertices[a] + vertices[b] + vertices[c] + vertices[d]) * .25f;
-                int material = center.y > 73 ? 3 : r > 18 ? 2 : r > 7 ? 1 : 0;
+                int material = center.z <= -50 ? 0 : center.y > 73 ? 3 : r > 18 ? 2 : r > 7 ? 1 : 0;
                 triangles[material].AddRange(new[] { a, b, c, b, d, c });
             }
             var ground = new Mesh { name = "Surrounding hills and mountain ridge" };
@@ -144,7 +144,9 @@ namespace HuntHappens.Editor
             h += Hill(x,z,85,285,80,85,106) + Hill(x,z,-20,270,80,70,67);
             h += Hill(x,z,170,255,65,90,58) + Hill(x,z,-230,170,95,100,47);
             h += (Mathf.PerlinNoise(x*.045f+9,z*.045f+5)-.5f)*10*Mathf.Clamp01((edge-150)/90);
-            return -.12f + h*fade;
+            // Keep the entire southern side flat, blending into the side hills over 100 m.
+            float southernPlain = Mathf.SmoothStep(0, 1, (z + 50) / 100);
+            return -.12f + h*fade*southernPlain;
         }
 
         static Material Material(string name, Color color)
