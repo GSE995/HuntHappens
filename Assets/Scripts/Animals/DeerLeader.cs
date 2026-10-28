@@ -36,7 +36,10 @@ namespace HuntHappens.Animals
         private DeerSedation sedation;
         private PlayerHealth player;
         private Transform home;
-        private Vector3 origin, chargeDirection, previousPosition;
+        private Vector3 origin, chargeDirection, chargeStart, previousPosition;
+        private const float ChargeOvershoot = 2f;
+        private const float AttackTurnSpeed = 720f;
+        private float chargeDistance;
         private WorldInventoryItem bait;
         private float elapsed, nextScan, angryUntil;
         private bool hit;
@@ -94,17 +97,23 @@ namespace HuntHappens.Animals
                     break;
                 case LeaderState.Warning:
                     Vector3 direction = Vector3.ProjectOnPlane(player.transform.position - transform.position, Vector3.up);
-                    if (direction.sqrMagnitude > .01f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 240 * Time.deltaTime);
+                    if (direction.sqrMagnitude > .01f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), AttackTurnSpeed * Time.deltaTime);
                     if (elapsed >= warningDuration)
                     {
-                        chargeDirection = transform.forward; previousPosition = transform.position; hit = false; Enter(LeaderState.Charge);
+                        chargeDirection = transform.forward;
+                        chargeStart = previousPosition = transform.position;
+                        // Commit to this aim point so a dodge cannot drag the charge across the arena.
+                        chargeDistance = Mathf.Max(0, Vector3.Dot(direction, chargeDirection)) + ChargeOvershoot;
+                        hit = false; Enter(LeaderState.Charge);
                     }
                     break;
                 case LeaderState.Charge:
                     Vector3 before = transform.position;
-                    agent.Move(chargeDirection * chargeSpeed * Time.deltaTime);
+                    float remaining = Mathf.Max(0, chargeDistance - Vector3.Dot(before - chargeStart, chargeDirection));
+                    agent.Move(chargeDirection * Mathf.Min(chargeSpeed * Time.deltaTime, remaining));
                     CheckImpact(previousPosition, transform.position); previousPosition = transform.position;
-                    if (state == LeaderState.Charge && (elapsed >= chargeDuration || (elapsed > .15f && (transform.position - before).sqrMagnitude < .0001f))) Enter(LeaderState.Recovery);
+                    if (state == LeaderState.Charge && (Vector3.Dot(transform.position - chargeStart, chargeDirection) >= chargeDistance - .01f ||
+                        elapsed >= chargeDuration || (elapsed > .15f && (transform.position - before).sqrMagnitude < .0001f))) Enter(LeaderState.Recovery);
                     break;
                 case LeaderState.Impact: if (elapsed >= .12f) Enter(LeaderState.Recovery); break;
                 case LeaderState.Recovery:
