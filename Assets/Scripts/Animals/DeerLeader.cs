@@ -8,7 +8,7 @@ namespace HuntHappens.Animals
     [DisallowMultipleComponent]
     public sealed class DeerLeader : MonoBehaviour
     {
-        public enum LeaderState { Calm, Warning, Charge, Impact, Recovery, MovingToBait, Eating, Returning }
+        public enum LeaderState { Calm, Warning, Charge, Impact, Recovery, MovingToBait, Eating, Returning, Stomp }
         [Header("Guarding")]
         [Min(1)] public float reactionRadius = 12;
         [Min(1)] public float protectionRadius = 12;
@@ -20,6 +20,20 @@ namespace HuntHappens.Animals
         [Min(.1f)] public float recoveryDuration = 3;
         [Min(0)] public float knockbackSpeed = 9;
         [Min(0)] public float upwardSpeed = 3;
+        [Header("Stomp wave")]
+        [Min(.1f)] public float stompWindup = .65f;
+        [Min(.1f)] public float stompRecovery = .25f;
+        [Min(1)] public float waveRadius = 8;
+        [Min(1)] public float waveSpeed = 10;
+        [Min(1)] public int waveDamage = 25;
+        private LineRenderer wave;
+        private Material waveMaterial;
+        private Vector3 waveOrigin;
+        private float waveDistance;
+        private bool waveHit, stompReleased;
+        public float StompLift => state != LeaderState.Stomp ? 0 :
+            Mathf.SmoothStep(0, 1, elapsed / Mathf.Max(.01f, stompWindup * .65f)) *
+            (1 - Mathf.SmoothStep(0, 1, (elapsed - stompWindup * .65f) / Mathf.Max(.01f, stompWindup * .35f)));
         [Header("Chocolate")]
         [Min(1)] public float chocolateRadius = 15;
         [Min(.1f)] public float eatingDuration = 8;
@@ -29,7 +43,7 @@ namespace HuntHappens.Animals
         public float StateElapsed => elapsed;
         public float LastImpactTime { get; private set; } = float.NegativeInfinity;
         public bool LowerHead => state == LeaderState.Warning || state == LeaderState.Charge || state == LeaderState.Eating;
-        public string Status => state == LeaderState.Warning ? "Вожак: берегись! Сейчас рывок!" : state == LeaderState.Charge ? "Вожак атакует — в сторону!" :
+        public string Status => state == LeaderState.Stomp ? "Вожак бьёт копытами — отойди!" : state == LeaderState.Warning ? "Вожак: берегись! Сейчас рывок!" : state == LeaderState.Charge ? "Вожак атакует — в сторону!" :
             state == LeaderState.Eating ? "Вожак ест шоколад — стадо без охраны" : state == LeaderState.MovingToBait ? "Вожак идёт к шоколаду" :
             state == LeaderState.Recovery ? "Вожак восстанавливается" : state == LeaderState.Returning ? "Вожак возвращается к стаду" : "Вожак охраняет стадо";
         private NavMeshAgent agent;
@@ -56,12 +70,12 @@ namespace HuntHappens.Animals
         private void Start() { player = FindAnyObjectByType<PlayerHealth>(); Enter(LeaderState.Calm); }
         public void NoticeAttack(DeerSedation victim)
         {
-            if (sedation.IsDelivered || sedation.State != DeerSedation.SedationState.Awake || state == LeaderState.Charge || state == LeaderState.Impact) return;
+            if (sedation.IsDelivered || sedation.State != DeerSedation.SedationState.Awake || state == LeaderState.Charge || state == LeaderState.Impact || state == LeaderState.Stomp) return;
             bool self = victim == sedation;
             if (!self && (state == LeaderState.Eating || state == LeaderState.MovingToBait || Vector3.Distance(victim.transform.position, transform.position) > protectionRadius || !Visible(victim.transform, victim.transform.position + Vector3.up))) return;
             if (player == null) return;
             if (!PlayerInTerritory)
-            { if (self) { bait = null; Enter(LeaderState.Returning); } return; }
+            { if (self) { bait = null; ClearWave(); Enter(LeaderState.Returning); } return; }
             angryUntil = Time.time + warningDuration + recoveryDuration + 2;
             bait = null;
             if (state != LeaderState.Warning && state != LeaderState.Recovery) Enter(LeaderState.Warning);
@@ -70,17 +84,18 @@ namespace HuntHappens.Animals
         {
             if (sedation.IsDelivered || sedation.State != DeerSedation.SedationState.Awake)
             {
-                bait = null;
+                bait = null; ClearWave();
                 if (agent.enabled && agent.isOnNavMesh) agent.isStopped = true;
                 state = LeaderState.Recovery; elapsed = 0; return;
             }
             if (player == null || !agent.enabled || !agent.isOnNavMesh) return;
+            UpdateWave();
             elapsed += Time.deltaTime;
             bool playerInTerritory = PlayerInTerritory;
             // Combat ends when the player leaves the territory, not when knockback or a missed charge
             // separates the two animals. Height from knockback does not count as leaving the zone.
-            if (!playerInTerritory && (state == LeaderState.Warning || state == LeaderState.Charge))
-            { bait = null; Enter(LeaderState.Returning); }
+            if (!playerInTerritory && (state == LeaderState.Warning || state == LeaderState.Charge || state == LeaderState.Stomp))
+            { bait = null; ClearWave(); Enter(LeaderState.Returning); }
             if ((state == LeaderState.Calm || state == LeaderState.Warning) && Time.time >= angryUntil && Time.time >= nextScan)
             {
                 nextScan = Time.time + .4f;
@@ -113,9 +128,13 @@ namespace HuntHappens.Animals
                     agent.Move(chargeDirection * Mathf.Min(chargeSpeed * Time.deltaTime, remaining));
                     CheckImpact(previousPosition, transform.position); previousPosition = transform.position;
                     if (state == LeaderState.Charge && (Vector3.Dot(transform.position - chargeStart, chargeDirection) >= chargeDistance - .01f ||
-                        elapsed >= chargeDuration || (elapsed > .15f && (transform.position - before).sqrMagnitude < .0001f))) Enter(LeaderState.Recovery);
+                        elapsed >= chargeDuration || (elapsed > .15f && (transform.position - before).sqrMagnitude < .0001f))) Enter(LeaderState.Stomp);
                     break;
-                case LeaderState.Impact: if (elapsed >= .12f) Enter(LeaderState.Recovery); break;
+                case LeaderState.Impact: if (elapsed >= .12f) Enter(LeaderState.Stomp); break;
+                case LeaderState.Stomp:
+                    if (!stompReleased && elapsed >= stompWindup) { stompReleased = true; ReleaseWave(); }
+                    if (elapsed >= stompWindup + stompRecovery) Enter(LeaderState.Recovery);
+                    break;
                 case LeaderState.Recovery:
                     if (elapsed >= recoveryDuration)
                         Enter(playerInTerritory ? LeaderState.Warning : LeaderState.Returning);
@@ -154,9 +173,78 @@ namespace HuntHappens.Animals
                 Enter(LeaderState.Impact); break;
             }
         }
+        private void ReleaseWave()
+        {
+            ClearWave();
+            waveOrigin = transform.position + transform.forward * .8f;
+            waveDistance = 0; waveHit = false;
+            var ring = new GameObject("Leader hoof shockwave");
+            wave = ring.AddComponent<LineRenderer>();
+            wave.useWorldSpace = true; wave.loop = true; wave.positionCount = 96;
+            wave.widthMultiplier = .22f;
+            waveMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            waveMaterial.SetColor("_BaseColor", new Color(1, .65f, .12f));
+            wave.sharedMaterial = waveMaterial;
+            wave.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            wave.receiveShadows = false;
+            DrawWave();
+        }
+        private void UpdateWave()
+        {
+            if (wave == null || Time.deltaTime <= 0) return;
+            if (!PlayerInTerritory) { ClearWave(); return; }
+            float previous = waveDistance;
+            waveDistance = Mathf.Min(waveRadius, waveDistance + waveSpeed * Time.deltaTime);
+            DrawWave();
+            var controller = player.GetComponent<CharacterController>();
+            Vector3 feet = controller != null ? controller.bounds.min : player.transform.position;
+            float distance = Vector3.ProjectOnPlane(player.transform.position - waveOrigin, Vector3.up).magnitude;
+            float padding = (controller != null ? controller.radius : .4f) + .11f;
+            if (!waveHit && distance >= previous - padding && distance <= waveDistance + padding &&
+                Mathf.Abs(feet.y - WaveGround(player.transform.position).y) < .8f &&
+                Visible(player.transform, player.transform.position + Vector3.up))
+            {
+                waveHit = true;
+                if (player.TakeDamage(waveDamage))
+                {
+                    var holder = player.GetComponent<ItemHolder>();
+                    if (holder != null && holder.IsHoldingDeer) holder.Drop();
+                }
+            }
+            if (waveDistance >= waveRadius) ClearWave();
+        }
+        private Vector3 WaveGround(Vector3 point)
+        {
+            point.y = waveOrigin.y;
+            float best = float.PositiveInfinity;
+            Vector3 ground = point;
+            foreach (var contact in Physics.RaycastAll(point + Vector3.up * 2, Vector3.down, 4, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (contact.transform.IsChildOf(transform) || contact.rigidbody != null ||
+                    contact.collider is CharacterController || contact.normal.y < .5f || contact.distance >= best) continue;
+                best = contact.distance; ground = contact.point;
+            }
+            return ground;
+        }
+        private void DrawWave()
+        {
+            for (int i = 0; i < wave.positionCount; i++)
+            {
+                float angle = i * Mathf.PI * 2 / wave.positionCount;
+                wave.SetPosition(i, WaveGround(waveOrigin + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * waveDistance) + Vector3.up * .12f);
+            }
+        }
+        private void ClearWave()
+        {
+            if (wave != null) Destroy(wave.gameObject);
+            if (waveMaterial != null) Destroy(waveMaterial);
+            wave = null; waveMaterial = null;
+        }
+        private void OnDisable() => ClearWave();
         private void Enter(LeaderState value)
         {
             state = value; elapsed = 0;
+            if (value == LeaderState.Stomp) stompReleased = false;
             if (value == LeaderState.Impact) LastImpactTime = Time.time;
             if (!agent.enabled || !agent.isOnNavMesh) return;
             agent.ResetPath(); agent.isStopped = true; agent.updateRotation = value != LeaderState.Warning && value != LeaderState.Charge;

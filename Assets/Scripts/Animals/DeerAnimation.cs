@@ -94,8 +94,11 @@ namespace HuntHappens.Animals
             bodyAngle = Mathf.Lerp(bodyAngle, (charging ? chargeLean : -5 * windup) - impact * impactRecoilAngle, blend);
             crouch = Mathf.Lerp(crouch, windup * preparationCrouch, blend);
             leanBack = Mathf.Lerp(leanBack, windup * preparationLeanBack + impact * impactRecoilDistance, blend);
+            float stomp = leader != null ? leader.StompLift : 0;
+            bool stomping = leader != null && leader.State == DeerLeader.LeaderState.Stomp;
+            if (stomping) moving = 0;
             float gallop = running * moving * (1 - preparation);
-            visual.localRotation = restRotation * Quaternion.Euler(bodyAngle + Mathf.Sin(phase) * gallopPitch * gallop, 0, 0);
+            visual.localRotation = restRotation * Quaternion.Euler(bodyAngle - stomp * 24 + Mathf.Sin(phase) * gallopPitch * gallop, 0, 0);
             visual.localPosition = restPosition + new Vector3(0, -crouch, -leanBack);
             for (int i = 0; i < legs.Length; i++)
             {
@@ -106,6 +109,7 @@ namespace HuntHappens.Animals
                 float swing = Mathf.Lerp(Mathf.Sin(phase + walkOffset) * walkSwing,
                     Mathf.Sin(phase + gallopOffset) * runSwing, running) * moving * (1 - preparation);
                 swing += (i < 2 ? -20 : 20) * preparation + (i < 2 ? 12 : -8) * impact;
+                swing += (i < 2 ? -65 : 12) * stomp;
                 legs[i].localRotation = legRest[i] * Quaternion.Euler(swing, 0, 0);
             }
             GroundHooves();
