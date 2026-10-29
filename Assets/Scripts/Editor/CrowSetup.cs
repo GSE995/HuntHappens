@@ -20,7 +20,6 @@ namespace HuntHappens.Editor
             const string folder = "Assets/Art/SmallGame";
             var black = Material(folder + "/Crow Feathers.mat", new Color(.035f, .045f, .065f));
             var beak = Material(folder + "/Crow Beak.mat", new Color(.12f, .13f, .15f));
-            var bark = Material(folder + "/Crow Branch.mat", new Color(.24f, .15f, .09f));
             var bird = new GameObject("Crow");
             var ai = bird.AddComponent<CrowAI>();
             var body = bird.GetComponent<Rigidbody>(); body.mass = .5f; body.isKinematic = true; body.useGravity = false;
@@ -41,19 +40,12 @@ namespace HuntHappens.Editor
             var prefab = PrefabUtility.SaveAsPrefabAsset(bird, folder + "/Crow.prefab");
             Object.DestroyImmediate(bird);
             var root = new GameObject("Crows"); Undo.RegisterCreatedObjectUndo(root, "Add crows");
-            // Spread perches across the actual forest, outside each crown's silhouette.
+            // The final placement is projected onto visible tree geometry below.
             for (int i = 0; i < 8; i++)
             {
                 var tree = trees[i * trees.Length / 8];
-                var crown = tree.Find("Crown").GetComponent<Renderer>().bounds;
-                var branch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                branch.name = "Crow Branch " + (i + 1); branch.transform.SetParent(root.transform);
-                branch.transform.position = new Vector3(tree.position.x + crown.extents.x*.6f, crown.center.y-.5f, tree.position.z);
-                branch.transform.rotation = Quaternion.Euler(0,0,90);
-                branch.transform.localScale = new Vector3(.13f,crown.extents.x*.7f,.13f);
-                branch.GetComponent<Renderer>().sharedMaterial = bark;
                 var perch = new GameObject("Perch " + (i + 1)).transform; perch.SetParent(root.transform);
-                perch.position = new Vector3(tree.position.x + crown.extents.x*1.2f,crown.center.y-.4f,tree.position.z);
+                perch.position = tree.position;
                 var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root.transform);
                 instance.name = "Crow " + (i + 1); instance.transform.position = perch.position;
                 instance.GetComponent<CrowAI>().perch = perch;
@@ -65,7 +57,7 @@ namespace HuntHappens.Editor
         }
         public static string ArrangeAtTrash()
         {
-            if (Application.isPlaying) throw new System.InvalidOperationException("Exit Play Mode first");
+            if (EditorApplication.isPlayingOrWillChangePlaymode || UnityEngine.SceneManagement.SceneManager.GetActiveScene().path != "Assets/Scenes/ForestPrototype.unity") throw new System.InvalidOperationException("Open ForestPrototype in Edit Mode");
             var root = GameObject.Find("Crows");
             var enclosure = Object.FindAnyObjectByType<HuntHappens.Delivery.DeerEnclosure>();
             var pasture = enclosure != null ? enclosure.transform.Find("Pen pasture") : null;
@@ -94,27 +86,59 @@ namespace HuntHappens.Editor
             for(int i=0;i<birds.Length;i++)
             {
                 var bird=birds[i]; var spot=occupied[i/4]; var tree=chosen[i];
-                var crown=tree.Find("Crown").GetComponent<Renderer>().bounds;
                 Vector3 direction=spot.transform.position-tree.position; direction.y=0; direction.Normalize();
-                float extent=Mathf.Max(crown.extents.x,crown.extents.z);
-                var branch=root.transform.Find("Crow Branch "+(i+1)); var perch=bird.perch;
-                Undo.RecordObjects(new Object[]{bird,bird.transform,branch,perch},"Move crow to trash tree");
-                Vector3 center=new Vector3(tree.position.x,crown.center.y-.5f,tree.position.z);
-                branch.position=center+direction*extent*.6f;
-                branch.rotation=Quaternion.FromToRotation(Vector3.up,direction);
-                branch.localScale=new Vector3(.13f,extent*.7f,.13f);
-                perch.position=center+direction*extent*1.2f+Vector3.up*.1f;
+                var perch=bird.perch;
+                Undo.RecordObjects(new Object[]{bird,bird.transform,perch},"Seat crow on tree canopy");
+                perch.position=FindCanopySeat(tree,direction);
                 perch.rotation=Quaternion.LookRotation(direction);
                 bird.transform.SetPositionAndRotation(perch.position,perch.rotation); bird.feedingSpot=spot;
                 PrefabUtility.RecordPrefabInstancePropertyModifications(bird);
                 PrefabUtility.RecordPrefabInstancePropertyModifications(bird.transform);
                 EditorUtility.SetDirty(bird);
             }
+            foreach (Transform child in root.transform.Cast<Transform>().ToArray())
+                if (child.name.StartsWith("Crow Branch ")) Undo.DestroyObjectImmediate(child.gameObject);
             var scene=root.scene; EditorSceneManager.MarkSceneDirty(scene);
             if(!EditorSceneManager.SaveScene(scene)) throw new System.Exception("Scene save failed");
             AssetDatabase.SaveAssets();
             return "4 crows per occupied trash spot; 8m bait radius; safe trash at "+safe.transform.position;
         }
+        // Cast against temporary copies of the actual render meshes, never the hidden proxy crown.
+        // No foliage colliders remain in the scene: sleeping birds can still fall to the ground.
+        internal static Vector3 FindCanopySeat(Transform tree, Vector3 direction)
+        {
+            var meshes = tree.GetComponentsInChildren<MeshFilter>()
+                .Where(m => m.sharedMesh != null && m.GetComponent<Renderer>() != null && m.GetComponent<Renderer>().enabled).ToArray();
+            if (meshes.Length == 0) throw new System.InvalidOperationException("No visible tree mesh: " + tree.name);
+            var bounds = meshes[0].GetComponent<Renderer>().bounds;
+            foreach (var mesh in meshes) bounds.Encapsulate(mesh.GetComponent<Renderer>().bounds);
+            var temporary = new System.Collections.Generic.List<GameObject>();
+            try
+            {
+                foreach (var mesh in meshes)
+                {
+                    var copy = new GameObject("Temporary canopy probe");
+                    temporary.Add(copy);
+                    copy.transform.SetParent(mesh.transform, false);
+                    copy.AddComponent<MeshCollider>().sharedMesh = mesh.sharedMesh;
+                }
+                Physics.SyncTransforms();
+                // Approach the outer, trash-facing side from above, away from the trunk and apex.
+                for (float fraction=.72f; fraction>=.35f; fraction-=.06f)
+                {
+                    var point=tree.position+direction*(Mathf.Min(bounds.extents.x,bounds.extents.z)*fraction);
+                    var ray=new Ray(new Vector3(point.x,bounds.max.y+1,point.z),Vector3.down);
+                    RaycastHit best=default; bool found=false;
+                    foreach(var copy in temporary)
+                        if(copy.GetComponent<MeshCollider>().Raycast(ray,out var hit,bounds.size.y+2) && hit.normal.y>.15f && (!found || hit.point.y>best.point.y))
+                        { best=hit; found=true; }
+                    if(found) return best.point+Vector3.up*.005f;
+                }
+                throw new System.InvalidOperationException("No canopy seat: "+tree.name);
+            }
+            finally { foreach(var copy in temporary) Object.DestroyImmediate(copy); }
+        }
+
         private static Material Material(string path, Color color)
         {
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);

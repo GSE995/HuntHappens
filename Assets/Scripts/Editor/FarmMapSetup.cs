@@ -106,7 +106,7 @@ namespace HuntHappens.Editor
             for(int i=0;i<deer.Length;i++){deer[i].transform.position=(i%2==0?Left:Right)+new Vector3((i-1)*3,.05f,0);SetFloat(deer[i].GetComponent<DeerAI>(),"roamRadius",10);SetFloat(deer[i].GetComponent<DeerAI>(),"wanderRadius",6);}
             GameObject.Find("Boss Deer").transform.position=Right+new Vector3(4,.05f,4);
             var litter=GameObject.Find("Forest Litter").transform;
-            Vector3[] patches={new Vector3(-7,0,5),new Vector3(28,0,9),new Vector3(-24,0,10)};
+            Vector3[] patches={new Vector3(-2,0,0),new Vector3(29,0,4),new Vector3(-29,0,9)};
             var bags=litter.Cast<Transform>().Where(t=>t.name=="TrashBag").ToArray();
             Vector3[] origins=bags.Select(t=>t.position).ToArray();
             var scattered=litter.Find("Scattered Litter");
@@ -115,7 +115,7 @@ namespace HuntHappens.Editor
             litter.SetParent(zones,true);
             var rats=Object.FindObjectsByType<RatAI>();
             for(int i=0;i<rats.Length;i++){int j=i%3;rats[i].transform.position=patches[j]+new Vector3((i/3-1)*1.8f,0,2);rats[i].territoryRadius=7;}
-            for(int i=0;i<3;i++) {Disc("Litter patch",patches[i]+Vector3.up*.025f,3.5f,dirt,zones);Box("Discarded crate",patches[i]+new Vector3(1,.5f,-1),Vector3.one,wood,decor);}
+            for(int i=0;i<3;i++) {Box("Discarded crate",patches[i]+new Vector3(1,.5f,-1),Vector3.one,wood,decor);}
             var rng=new System.Random(31415);
             for(int i=0;i<580;i++)
             {
@@ -138,11 +138,11 @@ namespace HuntHappens.Editor
             EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);AssetDatabase.SaveAssets();
             Debug.Log("Farm map built, routes validated, scene saved.");
         }
-        static bool Clear(Vector3 p)
+        internal static bool Clear(Vector3 p)
         {
             if(p.x>-42&&p.x<14&&p.z<-2)return true;
             if(Vector3.Distance(p,Left)<13||Vector3.Distance(p,Right)<13)return true;
-            if(new[]{new Vector3(-7,0,5),new Vector3(28,0,9),new Vector3(-24,0,10)}.Any(t=>Vector3.Distance(p,t)<5))return true;
+            if(new[]{new Vector3(-2,0,0),new Vector3(29,0,4),new Vector3(-29,0,9)}.Any(t=>Vector3.Distance(p,t)<5))return true;
             if(NearPath(p,Road,5))return true;
             return Trails.Any(path=>NearPath(p,path,4));
         }
