@@ -18,9 +18,17 @@ namespace HuntHappens.Editor
         public static void Build()
         {
             var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-            if (EditorApplication.isPlaying || scene.path != "Assets/Scenes/ForestPrototype.unity")
+            if (EditorApplication.isPlayingOrWillChangePlaymode || scene.path != "Assets/Scenes/ForestPrototype.unity")
                 throw new InvalidOperationException("Open ForestPrototype in Edit mode first.");
+            const string art = "Assets/Art/QuaterniusNature/";
+            var models = new List<GameObject>();
+            foreach (string kind in new[] { "Pine_", "CommonTree_" })
+            for (int i = 1; i <= 5; i++)
+                models.Add(AssetDatabase.LoadAssetAtPath<GameObject>(art + "FBX/" + kind + i + ".fbx")
+                    ?? throw new InvalidOperationException("Missing outer tree: " + kind + i));
             var template = GameObject.Find("Farm Map").transform.Find("Forest").GetChild(0);
+            float treeHeight = template.Find("Crown").GetComponent<Renderer>().bounds.max.y
+                - template.Find("Trunk").GetComponent<Renderer>().bounds.min.y;
             System.IO.Directory.CreateDirectory(Folder);
             AssetDatabase.Refresh();
             var old = GameObject.Find(RootName);
@@ -57,15 +65,21 @@ namespace HuntHappens.Editor
             ground.RecalculateNormals(); ground.RecalculateBounds();
             RenderMesh("Hills and distant mountain", ground, new[] { meadow, hills, ridge, peak }, root.transform);
 
-            // Reuse the map's tree silhouette; combine by sector/material to avoid hundreds of renderers.
-            var bark = Material("Bark", new Color(.25f, .22f, .17f));
-            var leaves = new[] {
-                Material("Forest olive", new Color(.24f,.36f,.16f)),
-                Material("Forest green", new Color(.18f,.31f,.19f)),
-                Material("Forest distant", new Color(.28f,.40f,.30f)) };
-            var batches = new Dictionary<int, List<CombineInstance>>();
-            var crownMesh = TreeMesh(false);
-            var trunkMesh = TreeMesh(true);
+            // Shared imported meshes avoid baking millions of duplicate vertices into assets.
+            var materials = new Dictionary<string, Material>();
+            foreach (var source in models.SelectMany(m => m.GetComponentsInChildren<Renderer>())
+                         .SelectMany(r => r.sharedMaterials).GroupBy(m => m.name).Select(g => g.First()))
+            {
+                var original = AssetDatabase.LoadAssetAtPath<Material>(art + "Materials/" + source.name + ".mat")
+                    ?? throw new InvalidOperationException("Missing tree material: " + source.name);
+                string path = Folder + "/Outer " + source.name + ".mat";
+                var copy = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (copy == null) { copy = new Material(original); AssetDatabase.CreateAsset(copy, path); }
+                else copy.CopyPropertiesFromMaterial(original);
+                copy.enableInstancing = true;
+                EditorUtility.SetDirty(copy);
+                materials.Add(source.name, copy);
+            }
             var rng = new System.Random(87231);
             int count = 0;
             for (int z = -194; z <= 194; z += 9)
@@ -75,57 +89,35 @@ namespace HuntHappens.Editor
                 float edge = Mathf.Max(Mathf.Abs(px), Mathf.Abs(pz));
                 if (edge < 58 || edge > 192 || rng.NextDouble() < .25) continue;
                 float size = .9f + (float)rng.NextDouble() * .9f;
-                var matrix = Matrix4x4.TRS(new Vector3(px, Height(px,pz) - .15f, pz),
-                    Quaternion.Euler(0, (float)rng.NextDouble()*360, 0), Vector3.one * size);
-                int sector = (px > 0 ? 1 : 0) + (pz > 0 ? 2 : 0);
-                int shade = edge > 130 ? 2 : rng.Next(2);
-                foreach (var filter in template.GetComponentsInChildren<MeshFilter>())
+                float yaw = (float)rng.NextDouble() * 360;
+                // Consume the former shade draw to retain the existing placement and sizes.
+                if (edge <= 130) rng.Next(2);
+                var model = models[(count % 7 != 0 ? 0 : 5) + count % 5];
+                var tree = (GameObject)PrefabUtility.InstantiatePrefab(model, root.transform);
+                tree.name = "Outer tree " + count + " " + model.name;
+                tree.transform.rotation = Quaternion.Euler(0, yaw, 0) * model.transform.localRotation;
+                var renderers = tree.GetComponentsInChildren<Renderer>();
+                var bounds = renderers[0].bounds;
+                foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+                tree.transform.localScale *= treeHeight * size / bounds.size.y;
+                bounds = renderers[0].bounds;
+                foreach (var renderer in renderers) bounds.Encapsulate(renderer.bounds);
+                tree.transform.position += new Vector3(px, Height(px, pz) - bounds.min.y, pz);
+                foreach (var renderer in renderers)
                 {
-                    int mat = filter.name == "Trunk" ? 0 : shade + 1;
-                    int key = sector * 4 + mat;
-                    if (!batches.ContainsKey(key)) batches[key] = new List<CombineInstance>();
-                    batches[key].Add(new CombineInstance { mesh = mat == 0 ? trunkMesh : crownMesh,
-                        transform = matrix * template.worldToLocalMatrix * filter.transform.localToWorldMatrix });
+                    renderer.sharedMaterials = renderer.sharedMaterials.Select(m => materials[m.name]).ToArray();
+                    renderer.shadowCastingMode = ShadowCastingMode.Off;
+                    renderer.receiveShadows = false;
                 }
+                foreach (var collider in tree.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(collider);
+                foreach (var component in tree.GetComponentsInChildren<Component>())
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(component);
                 count++;
             }
-            foreach (var batch in batches)
-            {
-                var mesh = new Mesh { name = "Forest sector " + batch.Key, indexFormat = IndexFormat.UInt32 };
-                mesh.CombineMeshes(batch.Value.ToArray(), true, true);
-                int mat = batch.Key % 4;
-                RenderMesh(mesh.name, mesh, new[] { mat == 0 ? bark : leaves[mat - 1] }, root.transform);
-            }
-            Object.DestroyImmediate(crownMesh);
-            Object.DestroyImmediate(trunkMesh);
             EditorSceneManager.MarkSceneDirty(scene);
             if (!EditorSceneManager.SaveScene(scene)) throw new InvalidOperationException("Scene save failed");
             AssetDatabase.SaveAssets();
             Debug.Log("Outer landscape saved: " + count + " decorative trees, 400 m of surrounding terrain, no colliders.");
-        }
-
-        static Mesh TreeMesh(bool trunk)
-        {
-            const int segments = 10;
-            int rings = trunk ? 1 : 6;
-            var vertices = new List<Vector3>();
-            var indices = new List<int>();
-            for (int r = 0; r <= rings; r++)
-            {
-                float t = (float)r / rings;
-                float y = trunk ? Mathf.Lerp(-1,1,t) : -Mathf.Cos(t*Mathf.PI)*.5f;
-                float radius = trunk ? .5f : Mathf.Sin(t*Mathf.PI)*.5f;
-                for (int i=0; i<segments; i++)
-                {
-                    float a=i*Mathf.PI*2/segments;
-                    vertices.Add(new Vector3(Mathf.Cos(a)*radius,y,Mathf.Sin(a)*radius));
-                    if(r==rings) continue;
-                    int k=r*segments+i, n=r*segments+(i+1)%segments;
-                    indices.AddRange(new[]{k,k+segments,n,n,k+segments,n+segments});
-                }
-            }
-            var mesh=new Mesh(); mesh.SetVertices(vertices); mesh.SetTriangles(indices,0);
-            mesh.RecalculateNormals(); mesh.RecalculateBounds(); return mesh;
         }
 
         static float Hill(float x, float z, float cx, float cz, float width, float depth, float height)
